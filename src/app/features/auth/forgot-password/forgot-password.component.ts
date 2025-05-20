@@ -1,11 +1,11 @@
-import {Component, inject, signal} from '@angular/core';
-import {CommonModule} from '@angular/common';
-import {RouterModule} from '@angular/router';
-import {FormBuilder, FormGroup, ReactiveFormsModule, Validators} from '@angular/forms';
-import {HttpClient} from '@angular/common/http';
-import {environment} from '../../../../environments/environment';
-import {ToastService} from '../../../core/services/toast.service';
-import {ThemeService} from '../../../core/services/theme.service';
+import { Component, inject, signal } from '@angular/core';
+import { CommonModule } from '@angular/common';
+import { RouterModule, Router } from '@angular/router';
+import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
+import { HttpClient } from '@angular/common/http';
+import { environment } from '../../../../environments/environment';
+import { ToastService } from '../../../core/services/toast.service';
+import { ThemeService } from '../../../core/services/theme.service';
 
 @Component({
   selector: 'app-forgot-password',
@@ -17,6 +17,7 @@ import {ThemeService} from '../../../core/services/theme.service';
 export class ForgotPasswordComponent {
   private fb = inject(FormBuilder);
   private http = inject(HttpClient);
+  private router = inject(Router);
   private toastService = inject(ToastService);
   protected themeService = inject(ThemeService);
 
@@ -55,6 +56,13 @@ export class ForgotPasswordComponent {
 
         console.error('Password reset request error:', error);
       }
+    });
+  }
+
+  protected goToResetPassword(): void {
+    // Navigate to the reset password page with the phone number as a query parameter
+    this.router.navigate(['/auth/reset-password'], {
+      queryParams: { phone_number: this.resetForm.value.phone_number }
     });
   }
 }

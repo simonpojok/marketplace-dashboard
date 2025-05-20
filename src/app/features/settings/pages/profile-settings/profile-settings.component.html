@@ -1,0 +1,190 @@
+<div class="space-y-6">
+  <!-- Page Header -->
+  <div>
+    <h1 class="text-2xl font-bold text-gray-900 dark:text-white">Profile Settings</h1>
+    <p class="mt-1 text-sm text-gray-600 dark:text-gray-300">
+      Manage your personal information
+    </p>
+  </div>
+
+  <!-- Loading State -->
+  <div *ngIf="isLoading()" class="flex justify-center py-12">
+    <div class="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-primary-500"></div>
+  </div>
+
+  <!-- Profile Form -->
+  <div *ngIf="!isLoading()" class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+    <!-- Left Column - Profile Form -->
+    <div
+      class="lg:col-span-2 bg-white dark:bg-dark-bg-secondary shadow-sm rounded-lg border border-gray-200 dark:border-dark-border overflow-hidden">
+      <div class="p-6">
+        <h2 class="text-lg font-medium text-gray-900 dark:text-white mb-4">Personal Information</h2>
+
+        <form [formGroup]="profileForm" (ngSubmit)="onSubmit()">
+          <!-- Name -->
+          <div class="mb-4">
+            <label for="name" class="block mb-2 text-sm font-medium text-gray-700 dark:text-gray-300">
+              Full Name
+            </label>
+            <input
+              type="text"
+              id="name"
+              formControlName="name"
+              class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500 dark:bg-gray-800 dark:text-white"
+              placeholder="John Doe"
+            />
+            <div *ngIf="submitted && profileForm.get('name')?.errors"
+                 class="mt-1 text-sm text-red-600 dark:text-red-400">
+              <span *ngIf="profileForm.get('name')?.errors?.['required']">Name is required</span>
+            </div>
+          </div>
+
+          <!-- Phone Number (Disabled, cannot be changed) -->
+          <div class="mb-4">
+            <label for="phone_number" class="block mb-2 text-sm font-medium text-gray-700 dark:text-gray-300">
+              Phone Number
+            </label>
+            <input
+              type="text"
+              id="phone_number"
+              formControlName="phone_number"
+              class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500 bg-gray-100 dark:bg-gray-700 dark:text-white cursor-not-allowed"
+              placeholder="+256 700 000 000"
+            />
+            <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">
+              Phone number cannot be changed. This is your primary identifier.
+            </p>
+          </div>
+
+          <!-- Email -->
+          <div class="mb-4">
+            <label for="email" class="block mb-2 text-sm font-medium text-gray-700 dark:text-gray-300">
+              Email Address
+            </label>
+            <input
+              type="email"
+              id="email"
+              formControlName="email"
+              class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500 dark:bg-gray-800 dark:text-white"
+              placeholder="johndoe@example.com"
+            />
+            <div *ngIf="submitted && profileForm.get('email')?.errors"
+                 class="mt-1 text-sm text-red-600 dark:text-red-400">
+              <span *ngIf="profileForm.get('email')?.errors?.['required']">Email is required</span>
+              <span *ngIf="profileForm.get('email')?.errors?.['email']">Please enter a valid email address</span>
+            </div>
+          </div>
+
+          <!-- Address -->
+          <div class="mb-4">
+            <label for="address" class="block mb-2 text-sm font-medium text-gray-700 dark:text-gray-300">
+              Address
+            </label>
+            <textarea
+              id="address"
+              formControlName="address"
+              rows="3"
+              class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500 dark:bg-gray-800 dark:text-white resize-none"
+              placeholder="Your address"
+            ></textarea>
+          </div>
+
+          <!-- Bio -->
+          <div class="mb-6">
+            <label for="bio" class="block mb-2 text-sm font-medium text-gray-700 dark:text-gray-300">
+              Bio
+            </label>
+            <textarea
+              id="bio"
+              formControlName="bio"
+              rows="4"
+              class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500 dark:bg-gray-800 dark:text-white resize-none"
+              placeholder="Tell us about yourself"
+            ></textarea>
+            <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">
+              Brief description for your profile.
+            </p>
+          </div>
+
+          <!-- Form Actions -->
+          <div class="flex items-center justify-end space-x-3">
+            <button
+              type="button"
+              class="px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg shadow-sm text-sm font-medium text-gray-700 dark:text-gray-200 bg-white dark:bg-dark-bg-secondary hover:bg-gray-50 dark:hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500"
+              (click)="resetForm()"
+            >
+              Cancel
+            </button>
+            <button
+              type="submit"
+              [disabled]="isSaving()"
+              class="px-4 py-2 border border-transparent rounded-lg shadow-sm text-sm font-medium text-white bg-primary-600 hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              <svg *ngIf="isSaving()" class="animate-spin -ml-1 mr-2 h-4 w-4 text-white inline-block"
+                   xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                <path class="opacity-75" fill="currentColor"
+                      d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+              </svg>
+              {{ isSaving() ? 'Saving...' : 'Save Changes' }}
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <!-- Right Column - Profile Card -->
+    <div
+      class="bg-white dark:bg-dark-bg-secondary shadow-sm rounded-lg border border-gray-200 dark:border-dark-border h-fit">
+      <div class="p-6">
+        <div class="text-center">
+          <!-- Profile Image/Avatar -->
+          <div class="inline-block relative">
+            <div
+              class="w-24 h-24 rounded-full bg-primary-100 dark:bg-primary-900/30 flex items-center justify-center mx-auto text-4xl font-medium text-primary-700 dark:text-primary-300"
+            >
+              {{ getInitials() }}
+            </div>
+
+            <button
+              type="button"
+              class="absolute bottom-0 right-0 bg-white dark:bg-gray-800 rounded-full p-1.5 border border-gray-300 dark:border-gray-600 shadow-sm hover:bg-gray-50 dark:hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-primary-500"
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-gray-500 dark:text-gray-400" fill="none"
+                   viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                      d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"/>
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                      d="M15 13a3 3 0 11-6 0 3 3 0 016 0z"/>
+              </svg>
+            </button>
+          </div>
+
+          <h3 class="mt-4 text-lg font-medium text-gray-900 dark:text-white">
+            {{ user?.name || 'User' }}
+          </h3>
+          <p class="text-sm text-gray-600 dark:text-gray-400">
+            {{ user?.phone_number }}
+          </p>
+        </div>
+
+        <div class="mt-6 border-t border-gray-200 dark:border-dark-border pt-4">
+          <dl class="divide-y divide-gray-200 dark:divide-dark-border">
+            <div class="py-3 flex justify-between text-sm">
+              <dt class="text-gray-600 dark:text-gray-400">Account Status</dt>
+              <dd class="text-gray-900 dark:text-white font-medium">Active</dd>
+            </div>
+            <div class="py-3 flex justify-between text-sm">
+              <dt class="text-gray-600 dark:text-gray-400">Member Since</dt>
+              <dd class="text-gray-900 dark:text-white font-medium">{{ formatDate(user?.date_joined) }}</dd>
+            </div>
+            <div class="py-3 flex justify-between text-sm">
+              <dt class="text-gray-600 dark:text-gray-400">Role</dt>
+              <dd class="text-gray-900 dark:text-white font-medium">Admin</dd>
+            </div>
+          </dl>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

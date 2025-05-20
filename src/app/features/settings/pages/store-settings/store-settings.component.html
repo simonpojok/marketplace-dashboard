@@ -1,0 +1,169 @@
+<div class="container mx-auto p-4">
+  <div class="bg-white shadow-md rounded-lg p-6">
+    <h1 class="text-2xl font-bold mb-6 text-gray-800">Store Settings</h1>
+
+    <!-- Loading indicator -->
+    <div *ngIf="isLoading" class="flex justify-center items-center py-8">
+      <div class="spinner-border text-primary" role="status">
+        <span class="sr-only">Loading...</span>
+      </div>
+      <span class="ml-2">Loading settings...</span>
+    </div>
+
+    <!-- Settings Form -->
+    <form [formGroup]="settingsForm" (ngSubmit)="onSubmit()" *ngIf="!isLoading">
+      <!-- Basic Store Information Section -->
+      <div class="mb-8">
+        <h2 class="text-xl font-semibold mb-4 text-gray-700 border-b pb-2">Basic Store Information</h2>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <!-- Store Name -->
+          <div class="form-group">
+            <label for="storeName" class="block text-sm font-medium text-gray-700 mb-1">Store Name</label>
+            <input type="text" id="storeName" formControlName="storeName" class="w-full p-2 border rounded-md focus:ring-indigo-500 focus:border-indigo-500">
+            <div *ngIf="isInvalid('storeName')" class="text-red-500 text-sm mt-1">
+              Store name is required and must be at least 3 characters
+            </div>
+          </div>
+
+          <!-- Store Email -->
+          <div class="form-group">
+            <label for="storeEmail" class="block text-sm font-medium text-gray-700 mb-1">Store Email</label>
+            <input type="email" id="storeEmail" formControlName="storeEmail" class="w-full p-2 border rounded-md focus:ring-indigo-500 focus:border-indigo-500">
+            <div *ngIf="isInvalid('storeEmail')" class="text-red-500 text-sm mt-1">
+              A valid email address is required
+            </div>
+          </div>
+
+          <!-- Store Phone -->
+          <div class="form-group">
+            <label for="storePhone" class="block text-sm font-medium text-gray-700 mb-1">Store Phone</label>
+            <input type="text" id="storePhone" formControlName="storePhone" class="w-full p-2 border rounded-md focus:ring-indigo-500 focus:border-indigo-500">
+            <div *ngIf="isInvalid('storePhone')" class="text-red-500 text-sm mt-1">
+              Store phone number is required
+            </div>
+          </div>
+
+          <!-- Store Currency -->
+          <div class="form-group">
+            <label for="storeCurrency" class="block text-sm font-medium text-gray-700 mb-1">Currency</label>
+            <select id="storeCurrency" formControlName="storeCurrency" class="w-full p-2 border rounded-md focus:ring-indigo-500 focus:border-indigo-500">
+              <option value="UGX">UGX - Ugandan Shilling</option>
+              <option value="USD">USD - US Dollar</option>
+              <option value="EUR">EUR - Euro</option>
+              <option value="GBP">GBP - British Pound</option>
+            </select>
+          </div>
+        </div>
+
+        <!-- Store Address -->
+        <div class="form-group mt-4">
+          <label for="storeAddress" class="block text-sm font-medium text-gray-700 mb-1">Store Address</label>
+          <textarea id="storeAddress" formControlName="storeAddress" rows="3" class="w-full p-2 border rounded-md focus:ring-indigo-500 focus:border-indigo-500"></textarea>
+          <div *ngIf="isInvalid('storeAddress')" class="text-red-500 text-sm mt-1">
+            Store address is required
+          </div>
+        </div>
+
+        <!-- Timezone -->
+        <div class="form-group mt-4">
+          <label for="storeTimeZone" class="block text-sm font-medium text-gray-700 mb-1">Timezone</label>
+          <select id="storeTimeZone" formControlName="storeTimeZone" class="w-full p-2 border rounded-md focus:ring-indigo-500 focus:border-indigo-500">
+            <option value="Africa/Kampala">Africa/Kampala (UTC+3)</option>
+            <option value="Africa/Nairobi">Africa/Nairobi (UTC+3)</option>
+            <option value="Africa/Lagos">Africa/Lagos (UTC+1)</option>
+            <option value="Europe/London">Europe/London (UTC+0/+1)</option>
+          </select>
+        </div>
+      </div>
+
+      <!-- Pricing & Tax Settings -->
+      <div class="mb-8">
+        <h2 class="text-xl font-semibold mb-4 text-gray-700 border-b pb-2">Pricing & Tax Settings</h2>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <!-- Tax Settings -->
+          <div class="form-group">
+            <div class="flex items-center mb-2">
+              <input type="checkbox" id="enableTax" formControlName="enableTax" class="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded">
+              <label for="enableTax" class="ml-2 block text-sm text-gray-700">Enable Tax</label>
+            </div>
+
+            <div *ngIf="settingsForm.get('enableTax')?.value">
+              <label for="taxRate" class="block text-sm font-medium text-gray-700 mb-1">Tax Rate (%)</label>
+              <input type="number" id="taxRate" formControlName="taxRate" min="0" max="100" class="w-full p-2 border rounded-md focus:ring-indigo-500 focus:border-indigo-500">
+            </div>
+          </div>
+
+          <!-- Shipping Settings -->
+          <div class="form-group">
+            <div class="flex items-center mb-2">
+              <input type="checkbox" id="enableShipping" formControlName="enableShipping" class="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded">
+              <label for="enableShipping" class="ml-2 block text-sm text-gray-700">Enable Shipping</label>
+            </div>
+
+            <div *ngIf="settingsForm.get('enableShipping')?.value">
+              <label for="flatShippingRate" class="block text-sm font-medium text-gray-700 mb-1">Flat Shipping Rate (UGX)</label>
+              <input type="number" id="flatShippingRate" formControlName="flatShippingRate" min="0" class="w-full p-2 border rounded-md focus:ring-indigo-500 focus:border-indigo-500">
+            </div>
+          </div>
+        </div>
+
+        <!-- Discounts -->
+        <div class="form-group mt-4">
+          <div class="flex items-center">
+            <input type="checkbox" id="enableDiscounts" formControlName="enableDiscounts" class="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded">
+            <label for="enableDiscounts" class="ml-2 block text-sm text-gray-700">Enable Discount Codes</label>
+          </div>
+        </div>
+      </div>
+
+      <!-- Customer Experience Settings -->
+      <div class="mb-8">
+        <h2 class="text-xl font-semibold mb-4 text-gray-700 border-b pb-2">Customer Experience</h2>
+
+        <div class="form-group">
+          <div class="flex items-center mb-3">
+            <input type="checkbox" id="enableProductReviews" formControlName="enableProductReviews" class="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded">
+            <label for="enableProductReviews" class="ml-2 block text-sm text-gray-700">Enable Product Reviews</label>
+          </div>
+        </div>
+      </div>
+
+      <!-- Email Notification Settings -->
+      <div class="mb-8">
+        <h2 class="text-xl font-semibold mb-4 text-gray-700 border-b pb-2">Email Notifications</h2>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div class="form-group">
+            <div class="flex items-center mb-3">
+              <input type="checkbox" id="orderConfirmationEmail" formControlName="orderConfirmationEmail" class="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded">
+              <label for="orderConfirmationEmail" class="ml-2 block text-sm text-gray-700">Send Order Confirmation Email</label>
+            </div>
+
+            <div class="flex items-center mb-3">
+              <input type="checkbox" id="shippingConfirmationEmail" formControlName="shippingConfirmationEmail" class="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded">
+              <label for="shippingConfirmationEmail" class="ml-2 block text-sm text-gray-700">Send Shipping Confirmation Email</label>
+            </div>
+
+            <div class="flex items-center">
+              <input type="checkbox" id="deliveryConfirmationEmail" formControlName="deliveryConfirmationEmail" class="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded">
+              <label for="deliveryConfirmationEmail" class="ml-2 block text-sm text-gray-700">Send Delivery Confirmation Email</label>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Form Actions -->
+      <div class="flex justify-end space-x-4 pt-4 border-t mt-8">
+        <button type="button" (click)="resetForm()" class="px-4 py-2 bg-gray-300 text-gray-700 rounded-md hover:bg-gray-400 focus:outline-none focus:ring-2 focus:ring-gray-500">
+          Reset
+        </button>
+        <button type="submit" [disabled]="isSaving" class="px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500">
+          <span *ngIf="isSaving">Saving...</span>
+          <span *ngIf="!isSaving">Save Settings</span>
+        </button>
+      </div>
+    </form>
+  </div>
+</div>

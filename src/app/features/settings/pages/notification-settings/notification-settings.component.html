@@ -1,0 +1,195 @@
+<div class="space-y-6">
+  <!-- Page Header -->
+  <div>
+    <h1 class="text-2xl font-bold text-gray-900 dark:text-white">Notification Settings</h1>
+    <p class="mt-1 text-sm text-gray-600 dark:text-gray-300">
+      Manage how and when you receive notifications
+    </p>
+  </div>
+
+  <!-- Loading State -->
+  <div *ngIf="isLoading()" class="flex justify-center py-12">
+    <div class="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-primary-500"></div>
+  </div>
+
+  <div *ngIf="!isLoading()">
+    <!-- Notification Types -->
+    <div class="bg-white dark:bg-dark-bg-secondary shadow-sm rounded-lg border border-gray-200 dark:border-dark-border overflow-hidden">
+      <div class="p-6">
+        <div class="flex items-center justify-between mb-4">
+          <h2 class="text-lg font-medium text-gray-900 dark:text-white">Notification Preferences</h2>
+          <div class="flex space-x-8 text-sm">
+            <div class="text-gray-600 dark:text-gray-400">Email</div>
+            <div class="text-gray-600 dark:text-gray-400">SMS</div>
+            <div class="text-gray-600 dark:text-gray-400">In-App</div>
+          </div>
+        </div>
+
+        <form [formGroup]="notificationForm" (ngSubmit)="onSubmit()">
+          <!-- Notification Settings List -->
+          <div class="space-y-4">
+            <div *ngFor="let setting of notificationSettings" class="py-4 border-t border-gray-200 dark:border-dark-border">
+              <div class="flex items-center justify-between">
+                <div>
+                  <h3 class="text-base font-medium text-gray-900 dark:text-white">{{ setting.title }}</h3>
+                  <p class="text-sm text-gray-600 dark:text-gray-400">{{ setting.description }}</p>
+                </div>
+                <div class="flex space-x-8">
+                  <!-- Email Toggle -->
+                  <div>
+                    <label class="relative inline-flex items-center cursor-pointer">
+                      <input
+                        type="checkbox"
+                        [formControlName]="setting.id + '_email'"
+                        class="sr-only peer"
+                      >
+                      <div class="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-primary-300 dark:peer-focus:ring-primary-800 rounded-full peer dark:bg-gray-700 peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-gray-600 peer-checked:bg-primary-600"></div>
+                    </label>
+                  </div>
+
+                  <!-- SMS Toggle -->
+                  <div>
+                    <label class="relative inline-flex items-center cursor-pointer">
+                      <input
+                        type="checkbox"
+                        [formControlName]="setting.id + '_sms'"
+                        class="sr-only peer"
+                      >
+                      <div class="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-primary-300 dark:peer-focus:ring-primary-800 rounded-full peer dark:bg-gray-700 peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-gray-600 peer-checked:bg-primary-600"></div>
+                    </label>
+                  </div>
+
+                  <!-- In-App Toggle -->
+                  <div>
+                    <label class="relative inline-flex items-center cursor-pointer">
+                      <input
+                        type="checkbox"
+                        [formControlName]="setting.id + '_app'"
+                        class="sr-only peer"
+                      >
+                      <div class="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-primary-300 dark:peer-focus:ring-primary-800 rounded-full peer dark:bg-gray-700 peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-gray-600 peer-checked:bg-primary-600"></div>
+                    </label>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Form Actions -->
+          <div class="flex items-center justify-end space-x-3 mt-6">
+            <button
+              type="button"
+              class="px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg shadow-sm text-sm font-medium text-gray-700 dark:text-gray-200 bg-white dark:bg-dark-bg-secondary hover:bg-gray-50 dark:hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500"
+              (click)="resetForm()"
+            >
+              Cancel
+            </button>
+            <button
+              type="submit"
+              [disabled]="isSaving()"
+              class="px-4 py-2 border border-transparent rounded-lg shadow-sm text-sm font-medium text-white bg-primary-600 hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              <svg *ngIf="isSaving()" class="animate-spin -ml-1 mr-2 h-4 w-4 text-white inline-block" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+              </svg>
+              {{ isSaving() ? 'Saving...' : 'Save Changes' }}
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <!-- Email Frequency -->
+    <div class="bg-white dark:bg-dark-bg-secondary shadow-sm rounded-lg border border-gray-200 dark:border-dark-border overflow-hidden">
+      <div class="p-6">
+        <h2 class="text-lg font-medium text-gray-900 dark:text-white mb-4">Email Frequency</h2>
+
+        <div class="space-y-3">
+          <div class="flex items-center">
+            <input
+              type="radio"
+              id="frequency_realtime"
+              name="email_frequency"
+              value="realtime"
+              formControlName="email_frequency"
+              class="h-4 w-4 text-primary-600 focus:ring-primary-500 border-gray-300 dark:border-gray-600 dark:bg-gray-800"
+            >
+            <label for="frequency_realtime" class="ml-3">
+              <div class="text-sm font-medium text-gray-900 dark:text-white">Realtime</div>
+              <p class="text-xs text-gray-600 dark:text-gray-400">Send emails as events happen</p>
+            </label>
+          </div>
+
+          <div class="flex items-center">
+            <input
+              type="radio"
+              id="frequency_daily"
+              name="email_frequency"
+              value="daily"
+              formControlName="email_frequency"
+              class="h-4 w-4 text-primary-600 focus:ring-primary-500 border-gray-300 dark:border-gray-600 dark:bg-gray-800"
+            >
+            <label for="frequency_daily" class="ml-3">
+              <div class="text-sm font-medium text-gray-900 dark:text-white">Daily Digest</div>
+              <p class="text-xs text-gray-600 dark:text-gray-400">Send a summary of all notifications once a day</p>
+            </label>
+          </div>
+
+          <div class="flex items-center">
+            <input
+              type="radio"
+              id="frequency_weekly"
+              name="email_frequency"
+              value="weekly"
+              formControlName="email_frequency"
+              class="h-4 w-4 text-primary-600 focus:ring-primary-500 border-gray-300 dark:border-gray-600 dark:bg-gray-800"
+            >
+            <label for="frequency_weekly" class="ml-3">
+              <div class="text-sm font-medium text-gray-900 dark:text-white">Weekly Digest</div>
+              <p class="text-xs text-gray-600 dark:text-gray-400">Send a summary of all notifications once a week</p>
+            </label>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Push Notifications -->
+    <div class="bg-white dark:bg-dark-bg-secondary shadow-sm rounded-lg border border-gray-200 dark:border-dark-border overflow-hidden">
+      <div class="p-6">
+        <div class="flex items-center justify-between">
+          <div>
+            <h2 class="text-lg font-medium text-gray-900 dark:text-white">Push Notifications</h2>
+            <p class="text-sm text-gray-600 dark:text-gray-400">
+              Receive push notifications on your device
+            </p>
+          </div>
+          <div>
+            <label class="relative inline-flex items-center cursor-pointer">
+              <input
+                type="checkbox"
+                formControlName="push_enabled"
+                class="sr-only peer"
+              >
+              <div class="w-14 h-7 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-primary-300 dark:peer-focus:ring-primary-800 rounded-full peer dark:bg-gray-700 peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-0.5 after:start-[4px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-6 after:w-6 after:transition-all dark:border-gray-600 peer-checked:bg-primary-600"></div>
+            </label>
+          </div>
+        </div>
+
+        <div *ngIf="isPushEnabled()" class="mt-4 p-4 bg-gray-50 dark:bg-gray-800 rounded-lg">
+          <div class="text-sm text-gray-600 dark:text-gray-400">
+            <p class="mb-2">Push notifications are currently enabled for this browser.</p>
+            <p>To manage browser notifications, you can also update your settings in your browser preferences.</p>
+          </div>
+        </div>
+
+        <div *ngIf="!isPushEnabled()" class="mt-4 p-4 bg-gray-50 dark:bg-gray-800 rounded-lg">
+          <div class="text-sm text-gray-600 dark:text-gray-400">
+            <p class="mb-2">Push notifications are currently disabled.</p>
+            <p>Enable push notifications to receive real-time updates even when you're not using the app.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

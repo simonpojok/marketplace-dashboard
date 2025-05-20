@@ -1,0 +1,68 @@
+<div class="space-y-6">
+  <!-- Page Header -->
+  <div>
+    <h1 class="text-2xl font-bold text-gray-900 dark:text-white">Settings</h1>
+    <p class="mt-1 text-sm text-gray-600 dark:text-gray-300">
+      Manage your account and application preferences
+    </p>
+  </div>
+
+  <!-- Settings Grid -->
+  <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+    <!-- Settings Cards -->
+    <a
+      *ngFor="let link of settingsLinks"
+      [routerLink]="link.path"
+      class="bg-white dark:bg-dark-bg-secondary p-6 rounded-lg border border-gray-200 dark:border-dark-border shadow-sm hover:shadow-md transition-shadow duration-200"
+    >
+      <div class="flex items-start">
+        <!-- Icon -->
+        <div [innerHTML]="link.icon" class="flex-shrink-0 h-10 w-10 rounded-lg bg-primary-100 dark:bg-primary-900/30 p-2 text-primary-600 dark:text-primary-400"></div>
+
+        <!-- Content -->
+        <div class="ml-4">
+          <h3 class="text-lg font-medium text-gray-900 dark:text-white">
+            {{ link.title }}
+          </h3>
+          <p class="mt-1 text-sm text-gray-600 dark:text-gray-400">
+            {{ link.description }}
+          </p>
+        </div>
+
+        <!-- Arrow -->
+        <div class="ml-auto">
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-gray-400 dark:text-gray-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+          </svg>
+        </div>
+      </div>
+    </a>
+  </div>
+
+  <!-- Additional Information -->
+  <div class="mt-8 bg-white dark:bg-dark-bg-secondary p-6 rounded-lg border border-gray-200 dark:border-dark-border shadow-sm">
+    <h2 class="text-lg font-medium text-gray-900 dark:text-white">About</h2>
+    <div class="mt-3 grid grid-cols-1 sm:grid-cols-2 gap-4">
+      <div>
+        <p class="text-sm text-gray-600 dark:text-gray-400">Version</p>
+        <p class="text-sm font-medium text-gray-900 dark:text-white">1.0.0</p>
+      </div>
+      <div>
+        <p class="text-sm text-gray-600 dark:text-gray-400">Last Updated</p>
+        <p class="text-sm font-medium text-gray-900 dark:text-white">May 20, 2025</p>
+      </div>
+      <div>
+        <p class="text-sm text-gray-600 dark:text-gray-400">Support</p>
+        <a href="mailto:support@afrisup.com" class="text-sm font-medium text-primary-600 dark:text-primary-400 hover:underline">
+          support&#64;afrisup.com
+        </a>
+      </div>
+      <div>
+        <p class="text-sm text-gray-600 dark:text-gray-400">Documentation</p>
+        <a href="#" class="text-sm font-medium text-primary-600 dark:text-primary-400 hover:underline">
+          View User Guide
+        </a>
+      </div>
+    </div>
+  </div>
+</div>

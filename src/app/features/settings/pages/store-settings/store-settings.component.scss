@@ -1,0 +1,50 @@
+/* Loading spinner */
+.spinner-border {
+  display: inline-block;
+  width: 2rem;
+  height: 2rem;
+  vertical-align: text-bottom;
+  border: 0.25em solid currentColor;
+  border-right-color: transparent;
+  border-radius: 50%;
+  animation: spinner-border .75s linear infinite;
+}
+
+@keyframes spinner-border {
+  to { transform: rotate(360deg); }
+}
+
+/* Form control states */
+.ng-valid[required], .ng-valid.required {
+  border-left: 3px solid #42A948; /* green */
+}
+
+.ng-invalid:not(form) {
+  border-left: 3px solid #a94442; /* red */
+}
+
+/* Checkbox styling */
+input[type="checkbox"] {
+  cursor: pointer;
+}
+
+input[type="checkbox"]:focus {
+  outline: 2px solid rgba(79, 70, 229, 0.2);
+}
+
+/* Button styling */
+button:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+}
+
+/* Add some responsiveness */
+@media (max-width: 768px) {
+  .container {
+    padding: 1rem;
+  }
+
+  .form-group {
+    margin-bottom: 1rem;
+  }
+}
