@@ -1,0 +1,68 @@
+<div class="bg-white dark:bg-dark-bg-secondary shadow-sm rounded-xl border border-gray-200 dark:border-dark-border h-full">
+  <div class="p-4 border-b border-gray-200 dark:border-dark-border flex items-center justify-between">
+    <div>
+      <h3 class="text-base font-medium text-gray-900 dark:text-white">Top Customers</h3>
+      <p class="text-sm text-gray-600 dark:text-gray-400">By total spent</p>
+    </div>
+
+    <a
+      routerLink="/customers"
+      class="text-sm font-medium text-primary-600 hover:text-primary-500 dark:text-primary-400"
+    >
+      View all
+    </a>
+  </div>
+
+  <!-- Loading state -->
+  <div *ngIf="isLoading" class="p-4 h-64 flex items-center justify-center">
+    <div class="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-primary-500"></div>
+  </div>
+
+  <!-- Customers List -->
+  <div *ngIf="!isLoading && customers.length > 0" class="divide-y divide-gray-200 dark:divide-dark-border">
+    <div *ngFor="let customer of customers; let i = index" class="p-4 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors">
+      <div class="flex items-center justify-between">
+        <div class="flex items-center">
+          <!-- Customer Avatar (Initials) -->
+          <div
+            class="w-10 h-10 rounded-full flex items-center justify-center text-white font-medium text-sm"
+            [ngStyle]="{ 'background-color': getAvatarColor(i) }"
+          >
+            {{ getInitials(customer.name) }}
+          </div>
+
+          <!-- Customer Details -->
+          <div class="ml-3">
+            <a
+              [routerLink]="['/customers', customer.id]"
+              class="text-sm font-medium text-gray-900 dark:text-white hover:text-primary-600 dark:hover:text-primary-400"
+            >
+              {{ customer.name }}
+            </a>
+            <p class="text-xs text-gray-600 dark:text-gray-400">{{ customer.phone }}</p>
+          </div>
+        </div>
+
+        <!-- Order Stats -->
+        <div class="text-right">
+          <p class="text-sm font-medium text-gray-900 dark:text-white">{{ formatCurrency(customer.totalSpent) }}</p>
+          <p class="text-xs text-gray-600 dark:text-gray-400">{{ customer.totalOrders }} orders</p>
+        </div>
+      </div>
+
+      <!-- Last Order Date -->
+      <div class="mt-2 text-xs text-gray-600 dark:text-gray-400">
+        Last order: {{ formatDate(customer.lastOrderDate) }}
+      </div>
+    </div>
+  </div>
+
+  <!-- Empty State -->
+  <div *ngIf="!isLoading && customers.length === 0" class="p-8 text-center">
+    <svg xmlns="http://www.w3.org/2000/svg" class="h-10 w-10 mx-auto text-gray-400 dark:text-gray-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" />
+    </svg>
+    <h3 class="mt-2 text-sm font-medium text-gray-900 dark:text-white">No customers</h3>
+    <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">Your top customers will appear here.</p>
+  </div>
+</div>

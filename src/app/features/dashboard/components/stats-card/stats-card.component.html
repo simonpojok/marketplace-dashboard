@@ -1,0 +1,88 @@
+<div class="bg-white dark:bg-dark-bg-secondary shadow-sm rounded-xl border border-gray-200 dark:border-dark-border p-6">
+  <div class="flex items-center justify-between">
+    <div>
+      <p class="text-sm font-medium text-gray-600 dark:text-gray-400">{{ title }}</p>
+      <div class="mt-2">
+        <p class="text-2xl font-semibold text-gray-900 dark:text-white">
+          <ng-container *ngIf="format === 'currency'">
+            {{ formatCurrency(value) }}
+          </ng-container>
+
+          <ng-container *ngIf="format !== 'currency'">
+            {{ value | number }}
+          </ng-container>
+        </p>
+      </div>
+    </div>
+
+    <!-- Icon Container -->
+    <div [ngClass]="getIconBackgroundClass()" class="p-3 rounded-full">
+      <ng-container [ngSwitch]="icon">
+        <svg *ngSwitchCase="'cash'" xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z" />
+        </svg>
+
+        <svg *ngSwitchCase="'shopping-bag'" xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" />
+        </svg>
+
+        <svg *ngSwitchCase="'users'" xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" />
+        </svg>
+
+        <svg *ngSwitchCase="'chart-bar'" xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+        </svg>
+
+        <svg *ngSwitchDefault xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+        </svg>
+      </ng-container>
+    </div>
+  </div>
+
+  <!-- Indicator -->
+  <div class="mt-6 flex items-center">
+        <span
+          [ngClass]="getChangeClass()"
+          class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium"
+        >
+          <svg
+            *ngIf="change > 0"
+            xmlns="http://www.w3.org/2000/svg"
+            class="h-3 w-3 mr-1"
+            fill="none"
+            viewBox="0 0 24 24"
+            stroke="currentColor"
+          >
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 15l7-7 7 7" />
+          </svg>
+
+          <svg
+            *ngIf="change < 0"
+            xmlns="http://www.w3.org/2000/svg"
+            class="h-3 w-3 mr-1"
+            fill="none"
+            viewBox="0 0 24 24"
+            stroke="currentColor"
+          >
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+          </svg>
+
+          <svg
+            *ngIf="change === 0"
+            xmlns="http://www.w3.org/2000/svg"
+            class="h-3 w-3 mr-1"
+            fill="none"
+            viewBox="0 0 24 24"
+            stroke="currentColor"
+          >
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 12h14" />
+          </svg>
+
+          {{ Math.abs(change) }}%
+        </span>
+
+    <span class="ml-2 text-sm text-gray-600 dark:text-gray-400">from last period</span>
+  </div>
+</div>

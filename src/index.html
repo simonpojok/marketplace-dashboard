@@ -1,13 +1,28 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="utf-8">
-  <title>MarketPlaceAdmin</title>
+  <title>Afrisup Admin</title>
   <base href="/">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <link rel="icon" type="image/x-icon" href="favicon.ico">
+  <meta name="description" content="Admin dashboard for Afrisup Marketplace">
+  <link rel="icon" type="image/x-icon" href="assets/images/favicon.ico">
+  <!-- Preload critical fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 </head>
 <body>
-  <app-root></app-root>
+<app-root>
+  <!-- Loading spinner while Angular loads -->
+  <div style="position: fixed; top: 0; left: 0; right: 0; bottom: 0; display: flex; align-items: center; justify-content: center; background-color: #f9fafb;">
+    <div style="width: 50px; height: 50px; border-radius: 50%; border: 4px solid #e5e7eb; border-top-color: #22c55e; animation: spin 1s linear infinite;"></div>
+  </div>
+  <style>
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+  </style>
+</app-root>
 </body>
 </html>

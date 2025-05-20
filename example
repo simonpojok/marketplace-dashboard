@@ -1,0 +1,47 @@
+src/
+│
+├── app/                           # Application root
+│   ├── core/                      # Core functionality
+│   │   ├── auth/                  # Authentication
+│   │   │   ├── guards/            # Route guards
+│   │   │   ├── interceptors/      # HTTP interceptors
+│   │   │   ├── services/          # Auth services
+│   │   │   └── store/             # Auth state management
+│   │   ├── http/                  # HTTP services
+│   │   ├── layout/                # App layouts
+│   │   └── services/              # Core services
+│   │
+│   ├── features/                  # Feature modules
+│   │   ├── dashboard/             # Dashboard feature
+│   │   ├── products/              # Products management
+│   │   ├── orders/                # Orders management
+│   │   ├── customers/             # Customer management
+│   │   └── settings/              # App settings
+│   │
+│   ├── shared/                    # Shared functionality
+│   │   ├── components/            # Reusable components
+│   │   ├── directives/            # Custom directives
+│   │   ├── pipes/                 # Custom pipes
+│   │   ├── models/                # Shared data models
+│   │   └── utils/                 # Utility functions
+│   │
+│   ├── app.component.ts           # Root component
+│   ├── app.config.ts              # App configuration
+│   └── app.routes.ts              # Main routes
+│
+├── assets/                        # Static assets
+│   ├── images/                    # Image assets
+│   ├── icons/                     # Icon assets
+│   └── fonts/                     # Font assets
+│
+├── environments/                  # Environment configs
+│   ├── environment.ts             # Development environment
+│   └── environment.prod.ts        # Production environment
+│
+├── styles/                        # Global styles
+│   ├── _variables.scss            # SCSS variables
+│   ├── _mixins.scss               # SCSS mixins
+│   └── _themes.scss               # Theme definitions
+│
+├── main.ts                        # Main entry
+└── index.html                     # Main HTML file

@@ -1,0 +1,88 @@
+<aside
+  class="h-full overflow-y-auto bg-white dark:bg-dark-bg-secondary shadow-md border-r border-gray-200 dark:border-dark-border transition-all duration-300 ease-in-out"
+  [class.w-64]="!collapsed"
+  [class.w-16]="collapsed"
+>
+  <nav class="py-4">
+    <ul class="space-y-1 px-2">
+      <ng-container *ngFor="let item of menuItems">
+        <!-- Menu Item -->
+        <li class="group">
+          <a
+            *ngIf="!item.children"
+            [routerLink]="item.route"
+            routerLinkActive="bg-primary-50 dark:bg-primary-900/20 text-primary-700 dark:text-primary-400"
+            [routerLinkActiveOptions]="{ exact: item.route === '/dashboard' }"
+            class="flex items-center px-3 py-2 rounded-lg text-gray-700 dark:text-dark-text-primary hover:bg-gray-100 dark:hover:bg-gray-700 group"
+          >
+            <!-- Icon -->
+            <span
+              class="flex-shrink-0"
+              [innerHTML]="item.icon"
+            ></span>
+            <!-- Label -->
+            <span
+              class="ml-3 transition-opacity duration-300"
+              [class.opacity-0]="collapsed"
+              [class.hidden]="collapsed"
+            >{{ item.label }}</span>
+          </a>
+
+          <!-- Menu Item with Submenu -->
+          <div *ngIf="item.children">
+            <!-- Parent Item -->
+            <button
+              (click)="toggleSubMenu(item)"
+              type="button"
+              class="w-full flex items-center justify-between px-3 py-2 rounded-lg text-gray-700 dark:text-dark-text-primary hover:bg-gray-100 dark:hover:bg-gray-700"
+              [class.bg-gray-100]="item.expanded"
+              [class.dark:bg-gray-700]="item.expanded"
+            >
+              <div class="flex items-center">
+                <!-- Icon -->
+                <span
+                  class="flex-shrink-0"
+                  [innerHTML]="item.icon"
+                ></span>
+                <!-- Label -->
+                <span
+                  class="ml-3 transition-opacity duration-300"
+                  [class.opacity-0]="collapsed"
+                  [class.hidden]="collapsed"
+                >{{ item.label }}</span>
+              </div>
+
+              <!-- Dropdown arrow -->
+              <svg
+                *ngIf="!collapsed"
+                xmlns="http://www.w3.org/2000/svg"
+                class="h-4 w-4 transition-transform duration-200"
+                [class.rotate-180]="item.expanded"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+              >
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
+              </svg>
+            </button>
+
+            <!-- Submenu -->
+            <div
+              *ngIf="item.expanded && !collapsed"
+              class="mt-1 pl-8 space-y-1"
+            >
+              <a
+                *ngFor="let child of item.children"
+                [routerLink]="child.route"
+                routerLinkActive="bg-primary-50 dark:bg-primary-900/20 text-primary-700 dark:text-primary-400"
+                class="block px-3 py-2 rounded-lg text-gray-700 dark:text-dark-text-primary hover:bg-gray-100 dark:hover:bg-gray-700"
+              >
+                {{ child.label }}
+              </a>
+            </div>
+          </div>
+        </li>
+      </ng-container>
+    </ul>
+  </nav>
+</aside>

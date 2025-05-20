@@ -1,0 +1,18 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 60">
+  <style>
+    .logo-text { font-family: 'Poppins', sans-serif; font-weight: 600; }
+    .text-primary { fill: #22c55e; }
+    .text-secondary { fill: #111827; }
+    .dark-mode .text-secondary { fill: #f9fafb; }
+  </style>
+  <g>
+    <!-- Logo Icon -->
+    <path class="text-primary" d="M30 10 L45 20 L30 30 L15 20 Z" />
+    <path class="text-primary" d="M30 20 L45 30 L30 40 L15 30 Z" fill-opacity="0.8" />
+    <path class="text-primary" d="M30 30 L45 40 L30 50 L15 40 Z" fill-opacity="0.6" />
+
+    <!-- Logo Text -->
+    <text x="60" y="35" class="logo-text text-secondary" font-size="24">Afrisup</text>
+    <text x="155" y="35" class="logo-text text-primary" font-size="16">Admin</text>
+  </g>
+</svg>

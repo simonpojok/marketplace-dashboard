@@ -1,0 +1,80 @@
+<div class="bg-white dark:bg-dark-bg-secondary shadow-sm rounded-xl border border-gray-200 dark:border-dark-border h-full">
+  <div class="p-4 border-b border-gray-200 dark:border-dark-border flex items-center justify-between">
+    <div>
+      <h3 class="text-base font-medium text-gray-900 dark:text-white">Recent Orders</h3>
+      <p class="text-sm text-gray-600 dark:text-gray-400">Latest transactions</p>
+    </div>
+
+    <a
+      routerLink="/orders/list"
+      class="text-sm font-medium text-primary-600 hover:text-primary-500 dark:text-primary-400"
+    >
+      View all
+    </a>
+  </div>
+
+  <!-- Loading state -->
+  <div *ngIf="isLoading" class="p-4 h-64 flex items-center justify-center">
+    <div class="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-primary-500"></div>
+  </div>
+
+  <!-- Orders Table -->
+  <div *ngIf="!isLoading && orders.length > 0" class="overflow-x-auto">
+    <table class="min-w-full divide-y divide-gray-200 dark:divide-dark-border">
+      <thead class="bg-gray-50 dark:bg-gray-800">
+      <tr>
+        <th scope="col" class="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+          Order
+        </th>
+        <th scope="col" class="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+          Customer
+        </th>
+        <th scope="col" class="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+          Date
+        </th>
+        <th scope="col" class="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+          Amount
+        </th>
+        <th scope="col" class="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+          Status
+        </th>
+      </tr>
+      </thead>
+      <tbody class="bg-white dark:bg-dark-bg-secondary divide-y divide-gray-200 dark:divide-dark-border">
+      <tr *ngFor="let order of orders" class="hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors">
+        <td class="px-4 py-3 text-sm text-gray-900 dark:text-white">
+          <a
+            [routerLink]="['/orders', order.id]"
+            class="font-medium text-primary-600 hover:text-primary-500 dark:text-primary-400"
+          >
+            {{ order.orderNumber }}
+          </a>
+        </td>
+        <td class="px-4 py-3 text-sm text-gray-900 dark:text-white">
+          {{ order.customer }}
+        </td>
+        <td class="px-4 py-3 text-sm text-gray-500 dark:text-gray-400">
+          {{ formatDate(order.date) }}
+        </td>
+        <td class="px-4 py-3 text-sm font-medium text-gray-900 dark:text-white">
+          {{ formatCurrency(order.total) }}
+        </td>
+        <td class="px-4 py-3 text-sm">
+                <span [ngClass]="getStatusClasses(order.status)" class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full">
+                  {{ formatStatus(order.status) }}
+                </span>
+        </td>
+      </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- Empty State -->
+  <div *ngIf="!isLoading && orders.length === 0" class="p-8 text-center">
+    <svg xmlns="http://www.w3.org/2000/svg" class="h-10 w-10 mx-auto text-gray-400 dark:text-gray-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" />
+    </svg>
+    <h3 class="mt-2 text-sm font-medium text-gray-900 dark:text-white">No orders</h3>
+    <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">Your recent orders will appear here.</p>
+  </div>
+</div>
