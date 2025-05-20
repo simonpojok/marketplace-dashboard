@@ -12,7 +12,7 @@ import {User} from '../../../../core/auth/models/user.model';
   selector: 'app-profile-settings',
   standalone: true,
   imports: [CommonModule, RouterModule, ReactiveFormsModule],
-  templateUrl: './profile-settings.component.html',
+  templateUrl: 'profile-settings.component.html',
   styles: []
 })
 export class ProfileSettingsComponent implements OnInit {

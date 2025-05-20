@@ -8,8 +8,8 @@ import {ToastService} from '../../../../core/services/toast.service';
   selector: 'app-store-settings',
   standalone: true,
   imports: [CommonModule, ReactiveFormsModule],
-  templateUrl: './store-settings.component.html',
-  styleUrls: ['./store-settings.component.css']
+  templateUrl: 'store-settings.component.html',
+  styleUrls: ['store-settings.component.scss']
 })
 export class StoreSettingsComponent implements OnInit {
   settingsForm: FormGroup;

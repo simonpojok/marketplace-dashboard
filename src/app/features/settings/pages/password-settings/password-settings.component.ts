@@ -10,7 +10,7 @@ import {ToastService} from '../../../../core/services/toast.service';
   selector: 'app-password-settings',
   standalone: true,
   imports: [CommonModule, RouterModule, ReactiveFormsModule],
-  templateUrl: './password-settings.component.html',
+  templateUrl: 'password-settings.component.html',
   styles: []
 })
 export class PasswordSettingsComponent {

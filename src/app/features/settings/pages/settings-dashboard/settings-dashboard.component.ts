@@ -14,7 +14,7 @@ interface SettingsLink {
   selector: 'app-settings-dashboard',
   standalone: true,
   imports: [CommonModule, RouterModule],
-  templateUrl: './settings-dashboard.component.html',
+  templateUrl: 'settings-dashboard.component.html',
   styles: []
 })
 export class SettingsDashboardComponent {

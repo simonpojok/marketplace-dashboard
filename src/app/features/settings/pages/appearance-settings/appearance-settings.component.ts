@@ -16,7 +16,7 @@ interface ThemeOption {
   selector: 'app-appearance-settings',
   standalone: true,
   imports: [CommonModule, RouterModule, ReactiveFormsModule],
-  templateUrl: './appearance-settings.component.html',
+  templateUrl: 'appearance-settings.component.html',
   styles: []
 })
 export class AppearanceSettingsComponent implements OnInit {

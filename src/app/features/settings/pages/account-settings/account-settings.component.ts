@@ -1,7 +1,7 @@
 import {Component, OnInit, inject, signal} from '@angular/core';
 import {CommonModule} from '@angular/common';
 import {RouterModule} from '@angular/router';
-import {FormBuilder, ReactiveFormsModule, Validators} from '@angular/forms';
+import {FormBuilder, FormsModule, ReactiveFormsModule, Validators} from '@angular/forms';
 import {HttpClient} from '@angular/common/http';
 import {AuthService} from '../../../../core/auth/services/auth.service';
 import {ToastService} from '../../../../core/services/toast.service';
@@ -19,8 +19,8 @@ interface TimeZoneOption {
 @Component({
   selector: 'app-account-settings',
   standalone: true,
-  imports: [CommonModule, RouterModule, ReactiveFormsModule],
-  templateUrl: './account-settings.component.html',
+  imports: [CommonModule, RouterModule, ReactiveFormsModule, FormsModule],
+  templateUrl: 'account-settings.component.html',
   styles: []
 })
 export class AccountSettingsComponent implements OnInit {
