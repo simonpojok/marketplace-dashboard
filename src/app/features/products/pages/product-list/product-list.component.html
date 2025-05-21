@@ -1,0 +1,331 @@
+<div class="space-y-6">
+  <!-- Page Header -->
+  <div class="flex flex-col md:flex-row md:items-center md:justify-between">
+    <div>
+      <h1 class="text-2xl font-bold text-gray-900 dark:text-white">Products</h1>
+      <p class="mt-1 text-sm text-gray-600 dark:text-gray-300">
+        Manage your product inventory
+      </p>
+    </div>
+    <div class="mt-4 md:mt-0 flex flex-wrap gap-3">
+      <a
+        routerLink="/products/create"
+        class="flex items-center justify-center px-4 py-2 border border-transparent rounded-lg shadow-sm text-sm font-medium text-white bg-primary-600 hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500"
+      >
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-2" fill="none" viewBox="0 0 24 24"
+             stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
+        </svg>
+        Add Product
+      </a>
+      <button
+        type="button"
+        class="flex items-center justify-center px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg shadow-sm text-sm font-medium text-gray-700 dark:text-gray-200 bg-white dark:bg-dark-bg-secondary hover:bg-gray-50 dark:hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500"
+      >
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-2" fill="none" viewBox="0 0 24 24"
+             stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+        </svg>
+        Export
+      </button>
+    </div>
+  </div>
+
+  <!-- Filters -->
+  <div
+    class="bg-white dark:bg-dark-bg-secondary p-4 rounded-lg border border-gray-200 dark:border-dark-border shadow-sm">
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-4">
+      <!-- Search -->
+      <div>
+        <label for="search" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Search</label>
+        <div class="relative">
+          <input
+            type="text"
+            id="search"
+            [(ngModel)]="searchTerm()"
+            (keyup.enter)="onSearch()"
+            class="w-full pl-10 pr-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500 dark:bg-gray-800 dark:text-white"
+            placeholder="Product name, SKU, or description..."
+          >
+          <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-gray-400 dark:text-gray-500" fill="none"
+                 viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                    d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
+            </svg>
+          </div>
+        </div>
+      </div>
+
+      <!-- Category Filter -->
+      <div>
+        <label for="category" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Category</label>
+        <select
+          id="category"
+          [(ngModel)]="selectedCategory()"
+          (change)="onFilter()"
+          class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500 dark:bg-gray-800 dark:text-white"
+        >
+          <option value="">All Categories</option>
+          <option *ngFor="let category of categories()" [value]="category.id">{{ category.name }}</option>
+        </select>
+      </div>
+
+      <!-- Brand Filter -->
+      <div>
+        <label for="brand" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Brand</label>
+        <select
+          id="brand"
+          [(ngModel)]="selectedBrand()"
+          (change)="onFilter()"
+          class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500 dark:bg-gray-800 dark:text-white"
+        >
+          <option value="">All Brands</option>
+          <option *ngFor="let brand of brands()" [value]="brand.id">{{ brand.name }}</option>
+        </select>
+      </div>
+
+      <!-- Sort By -->
+      <div>
+        <label for="sortBy" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Sort By</label>
+        <div class="flex space-x-2">
+          <select
+            id="sortBy"
+            [(ngModel)]="sortBy()"
+            (change)="onFilter()"
+            class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500 dark:bg-gray-800 dark:text-white"
+          >
+            <option value="name">Name</option>
+            <option value="price">Price</option>
+            <option value="created_at">Date Created</option>
+            <option value="stock_quantity">Stock</option>
+          </select>
+          <button
+            type="button"
+            (click)="handSortProducts()"
+            class="flex items-center justify-center px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg shadow-sm text-sm text-gray-700 dark:text-gray-200 bg-white dark:bg-dark-bg-secondary hover:bg-gray-50 dark:hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500"
+          >
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor"
+                 [class.transform]="sortOrder() === 'desc'" [class.rotate-180]="sortOrder() === 'desc'">
+              <path fill-rule="evenodd"
+                    d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z"
+                    clip-rule="evenodd"/>
+            </svg>
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Checkboxes -->
+    <div class="flex flex-wrap gap-6">
+      <div class="flex items-center">
+        <input
+          id="inStock"
+          type="checkbox"
+          [(ngModel)]="filterInStock()"
+          (change)="onFilter()"
+          class="h-4 w-4 text-primary-600 focus:ring-primary-500 border-gray-300 dark:border-gray-600 rounded"
+        >
+        <label for="inStock" class="ml-2 block text-sm text-gray-700 dark:text-gray-300">
+          In Stock
+        </label>
+      </div>
+      <div class="flex items-center">
+        <input
+          id="onSale"
+          type="checkbox"
+          [(ngModel)]="filterOnSale()"
+          (change)="onFilter()"
+          class="h-4 w-4 text-primary-600 focus:ring-primary-500 border-gray-300 dark:border-gray-600 rounded"
+        >
+        <label for="onSale" class="ml-2 block text-sm text-gray-700 dark:text-gray-300">
+          On Sale
+        </label>
+      </div>
+      <div class="flex items-center">
+        <input
+          id="featured"
+          type="checkbox"
+          [(ngModel)]="filterFeatured()"
+          (change)="onFilter()"
+          class="h-4 w-4 text-primary-600 focus:ring-primary-500 border-gray-300 dark:border-gray-600 rounded"
+        >
+        <label for="featured" class="ml-2 block text-sm text-gray-700 dark:text-gray-300">
+          Featured
+        </label>
+      </div>
+      <div class="ml-auto">
+        <button
+          type="button"
+          (click)="resetFilters()"
+          class="text-sm text-primary-600 dark:text-primary-400 hover:underline focus:outline-none"
+        >
+          Reset Filters
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Loading Indicator -->
+  <div *ngIf="isLoading()" class="flex justify-center py-12">
+    <div class="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-primary-500"></div>
+  </div>
+
+  <!-- Products Grid -->
+  <div *ngIf="!isLoading() && products().length > 0"
+       class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+    <div *ngFor="let product of products()"
+         class="bg-white dark:bg-dark-bg-secondary shadow-sm rounded-lg border border-gray-200 dark:border-dark-border overflow-hidden hover:shadow-md transition-shadow duration-200">
+      <a [routerLink]="['/products/view', product.id]" class="block">
+        <!-- Product Image -->
+        <div class="aspect-w-1 aspect-h-1 w-full overflow-hidden bg-gray-100 dark:bg-gray-700">
+          <img
+            [src]="getPrimaryImage(product)"
+            [alt]="product.name"
+            class="h-48 w-full object-cover object-center"
+            onerror="this.src='assets/images/placeholder-product.jpg'"
+          >
+        </div>
+
+        <!-- Product Info -->
+        <div class="p-4">
+          <div class="flex justify-between items-start">
+            <div>
+              <h3 class="text-sm font-medium text-gray-900 dark:text-white line-clamp-2">{{ product.name }}</h3>
+              <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">
+                SKU: {{ product.sku }}
+              </p>
+            </div>
+            <div class="flex items-center space-x-1">
+              <span *ngIf="product.is_featured"
+                    class="flex-shrink-0 inline-block px-2 py-0.5 text-xs font-medium bg-primary-100 text-primary-800 dark:bg-primary-900/30 dark:text-primary-300 rounded-full">Featured</span>
+            </div>
+          </div>
+
+          <div class="flex items-center justify-between mt-2">
+            <div class="flex flex-col">
+              <!-- Price -->
+              <div class="flex items-center">
+                <span class="text-sm font-medium text-gray-900 dark:text-white"
+                      [class.line-through]="product.discount_price">
+                  {{ formatCurrency(product.price) }}
+                </span>
+                <span *ngIf="product.discount_price"
+                      class="ml-2 text-sm font-medium text-green-600 dark:text-green-400">
+                  {{ formatCurrency(product.discount_price) }}
+                </span>
+              </div>
+              <!-- Stock -->
+              <div class="mt-1">
+                <span
+                  [ngClass]="
+                    product.stock_quantity === 0 ? 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-300' :
+                    (product.stock_quantity < 10 ? 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-300' :
+                    'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300')
+                  "
+                  class="px-1.5 py-0.5 text-xs font-medium rounded"
+                >
+                  {{ product.stock_quantity }} in stock
+                </span>
+              </div>
+            </div>
+            <div class="flex space-x-1">
+              <a [routerLink]="['/products/edit', product.id]"
+                 class="p-1 text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24"
+                     stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"/>
+                </svg>
+              </a>
+              <button (click)="deleteProduct(product.id, $event)"
+                      class="p-1 text-gray-500 hover:text-red-600 dark:text-gray-400 dark:hover:text-red-400">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24"
+                     stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
+                </svg>
+              </button>
+            </div>
+          </div>
+
+          <!-- Category/Brand -->
+          <div class="mt-2 text-xs text-gray-500 dark:text-gray-400 flex flex-wrap gap-2">
+            <span class="inline-flex items-center">
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3 mr-1" fill="none" viewBox="0 0 24 24"
+                   stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                      d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z"/>
+              </svg>
+              {{ getCategoryName(product.category) }}
+            </span>
+            <span *ngIf="product.brand" class="inline-flex items-center">
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3 mr-1" fill="none" viewBox="0 0 24 24"
+                   stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                      d="M16 4v12l-4-2-4 2V4M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/>
+              </svg>
+              {{ getBrandName(product.brand) }}
+            </span>
+          </div>
+        </div>
+      </a>
+    </div>
+  </div>
+
+  <!-- Empty State -->
+  <div *ngIf="!isLoading() && products().length === 0" class="flex flex-col items-center justify-center py-12">
+    <svg xmlns="http://www.w3.org/2000/svg" class="h-12 w-12 text-gray-400 dark:text-gray-500 mb-4" fill="none"
+         viewBox="0 0 24 24" stroke="currentColor">
+      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+            d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"/>
+    </svg>
+    <h3 class="text-lg font-medium text-gray-900 dark:text-white">No products found</h3>
+    <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">
+      Try changing your search or filter settings, or add a new product.
+    </p>
+    <a
+      routerLink="/products/create"
+      class="mt-4 flex items-center justify-center px-4 py-2 border border-transparent rounded-lg shadow-sm text-sm font-medium text-white bg-primary-600 hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500"
+    >
+      <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-2" fill="none" viewBox="0 0 24 24"
+           stroke="currentColor">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
+      </svg>
+      Add Product
+    </a>
+  </div>
+
+  <!-- Pagination -->
+  <div *ngIf="!isLoading() && totalProducts() > 0"
+       class="bg-white dark:bg-dark-bg-secondary px-4 py-3 flex items-center justify-between border border-gray-200 dark:border-dark-border rounded-lg">
+    <div class="hidden sm:block">
+      <p class="text-sm text-gray-700 dark:text-gray-300">
+        Showing
+        <span class="font-medium">{{ (currentPage() - 1) * pageSize() + 1 }}</span>
+        to
+        <span class="font-medium">{{ Math.min(currentPage() * pageSize(), totalProducts()) }}</span>
+        of
+        <span class="font-medium">{{ totalProducts() }}</span>
+        products
+      </p>
+    </div>
+    <div class="flex-1 flex justify-between sm:justify-end space-x-2">
+      <button
+        [disabled]="currentPage() === 1"
+        (click)="onPageChange(currentPage() - 1)"
+        class="relative inline-flex items-center px-4 py-2 border border-gray-300 dark:border-gray-600 text-sm font-medium rounded-md text-gray-700 dark:text-gray-200 bg-white dark:bg-dark-bg-secondary hover:bg-gray-50 dark:hover:bg-gray-700 disabled:opacity-50 disabled:cursor-not-allowed"
+      >
+        Previous
+      </button>
+      <button
+        [disabled]="currentPage() * pageSize() >= totalProducts()"
+        (click)="onPageChange(currentPage() + 1)"
+        class="relative inline-flex items-center px-4 py-2 border border-gray-300 dark:border-gray-600 text-sm font-medium rounded-md text-gray-700 dark:text-gray-200 bg-white dark:bg-dark-bg-secondary hover:bg-gray-50 dark:hover:bg-gray-700 disabled:opacity-50 disabled:cursor-not-allowed"
+      >
+        Next
+      </button>
+    </div>
+  </div>
+</div>

@@ -3,14 +3,14 @@ import {CommonModule} from '@angular/common';
 import {RouterModule} from '@angular/router';
 import {FormsModule} from '@angular/forms';
 import {ProductsService} from '../../services/products.service';
-import {Product} from '../../models/product.model';
+import {Product, Category, Brand} from '../../models/product.model';
 import {ToastService} from '../../../../core/services/toast.service';
 
 @Component({
   selector: 'app-product-list',
   standalone: true,
   imports: [CommonModule, RouterModule, FormsModule],
-  templateUrl: './product-list.component.html',
+  templateUrl: 'product-list.component.html',
   styles: []
 })
 export class ProductListComponent implements OnInit {
@@ -32,19 +32,50 @@ export class ProductListComponent implements OnInit {
   protected sortBy = signal('created_at');
   protected sortOrder = signal('desc');
 
+  // Category and brand options for filters
+  protected categories = signal<Category[]>([]);
+  protected brands = signal<Brand[]>([]);
+
+  // For use in template
+  protected readonly Math = Math;
+
   ngOnInit(): void {
+    this.loadCategories();
+    this.loadBrands();
     this.loadProducts();
+  }
+
+  private loadCategories(): void {
+    this.productsService.getCategories().subscribe({
+      next: (categories) => {
+        this.categories.set(categories);
+      },
+      error: (error) => {
+        console.error('Error loading categories:', error);
+      }
+    });
+  }
+
+  private loadBrands(): void {
+    this.productsService.getBrands().subscribe({
+      next: (brands) => {
+        this.brands.set(brands);
+      },
+      error: (error) => {
+        console.error('Error loading brands:', error);
+      }
+    });
   }
 
   protected loadProducts(page: number = 1): void {
     this.isLoading.set(true);
 
     const params = {
-      page: page,
-      page_size: this.pageSize(),
-      search: this.searchTerm() || null,
-      category: this.selectedCategory() || null,
-      brand: this.selectedBrand() || null,
+      page: page.toString(),
+      page_size: this.pageSize().toString(),
+      search: this.searchTerm(),
+      category: this.selectedCategory(),
+      brand: this.selectedBrand(),
       in_stock: this.filterInStock() ? 'true' : null,
       on_sale: this.filterOnSale() ? 'true' : null,
       is_featured: this.filterFeatured() ? 'true' : null,
@@ -81,7 +112,7 @@ export class ProductListComponent implements OnInit {
   protected onSort(field: string): void {
     if (this.sortBy() === field) {
       // Toggle sort order if same field is clicked
-      this.sortOrder.set(this.sortOrder() === 'asc' ? 'desc' : 'asc');
+      this.sortOrder.update(value => value === 'asc' ? 'desc' : 'asc');
     } else {
       // Default to ascending for new sort field
       this.sortBy.set(field);
@@ -141,5 +172,26 @@ export class ProductListComponent implements OnInit {
     }
   }
 
-  protected readonly Math = Math;
+  protected getCategoryName(categoryId: string): string {
+    const category = this.categories().find(cat => cat.id === categoryId);
+    return category ? category.name : 'Unknown';
+  }
+
+  protected getBrandName(brandId: string): string {
+    const brand = this.brands().find(b => b.id === brandId);
+    return brand ? brand.name : 'Unknown';
+  }
+
+  protected getPrimaryImage(product: Product): string {
+    if (product.images && product.images.length > 0) {
+      const primaryImage = product.images.find(img => img.is_primary);
+      return primaryImage ? primaryImage.image : product.images[0].image;
+    }
+    return 'assets/images/placeholder-product.jpg';
+  }
+
+  public handSortProducts() {
+    this.sortOrder.update(value => value === 'asc' ? 'desc' : 'asc');
+    this.onFilter();
+  }
 }
