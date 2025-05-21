@@ -10,6 +10,7 @@ import {Customer, CustomerListResponse, CustomerOrdersResponse} from '../models/
 export class CustomersService {
   private http = inject(HttpClient);
   private apiUrl = `${environment.apiUrl}${environment.apiVersion}/users`;
+  private apiOrdersUrl = `${environment.apiUrl}${environment.apiVersion}/orders`;
 
   getCustomers(params?: any): Observable<CustomerListResponse> {
     let httpParams = new HttpParams();
@@ -40,7 +41,7 @@ export class CustomersService {
       });
     }
 
-    return this.http.get<CustomerOrdersResponse>(`${this.apiUrl}/customers/${id}/orders/`, {params: httpParams});
+    return this.http.get<CustomerOrdersResponse>(`${this.apiOrdersUrl}/customer/${id}/`, {params: httpParams});
   }
 
   updateCustomer(id: string, data: Partial<Customer>): Observable<Customer> {
