@@ -1,10 +1,10 @@
-import { Component, OnInit, inject, signal } from '@angular/core';
-import { CommonModule } from '@angular/common';
-import { RouterModule, ActivatedRoute, Router } from '@angular/router';
-import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
-import { ProductsService } from '../../services/products.service';
-import { Category } from '../../models/product.model';
-import { ToastService } from '../../../../core/services/toast.service';
+import {Component, OnInit, inject, signal} from '@angular/core';
+import {CommonModule} from '@angular/common';
+import {RouterModule, ActivatedRoute, Router} from '@angular/router';
+import {FormBuilder, FormGroup, ReactiveFormsModule, Validators} from '@angular/forms';
+import {ProductsService} from '../../services/products.service';
+import {Category} from '../../models/product.model';
+import {ToastService} from '../../../../core/services/toast.service';
 
 @Component({
   selector: 'app-category-form',
@@ -149,17 +149,16 @@ export class CategoryFormComponent implements OnInit {
     if (this.isEditMode()) {
       this.updateCategory(formData);
     } else {
-      this.createCategory(formData);
+      this.handleCreateCategory(formData);
     }
   }
 
-  private createCategory(formData: FormData): void {
-    // @ts-ignore
-    this.productsService.createCategory(formData).subscribe({
+  private handleCreateCategory(formData: FormData): void {
+    this.productsService.handleCreateCategoryWithInformation(formData).subscribe({
       next: (category) => {
         this.isSaving.set(false);
         this.toastService.success('Category created successfully');
-        this.router.navigate(['/products/categories']);
+        this.router.navigate(['/products/categories']).then(console.log);
       },
       error: (error) => {
         console.error('Error creating category:', error);
@@ -218,7 +217,7 @@ export class CategoryFormComponent implements OnInit {
         .replace(/[\s_-]+/g, '-')
         .replace(/^-+|-+$/g, '');
 
-      this.categoryForm.patchValue({ slug });
+      this.categoryForm.patchValue({slug});
     }
   }
 

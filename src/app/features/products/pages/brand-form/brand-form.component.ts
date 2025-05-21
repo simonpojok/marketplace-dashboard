@@ -82,7 +82,7 @@ export class BrandFormComponent implements OnInit {
     });
   }
 
-  protected onSubmit(): void {
+  protected onHandleSaveBrandInformation(): void {
     if (this.brandForm.invalid) {
       // Mark form controls as touched to trigger validation messages
       Object.keys(this.brandForm.controls).forEach(key => {
@@ -111,8 +111,7 @@ export class BrandFormComponent implements OnInit {
     const saveObservable = this.isEditMode() && this.brand()
       // @ts-ignore
       ? this.productsService.updateBrand(this.brand()!.id, formData)
-      // @ts-ignore
-      : this.productsService.createBrand(formData);
+      : this.productsService.handleCreateBrandWithInformation(formData);
 
     saveObservable.subscribe({
       next: () => {

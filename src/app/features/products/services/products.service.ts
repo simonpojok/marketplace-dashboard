@@ -74,7 +74,7 @@ export class ProductsService {
     return this.http.get<Category>(`${this.apiUrl}/categories/${id}/`);
   }
 
-  createCategory(category: FormData): Observable<Category> {
+  handleCreateCategoryWithInformation(category: FormData): Observable<Category> {
     return this.http.post<Category>(`${this.apiUrl}/categories/`, category);
   }
 
@@ -120,7 +120,8 @@ export class ProductsService {
     return this.http.get<Brand>(`${this.apiUrl}/brands/${id}/`);
   }
 
-  createBrand(brand: FormData): Observable<Brand> {
+  handleCreateBrandWithInformation(brand: FormData): Observable<Brand> {
+    console.log(brand)
     return this.http.post<Brand>(`${this.apiUrl}/brands/`, brand);
   }
 
