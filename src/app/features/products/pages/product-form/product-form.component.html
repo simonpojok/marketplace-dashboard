@@ -1,3 +1,4 @@
+<!-- src/app/features/products/pages/product-form/product-form.component.html -->
 <div class="space-y-6">
   <!-- Loading Indicator -->
   <div *ngIf="isLoading()" class="flex justify-center py-12">
@@ -8,8 +9,9 @@
     <!-- Page Header with Actions -->
     <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between">
       <div class="mb-5">
-        <h1
-          class="text-2xl font-bold text-gray-900 dark:text-white">{{ isEdit() ? 'Edit Product' : 'Create New Product' }}</h1>
+        <h1 class="text-2xl font-bold text-gray-900 dark:text-white">
+          {{ isEdit() ? 'Edit Product' : 'Create New Product' }}
+        </h1>
         <p class="mt-1 text-sm text-gray-600 dark:text-gray-300">
           {{ isEdit() ? 'Update product details and information' : 'Add a new product to your store' }}
         </p>
@@ -19,8 +21,7 @@
           routerLink="/products"
           class="flex items-center justify-center px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg shadow-sm text-sm font-medium text-gray-700 dark:text-gray-200 bg-white dark:bg-dark-bg-secondary hover:bg-gray-50 dark:hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500"
         >
-          <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-2" fill="none" viewBox="0 0 24 24"
-               stroke="currentColor">
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"/>
           </svg>
           Cancel
@@ -30,588 +31,40 @@
 
     <!-- Product Form -->
     <form [formGroup]="productForm" (ngSubmit)="handleCreateProduct()" class="space-y-8">
-      <!-- Basic Details Card -->
-      <div
-        class="bg-white dark:bg-dark-bg-secondary shadow-sm rounded-lg border border-gray-200 dark:border-dark-border overflow-hidden">
-        <div class="p-6">
-          <h2 class="text-lg font-medium text-gray-900 dark:text-white mb-4">Basic Information</h2>
+      <!-- Basic Information -->
+      <app-basic-info-form
+        [parentForm]="productForm"
+        [categories]="categories()"
+        [brands]="brands()"
+        (slugGenerated)="generateSlug()"
+      ></app-basic-info-form>
 
-          <div class="grid grid-cols-1 gap-y-6 gap-x-4 sm:grid-cols-6">
-            <!-- Product Name -->
-            <div class="sm:col-span-4">
-              <label for="name" class="block text-sm font-medium text-gray-700 dark:text-gray-300">
-                Product Name *
-              </label>
-              <div class="mt-1">
-                <input
-                  type="text"
-                  id="name"
-                  formControlName="name"
-                  (blur)="generateSlug()"
-                  class="block w-full rounded-md border-gray-300 dark:border-gray-600 shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm dark:bg-gray-800 dark:text-white"
-                >
-              </div>
-              <div *ngIf="productForm.get('name')?.invalid && productForm.get('name')?.touched"
-                   class="mt-1 text-sm text-red-600 dark:text-red-400">
-                Product name is required and must be at least 3 characters
-              </div>
-            </div>
+      <!-- Pricing & Inventory -->
+      <app-pricing-inventory-form
+        [parentForm]="productForm"
+      ></app-pricing-inventory-form>
 
-            <!-- Slug -->
-            <div class="sm:col-span-2">
-              <label for="slug" class="block text-sm font-medium text-gray-700 dark:text-gray-300">
-                URL Slug
-              </label>
-              <div class="mt-1 flex rounded-md shadow-sm">
-                <input
-                  type="text"
-                  id="slug"
-                  readonly
-                  formControlName="slug"
-                  class="block w-full rounded-md border-gray-300 dark:border-gray-600 shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm dark:bg-gray-800 dark:text-white"
-                  placeholder="auto-generated"
-                >
-              </div>
-              <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">
-                Leave empty to auto-generate
-              </p>
-            </div>
+      <!-- Product Images -->
+      <app-product-images-form
+        [parentForm]="productForm"
+        [uploadedImages]="uploadedImages"
+        (filesSelected)="onImageFilesSelected($event)"
+        (imageRemoved)="removeImage($event)"
+        (primaryImageSet)="setPrimaryImage($event)"
+        (imageAdded)="addImage()"
+        (fileDrop)="onDrop($event)"
+        (dragOver)="onDragOver($event)"
+      ></app-product-images-form>
 
-            <!-- SKU -->
-            <div class="sm:col-span-2">
-              <label for="sku" class="block text-sm font-medium text-gray-700 dark:text-gray-300">
-                SKU
-              </label>
-              <div class="mt-1">
-                <input
-                  type="text"
-                  id="sku"
-                  formControlName="sku"
-                  class="block w-full rounded-md border-gray-300 dark:border-gray-600 shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm dark:bg-gray-800 dark:text-white"
-                  placeholder="auto-generated"
-                >
-              </div>
-              <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">
-                Leave empty to auto-generate
-              </p>
-            </div>
-
-            <!-- Category -->
-            <div class="sm:col-span-2">
-              <label for="category" class="block text-sm font-medium text-gray-700 dark:text-gray-300">
-                Category *
-              </label>
-              <div class="mt-1">
-                <select
-                  id="category"
-                  formControlName="category"
-                  class="block w-full rounded-md border-gray-300 dark:border-gray-600 shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm dark:bg-gray-800 dark:text-white"
-                >
-                  <option value="">Select Category</option>
-                  <option *ngFor="let category of categories()" [value]="category.id">
-                    {{ category.name }}
-                  </option>
-                </select>
-              </div>
-              <div *ngIf="productForm.get('category')?.invalid && productForm.get('category')?.touched"
-                   class="mt-1 text-sm text-red-600 dark:text-red-400">
-                Category is required
-              </div>
-            </div>
-
-            <!-- Brand -->
-            <div class="sm:col-span-2">
-              <label for="brand" class="block text-sm font-medium text-gray-700 dark:text-gray-300">
-                Brand
-              </label>
-              <div class="mt-1">
-                <select
-                  id="brand"
-                  formControlName="brand"
-                  class="block w-full rounded-md border-gray-300 dark:border-gray-600 shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm dark:bg-gray-800 dark:text-white"
-                >
-                  <option value="">No Brand</option>
-                  <option *ngFor="let brand of brands()" [value]="brand.id">
-                    {{ brand.name }}
-                  </option>
-                </select>
-              </div>
-            </div>
-
-            <!-- Description -->
-            <div class="sm:col-span-6">
-              <label for="description" class="block text-sm font-medium text-gray-700 dark:text-gray-300">
-                Description
-              </label>
-              <div class="mt-1">
-                <textarea
-                  id="description"
-                  formControlName="description"
-                  rows="4"
-                  class="block w-full rounded-md border-gray-300 dark:border-gray-600 shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm dark:bg-gray-800 dark:text-white"
-                ></textarea>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <!-- Pricing & Inventory Card -->
-      <div
-        class="bg-white dark:bg-dark-bg-secondary shadow-sm rounded-lg border border-gray-200 dark:border-dark-border overflow-hidden">
-        <div class="p-6">
-          <h2 class="text-lg font-medium text-gray-900 dark:text-white mb-4">Pricing & Inventory</h2>
-
-          <div class="grid grid-cols-1 gap-y-6 gap-x-4 sm:grid-cols-6">
-            <!-- Regular Price -->
-            <div class="sm:col-span-2">
-              <label for="price" class="block text-sm font-medium text-gray-700 dark:text-gray-300">
-                Regular Price *
-              </label>
-              <div class="mt-1 relative rounded-md shadow-sm">
-                <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                  <span class="text-gray-500 dark:text-gray-400 sm:text-sm">UGX</span>
-                </div>
-                <input
-                  type="number"
-                  id="price"
-                  formControlName="price"
-                  min="0"
-                  class="block w-full pl-12 rounded-md border-gray-300 dark:border-gray-600 shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm dark:bg-gray-800 dark:text-white"
-                >
-              </div>
-              <div *ngIf="productForm.get('price')?.invalid && productForm.get('price')?.touched"
-                   class="mt-1 text-sm text-red-600 dark:text-red-400">
-                Price is required and must be a positive number
-              </div>
-            </div>
-
-            <!-- Sale Price -->
-            <div class="sm:col-span-2">
-              <label for="discount_price" class="block text-sm font-medium text-gray-700 dark:text-gray-300">
-                Sale Price
-              </label>
-              <div class="mt-1 relative rounded-md shadow-sm">
-                <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                  <span class="text-gray-500 dark:text-gray-400 sm:text-sm">UGX</span>
-                </div>
-                <input
-                  type="number"
-                  id="discount_price"
-                  formControlName="discount_price"
-                  min="0"
-                  class="block w-full pl-12 rounded-md border-gray-300 dark:border-gray-600 shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm dark:bg-gray-800 dark:text-white"
-                >
-              </div>
-              <div *ngIf="discountPercentage() > 0" class="mt-1 text-sm text-green-600 dark:text-green-400">
-                {{ discountPercentage() }}% off
-              </div>
-            </div>
-
-            <!-- Stock Quantity -->
-            <div class="sm:col-span-2">
-              <label for="stock_quantity" class="block text-sm font-medium text-gray-700 dark:text-gray-300">
-                Stock Quantity *
-              </label>
-              <div class="mt-1">
-                <input
-                  type="number"
-                  id="stock_quantity"
-                  formControlName="stock_quantity"
-                  min="0"
-                  class="block w-full rounded-md border-gray-300 dark:border-gray-600 shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm dark:bg-gray-800 dark:text-white"
-                >
-              </div>
-              <div *ngIf="productForm.get('stock_quantity')?.invalid && productForm.get('stock_quantity')?.touched"
-                   class="mt-1 text-sm text-red-600 dark:text-red-400">
-                Stock quantity is required and cannot be negative
-              </div>
-            </div>
-
-            <!-- Options & Features -->
-            <div class="sm:col-span-6">
-              <fieldset>
-                <legend class="text-sm font-medium text-gray-700 dark:text-gray-300">Options & Features</legend>
-                <div class="mt-2 space-y-2">
-                  <!-- Has Variations -->
-                  <div class="relative flex items-start">
-                    <div class="flex items-center h-5">
-                      <input
-                        id="has_variations"
-                        type="checkbox"
-                        formControlName="has_variations"
-                        class="h-4 w-4 text-primary-600 border-gray-300 rounded focus:ring-primary-500 dark:bg-gray-800 dark:border-gray-600"
-                      >
-                    </div>
-                    <div class="ml-3 text-sm">
-                      <label for="has_variations" class="font-medium text-gray-700 dark:text-gray-300">Has
-                        Variations</label>
-                      <p class="text-gray-500 dark:text-gray-400">Product has multiple variations (sizes, colors,
-                        etc.)</p>
-                    </div>
-                  </div>
-
-                  <!-- Is Active -->
-                  <div class="relative flex items-start">
-                    <div class="flex items-center h-5">
-                      <input
-                        id="is_active"
-                        type="checkbox"
-                        formControlName="is_active"
-                        class="h-4 w-4 text-primary-600 border-gray-300 rounded focus:ring-primary-500 dark:bg-gray-800 dark:border-gray-600"
-                      >
-                    </div>
-                    <div class="ml-3 text-sm">
-                      <label for="is_active" class="font-medium text-gray-700 dark:text-gray-300">Is Active</label>
-                      <p class="text-gray-500 dark:text-gray-400">Product is visible and available for purchase</p>
-                    </div>
-                  </div>
-
-                  <!-- Is Featured -->
-                  <div class="relative flex items-start">
-                    <div class="flex items-center h-5">
-                      <input
-                        id="is_featured"
-                        type="checkbox"
-                        formControlName="is_featured"
-                        class="h-4 w-4 text-primary-600 border-gray-300 rounded focus:ring-primary-500 dark:bg-gray-800 dark:border-gray-600"
-                      >
-                    </div>
-                    <div class="ml-3 text-sm">
-                      <label for="is_featured" class="font-medium text-gray-700 dark:text-gray-300">Is Featured</label>
-                      <p class="text-gray-500 dark:text-gray-400">Product will be showcased in featured sections</p>
-                    </div>
-                  </div>
-                </div>
-              </fieldset>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <!-- Product Images Card -->
-      <div
-        class="bg-white dark:bg-dark-bg-secondary shadow-sm rounded-lg border border-gray-200 dark:border-dark-border overflow-hidden">
-        <div class="p-6">
-          <div class="flex justify-between items-center mb-4">
-            <h2 class="text-lg font-medium text-gray-900 dark:text-white">Product Images</h2>
-            <button
-              type="button"
-              (click)="addImage()"
-              class="inline-flex items-center px-3 py-1.5 border border-transparent text-sm font-medium rounded-md text-primary-700 dark:text-primary-300 bg-primary-100 dark:bg-primary-900/30 hover:bg-primary-200 dark:hover:bg-primary-900/40 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500"
-            >
-              <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24"
-                   stroke="currentColor">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
-              </svg>
-              Add Image
-            </button>
-          </div>
-
-          <!-- Image Form Groups -->
-          <div formArrayName="images">
-            <div *ngIf="imagesFormArray.length === 0"
-                 class="text-center py-8 border border-dashed border-gray-300 dark:border-gray-600 rounded-lg">
-              <svg xmlns="http://www.w3.org/2000/svg" class="mx-auto h-12 w-12 text-gray-400 dark:text-gray-500"
-                   fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                      d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/>
-              </svg>
-              <h3 class="mt-2 text-sm font-medium text-gray-900 dark:text-white">No images added</h3>
-              <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">Click 'Add Image' to upload product images</p>
-            </div>
-
-            <div *ngFor="let imageGroup of imagesFormArray.controls; let i = index"
-                 class="mb-4 p-4 border border-gray-200 dark:border-gray-700 rounded-lg">
-              <div [formGroupName]="i" class="grid grid-cols-1 md:grid-cols-6 gap-4">
-                <!-- Image URL -->
-                <div class="md:col-span-3">
-                  <label [for]="'image-' + i" class="block text-sm font-medium text-gray-700 dark:text-gray-300">
-                    Image URL *
-                  </label>
-                  <div class="mt-1">
-                    <input
-                      [id]="'image-' + i"
-                      type="text"
-                      formControlName="image"
-                      class="block w-full rounded-md border-gray-300 dark:border-gray-600 shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm dark:bg-gray-800 dark:text-white"
-                    >
-                  </div>
-                </div>
-
-                <!-- Alt Text -->
-                <div class="md:col-span-2">
-                  <label [for]="'alt-text-' + i" class="block text-sm font-medium text-gray-700 dark:text-gray-300">
-                    Alt Text
-                  </label>
-                  <div class="mt-1">
-                    <input
-                      [id]="'alt-text-' + i"
-                      type="text"
-                      formControlName="alt_text"
-                      class="block w-full rounded-md border-gray-300 dark:border-gray-600 shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm dark:bg-gray-800 dark:text-white"
-                    >
-                  </div>
-                </div>
-
-                <!-- Display Order -->
-                <div class="md:col-span-1">
-                  <label [for]="'display-order-' + i"
-                         class="block text-sm font-medium text-gray-700 dark:text-gray-300">
-                    Order
-                  </label>
-                  <div class="mt-1">
-                    <input
-                      [id]="'display-order-' + i"
-                      type="number"
-                      formControlName="display_order"
-                      class="block w-full rounded-md border-gray-300 dark:border-gray-600 shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm dark:bg-gray-800 dark:text-white"
-                    >
-                  </div>
-                </div>
-
-                <!-- Actions -->
-                <div class="md:col-span-6 flex justify-between items-center mt-2">
-                  <div class="flex items-center">
-                    <input
-                      [id]="'is-primary-' + i"
-                      type="checkbox"
-                      formControlName="is_primary"
-                      (change)="setPrimaryImage(i)"
-                      class="h-4 w-4 text-primary-600 border-gray-300 rounded focus:ring-primary-500 dark:bg-gray-800 dark:border-gray-600"
-                    >
-                    <label [for]="'is-primary-' + i" class="ml-2 text-sm text-gray-700 dark:text-gray-300">
-                      Primary Image
-                    </label>
-                  </div>
-                  <button
-                    type="button"
-                    (click)="removeImage(i)"
-                    class="inline-flex items-center px-2.5 py-1.5 border border-transparent text-xs font-medium rounded text-red-700 dark:text-red-300 bg-red-100 dark:bg-red-900/30 hover:bg-red-200 dark:hover:bg-red-900/40 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500"
-                  >
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24"
-                         stroke="currentColor">
-                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                            d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
-                    </svg>
-                    Remove
-                  </button>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <!-- Variations Card (if enabled) -->
-      <div *ngIf="hasVariations()"
-           class="bg-white dark:bg-dark-bg-secondary shadow-sm rounded-lg border border-gray-200 dark:border-dark-border overflow-hidden">
-        <div class="p-6">
-          <div class="flex justify-between items-center mb-4">
-            <h2 class="text-lg font-medium text-gray-900 dark:text-white">Product Variations</h2>
-            <button
-              type="button"
-              (click)="addVariation()"
-              class="inline-flex items-center px-3 py-1.5 border border-transparent text-sm font-medium rounded-md text-primary-700 dark:text-primary-300 bg-primary-100 dark:bg-primary-900/30 hover:bg-primary-200 dark:hover:bg-primary-900/40 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500"
-            >
-              <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24"
-                   stroke="currentColor">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
-              </svg>
-              Add Variation
-            </button>
-          </div>
-
-          <!-- Variation Form Groups -->
-          <div formArrayName="variations">
-            <div *ngIf="variationsFormArray.length === 0"
-                 class="text-center py-8 border border-dashed border-gray-300 dark:border-gray-600 rounded-lg">
-              <svg xmlns="http://www.w3.org/2000/svg" class="mx-auto h-12 w-12 text-gray-400 dark:text-gray-500"
-                   fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                      d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
-              </svg>
-              <h3 class="mt-2 text-sm font-medium text-gray-900 dark:text-white">No variations added</h3>
-              <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">Click 'Add Variation' to create product
-                variations</p>
-            </div>
-
-            <div *ngFor="let variationGroup of variationsFormArray.controls; let i = index"
-                 class="mb-4 p-4 border border-gray-200 dark:border-gray-700 rounded-lg">
-              <div [formGroupName]="i">
-                <div class="grid grid-cols-1 md:grid-cols-12 gap-4">
-                  <!-- Size -->
-                  <div class="md:col-span-3">
-                    <label [for]="'size-' + i" class="block text-sm font-medium text-gray-700 dark:text-gray-300">
-                      Size
-                    </label>
-                    <div class="mt-1">
-                      <select
-                        [id]="'size-' + i"
-                        formControlName="size"
-                        class="block w-full rounded-md border-gray-300 dark:border-gray-600 shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm dark:bg-gray-800 dark:text-white"
-                      >
-                        <option value="">No Size</option>
-                        <option *ngFor="let sizeOption of getSizeChoices()" [value]="sizeOption.value">
-                          {{ sizeOption.label }}
-                        </option>
-                      </select>
-                    </div>
-                  </div>
-
-                  <!-- Custom Size (if CUSTOM is selected) -->
-                  <div *ngIf="variationGroup.get('size')?.value === 'CUSTOM'" class="md:col-span-3">
-                    <label [for]="'custom-size-' + i"
-                           class="block text-sm font-medium text-gray-700 dark:text-gray-300">
-                      Custom Size
-                    </label>
-                    <div class="mt-1">
-                      <input
-                        [id]="'custom-size-' + i"
-                        type="text"
-                        formControlName="custom_attribute"
-                        class="block w-full rounded-md border-gray-300 dark:border-gray-600 shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm dark:bg-gray-800 dark:text-white"
-                      >
-                    </div>
-                  </div>
-
-                  <!-- Color -->
-                  <div class="md:col-span-3">
-                    <label [for]="'color-' + i" class="block text-sm font-medium text-gray-700 dark:text-gray-300">
-                      Color
-                    </label>
-                    <div class="mt-1">
-                      <input
-                        [id]="'color-' + i"
-                        type="text"
-                        formControlName="color"
-                        class="block w-full rounded-md border-gray-300 dark:border-gray-600 shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm dark:bg-gray-800 dark:text-white"
-                      >
-                    </div>
-                  </div>
-
-                  <!-- Color Code -->
-                  <div class="md:col-span-3">
-                    <label [for]="'color-code-' + i" class="block text-sm font-medium text-gray-700 dark:text-gray-300">
-                      Color Code
-                    </label>
-                    <div class="mt-1 flex items-center">
-                      <input
-                        [id]="'color-code-' + i"
-                        type="text"
-                        formControlName="color_code"
-                        class="block w-full rounded-md border-gray-300 dark:border-gray-600 shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm dark:bg-gray-800 dark:text-white"
-                      >
-                      <div *ngIf="variationGroup.get('color_code')?.value"
-                           class="ml-2 h-6 w-6 rounded-full border border-gray-300 dark:border-gray-600"
-                           [style.background-color]="variationGroup.get('color_code')?.value"></div>
-                    </div>
-                  </div>
-
-                  <!-- Price Adjustment -->
-                  <div class="md:col-span-3">
-                    <label [for]="'price-adjustment-' + i"
-                           class="block text-sm font-medium text-gray-700 dark:text-gray-300">
-                      Price Adjustment
-                    </label>
-                    <div class="mt-1 relative rounded-md shadow-sm">
-                      <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                        <span class="text-gray-500 dark:text-gray-400 sm:text-sm">UGX</span>
-                      </div>
-                      <input
-                        [id]="'price-adjustment-' + i"
-                        type="number"
-                        formControlName="price_adjustment"
-                        class="block w-full pl-12 rounded-md border-gray-300 dark:border-gray-600 shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm dark:bg-gray-800 dark:text-white"
-                      >
-                    </div>
-                  </div>
-
-                  <!-- Stock Quantity -->
-                  <div class="md:col-span-3">
-                    <label [for]="'stock-quantity-' + i"
-                           class="block text-sm font-medium text-gray-700 dark:text-gray-300">
-                      Stock Quantity *
-                    </label>
-                    <div class="mt-1">
-                      <input
-                        [id]="'stock-quantity-' + i"
-                        type="number"
-                        formControlName="stock_quantity"
-                        min="0"
-                        class="block w-full rounded-md border-gray-300 dark:border-gray-600 shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm dark:bg-gray-800 dark:text-white"
-                      >
-                    </div>
-                  </div>
-
-                  <!-- SKU -->
-                  <div class="md:col-span-3">
-                    <label [for]="'sku-' + i" class="block text-sm font-medium text-gray-700 dark:text-gray-300">
-                      SKU
-                    </label>
-                    <div class="mt-1">
-                      <input
-                        [id]="'sku-' + i"
-                        type="text"
-                        formControlName="sku"
-                        class="block w-full rounded-md border-gray-300 dark:border-gray-600 shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm dark:bg-gray-800 dark:text-white"
-                        placeholder="auto-generated"
-                      >
-                    </div>
-                  </div>
-
-                  <!-- Image URL -->
-                  <div class="md:col-span-3">
-                    <label [for]="'variation-image-' + i"
-                           class="block text-sm font-medium text-gray-700 dark:text-gray-300">
-                      Image URL
-                    </label>
-                    <div class="mt-1">
-                      <input
-                        [id]="'variation-image-' + i"
-                        type="text"
-                        formControlName="image"
-                        class="block w-full rounded-md border-gray-300 dark:border-gray-600 shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm dark:bg-gray-800 dark:text-white"
-                      >
-                    </div>
-                  </div>
-
-                  <!-- Active Status -->
-                  <div class="md:col-span-8 mt-2">
-                    <div class="flex items-center">
-                      <input
-                        [id]="'variation-active-' + i"
-                        type="checkbox"
-                        formControlName="is_active"
-                        class="h-4 w-4 text-primary-600 border-gray-300 rounded focus:ring-primary-500 dark:bg-gray-800 dark:border-gray-600"
-                      >
-                      <label [for]="'variation-active-' + i" class="ml-2 text-sm text-gray-700 dark:text-gray-300">
-                        Active
-                      </label>
-                    </div>
-                  </div>
-
-                  <!-- Remove Button -->
-                  <div class="md:col-span-4 flex justify-end items-center mt-2">
-                    <button
-                      type="button"
-                      (click)="removeVariation(i)"
-                      class="inline-flex items-center px-2.5 py-1.5 border border-transparent text-xs font-medium rounded text-red-700 dark:text-red-300 bg-red-100 dark:bg-red-900/30 hover:bg-red-200 dark:hover:bg-red-900/40 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500"
-                    >
-                      <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24"
-                           stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                              d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
-                      </svg>
-                      Remove Variation
-                    </button>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
+      <!-- Product Variations -->
+      <app-product-variations-form
+        [parentForm]="productForm"
+        [hasVariations]="hasVariations()"
+        [uploadedImages]="uploadedImages"
+        (variationAdded)="addVariation()"
+        (variationRemoved)="removeVariation($event)"
+        (variationImageUploaded)="handleVariationImageUpload($event.event, $event.index)"
+      ></app-product-variations-form>
 
       <!-- Form Actions -->
       <div class="flex justify-end space-x-3">
@@ -626,11 +79,9 @@
           [disabled]="isSaving() || productForm.invalid"
           class="inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-primary-600 hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 disabled:opacity-50 disabled:cursor-not-allowed"
         >
-          <svg *ngIf="isSaving()" class="animate-spin -ml-1 mr-2 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg"
-               fill="none" viewBox="0 0 24 24">
+          <svg *ngIf="isSaving()" class="animate-spin -ml-1 mr-2 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
             <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-            <path class="opacity-75" fill="currentColor"
-                  d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
           </svg>
           {{ isSaving() ? 'Saving...' : (isEdit() ? 'Update Product' : 'Create Product') }}
         </button>

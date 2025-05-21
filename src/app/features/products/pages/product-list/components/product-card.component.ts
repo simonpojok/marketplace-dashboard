@@ -13,7 +13,6 @@ import {ToastService} from '../../../../../core/services/toast.service';
     NgIf,
     RouterLink,
     NgClass,
-    NgOptimizedImage
   ]
 })
 export class ProductCardComponent {

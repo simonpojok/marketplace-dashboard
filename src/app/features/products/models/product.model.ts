@@ -13,10 +13,10 @@ export interface Product {
   current_price: number;
   discount_percentage: number;
   stock_quantity: number;
+  primary_image: string;
   has_variations: boolean;
   is_active: boolean;
   is_featured: boolean;
-  primary_image: string;
   images: ProductImage[];
   variations: ProductVariation[];
   created_at: string;
@@ -58,10 +58,15 @@ export interface ProductImage {
 export interface ProductVariation {
   id: string;
   sku: string;
+  type?: string; // 'size', 'color', 'screen', 'memory', 'storage', 'processor', 'custom'
   size?: string;
   size_display?: string;
   color?: string;
   color_code?: string;
+  screen_size?: string;
+  memory?: string;
+  storage?: string;
+  processor?: string;
   custom_attribute?: string;
   price_adjustment: number;
   stock_quantity: number;
