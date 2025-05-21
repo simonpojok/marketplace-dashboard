@@ -1,8 +1,8 @@
-import { Injectable, inject } from '@angular/core';
-import { HttpClient, HttpParams } from '@angular/common/http';
-import { Observable } from 'rxjs';
-import { environment } from '../../../../environments/environment';
-import { Product, Category, Brand, ProductListResponse } from '../models/product.model';
+import {Injectable, inject} from '@angular/core';
+import {HttpClient, HttpParams} from '@angular/common/http';
+import {Observable} from 'rxjs';
+import {environment} from '../../../../environments/environment';
+import {Product, Category, Brand, ProductListResponse} from '../models/product.model';
 
 @Injectable({
   providedIn: 'root'
@@ -23,18 +23,19 @@ export class ProductsService {
       });
     }
 
-    return this.http.get<ProductListResponse>(`${this.apiUrl}/products/`, { params: httpParams });
+    return this.http.get<ProductListResponse>(`${this.apiUrl}/products/`, {params: httpParams});
   }
 
   getProduct(id: string): Observable<Product> {
     return this.http.get<Product>(`${this.apiUrl}/products/${id}/`);
   }
 
-  createProduct(product: FormData): Observable<Product> {
+  handleCreateProduct(product: FormData): Observable<Product> {
+    console.log(product);
     return this.http.post<Product>(`${this.apiUrl}/products/`, product);
   }
 
-  updateProduct(id: string, product: FormData): Observable<Product> {
+  handleUpdateProduct(id: string, product: FormData): Observable<Product> {
     return this.http.patch<Product>(`${this.apiUrl}/products/${id}/`, product);
   }
 
@@ -67,7 +68,7 @@ export class ProductsService {
       });
     }
 
-    return this.http.get<Category[]>(`${this.apiUrl}/categories/`, { params: httpParams });
+    return this.http.get<Category[]>(`${this.apiUrl}/categories/`, {params: httpParams});
   }
 
   getCategory(id: string): Observable<Category> {
@@ -93,12 +94,12 @@ export class ProductsService {
   getCategoryProducts(id: string, includeChildren: boolean = false): Observable<Product[]> {
     return this.http.get<Product[]>(
       `${this.apiUrl}/categories/${id}/products/`,
-      { params: { include_children: includeChildren.toString() } }
+      {params: {include_children: includeChildren.toString()}}
     );
   }
 
   searchCategories(query: string): Observable<Category[]> {
-    return this.http.get<Category[]>(`${this.apiUrl}/categories/search/`, { params: { q: query } });
+    return this.http.get<Category[]>(`${this.apiUrl}/categories/search/`, {params: {q: query}});
   }
 
   // Brands
@@ -113,7 +114,7 @@ export class ProductsService {
       });
     }
 
-    return this.http.get<any>(`${this.apiUrl}/brands/`, { params: httpParams });
+    return this.http.get<any>(`${this.apiUrl}/brands/`, {params: httpParams});
   }
 
   getBrand(id: string): Observable<Brand> {
@@ -134,11 +135,11 @@ export class ProductsService {
   }
 
   searchBrands(query: string): Observable<Brand[]> {
-    return this.http.get<Brand[]>(`${this.apiUrl}/brands/search/`, { params: { q: query } });
+    return this.http.get<Brand[]>(`${this.apiUrl}/brands/search/`, {params: {q: query}});
   }
 
   // Search
   searchProducts(query: string): Observable<Product[]> {
-    return this.http.get<Product[]>(`${this.apiUrl}/products/search/`, { params: { q: query } });
+    return this.http.get<Product[]>(`${this.apiUrl}/products/search/`, {params: {q: query}});
   }
 }

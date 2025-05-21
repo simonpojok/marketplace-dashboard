@@ -150,7 +150,7 @@ export class ProductFormComponent implements OnInit {
     }
   }
 
-  protected onSubmit(): void {
+  protected handleCreateProduct(): void {
     if (this.productForm.invalid) {
       // Mark all fields as touched to display error messages
       Object.keys(this.productForm.controls).forEach(key => {
@@ -166,7 +166,7 @@ export class ProductFormComponent implements OnInit {
 
     if (this.isEdit()) {
       // Update existing product
-      this.productsService.updateProduct(this.product()!.id, productData).subscribe({
+      this.productsService.handleUpdateProduct(this.product()!.id, productData).subscribe({
         next: (product) => {
           this.isSaving.set(false);
           this.toastService.success('Product updated successfully');
@@ -180,11 +180,11 @@ export class ProductFormComponent implements OnInit {
       });
     } else {
       // Create new product
-      this.productsService.createProduct(productData).subscribe({
+      this.productsService.handleCreateProduct(productData).subscribe({
         next: (product) => {
           this.isSaving.set(false);
           this.toastService.success('Product created successfully');
-          this.router.navigate(['/products/view', product.id]);
+          this.router.navigate(['/products/view', product.id]).then(console.log);
         },
         error: (error) => {
           console.error('Error creating product:', error);
