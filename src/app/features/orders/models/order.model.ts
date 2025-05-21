@@ -1,7 +1,10 @@
+import {OrderItem} from './order-item.model';
+import {OrderStatusHistory} from './order-status-history.model';
+
 export interface Order {
   id: string;
   order_number: string;
-  user: string;
+  creator: string;
   full_name: string;
   phone_number: string;
   email: string;
@@ -14,10 +17,10 @@ export interface Order {
   payment_method: PaymentMethod;
   payment_method_display?: string;
   payment_status: boolean;
-  total_price: number;
-  shipping_cost: number;
-  tax: number;
-  grand_total: number;
+  total_price: string;
+  shipping_cost: string;
+  tax: string;
+  grand_total: string;
   tracking_number?: string;
   items: OrderItem[];
   status_history: OrderStatusHistory[];
@@ -25,37 +28,9 @@ export interface Order {
   updated_at: string;
 }
 
-export interface OrderItem {
-  id: string;
-  order: string;
-  product: string;
-  variation?: string;
-  product_name: string;
-  product_sku: string;
-  variation_details?: string;
-  price: number;
-  quantity: number;
-  total_price: number;
-}
-
-export interface OrderStatusHistory {
-  id: string;
-  status: OrderStatus;
-  status_display?: string;
-  notes?: string;
-  created_at: string;
-}
-
 export type OrderStatus = 'pending' | 'processing' | 'packed' | 'shipped' | 'delivered' | 'cancelled' | 'refunded';
 
 export type PaymentMethod = 'mtn_mobile_money' | 'airtel_money' | 'bank_transfer' | 'cash_on_delivery';
-
-export interface OrderListResponse {
-  count: number;
-  next: string | null;
-  previous: string | null;
-  results: Order[];
-}
 
 export interface OrderFilterParams {
   status?: OrderStatus;

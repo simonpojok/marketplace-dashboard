@@ -2,7 +2,8 @@ import {Injectable, inject} from '@angular/core';
 import {HttpClient, HttpParams} from '@angular/common/http';
 import {Observable} from 'rxjs';
 import {environment} from '../../../../environments/environment';
-import {Order, OrderFilterParams, OrderListResponse, OrderUpdateParams} from '../models/order.model';
+import {Order, OrderFilterParams, OrderUpdateParams} from '../models/order.model';
+import {OrderListResponse} from '../models/order-liist-response.model';
 
 @Injectable({
   providedIn: 'root'

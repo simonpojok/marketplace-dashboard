@@ -181,4 +181,6 @@ export class OrderListComponent implements OnInit {
     const paymentMethod = this.paymentMethodOptions.find(option => option.value === method);
     return paymentMethod ? paymentMethod.label : method;
   }
+
+  protected readonly Number = Number;
 }

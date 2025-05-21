@@ -241,10 +241,10 @@
                       </div>
                     </div>
                   </td>
-                  <td class="py-4 text-sm text-gray-900 dark:text-white">{{ formatCurrency(item.price) }}</td>
+                  <td class="py-4 text-sm text-gray-900 dark:text-white">{{ formatCurrency(Number(item.price)) }}</td>
                   <td class="py-4 text-sm text-gray-900 dark:text-white">{{ item.quantity }}</td>
                   <td
-                    class="py-4 text-sm text-gray-900 dark:text-white text-right">{{ formatCurrency(item.total_price) }}
+                    class="py-4 text-sm text-gray-900 dark:text-white text-right">{{ formatCurrency(Number(item.total_price)) }}
                   </td>
                 </tr>
                 </tbody>
@@ -254,7 +254,7 @@
                     Subtotal
                   </td>
                   <td
-                    class="pt-4 text-sm font-medium text-gray-900 dark:text-white text-right">{{ formatCurrency(order()?.total_price || 0) }}
+                    class="pt-4 text-sm font-medium text-gray-900 dark:text-white text-right">{{ formatCurrency(Number(order()?.total_price || 0)) }}
                   </td>
                 </tr>
                 <tr>
@@ -262,19 +262,19 @@
                     Shipping
                   </td>
                   <td
-                    class="pt-2 text-sm font-medium text-gray-900 dark:text-white text-right">{{ formatCurrency(order()?.shipping_cost || 0) }}
+                    class="pt-2 text-sm font-medium text-gray-900 dark:text-white text-right">{{ formatCurrency(Number(order()?.shipping_cost || 0)) }}
                   </td>
                 </tr>
                 <tr>
                   <td colspan="3" class="pt-2 text-sm font-medium text-gray-700 dark:text-gray-300 text-right">Tax</td>
                   <td
-                    class="pt-2 text-sm font-medium text-gray-900 dark:text-white text-right">{{ formatCurrency(order()?.tax || 0) }}
+                    class="pt-2 text-sm font-medium text-gray-900 dark:text-white text-right">{{ formatCurrency(Number(order()?.tax || 0)) }}
                   </td>
                 </tr>
                 <tr>
                   <td colspan="3" class="pt-2 text-base font-medium text-gray-900 dark:text-white text-right">Total</td>
                   <td
-                    class="pt-2 text-base font-bold text-gray-900 dark:text-white text-right">{{ formatCurrency(order()?.grand_total || 0) }}
+                    class="pt-2 text-base font-bold text-gray-900 dark:text-white text-right">{{ formatCurrency(Number(order()?.grand_total || '0')) }}
                   </td>
                 </tr>
                 </tfoot>
