@@ -1,4 +1,4 @@
-import { Component, OnInit, inject, signal } from '@angular/core';
+import {Component, OnInit, inject, signal, model} from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
 import { FormsModule } from '@angular/forms';
@@ -20,7 +20,7 @@ export class CategoryListComponent implements OnInit {
   // Reactive state with signals
   protected isLoading = signal(true);
   protected categories = signal<Category[]>([]);
-  protected searchTerm = signal('');
+  protected searchTerm = model('');
   protected expandedCategories = signal<Record<string, boolean>>({});
 
   ngOnInit(): void {

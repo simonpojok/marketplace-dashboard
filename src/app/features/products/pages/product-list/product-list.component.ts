@@ -1,15 +1,16 @@
-import {Component, OnInit, inject, signal} from '@angular/core';
+import {Component, OnInit, inject, signal, model} from '@angular/core';
 import {CommonModule} from '@angular/common';
 import {RouterModule} from '@angular/router';
 import {FormsModule} from '@angular/forms';
 import {ProductsService} from '../../services/products.service';
 import {Product, Category, Brand} from '../../models/product.model';
 import {ToastService} from '../../../../core/services/toast.service';
+import {ProductCardComponent} from './components/product-card.component';
 
 @Component({
   selector: 'app-product-list',
   standalone: true,
-  imports: [CommonModule, RouterModule, FormsModule],
+  imports: [CommonModule, RouterModule, FormsModule, ProductCardComponent],
   templateUrl: 'product-list.component.html',
   styles: []
 })
@@ -23,7 +24,7 @@ export class ProductListComponent implements OnInit {
   protected totalProducts = signal(0);
   protected currentPage = signal(1);
   protected pageSize = signal(10);
-  protected searchTerm = signal('');
+  protected searchTerm = model('');
   protected selectedCategory = signal('');
   protected selectedBrand = signal('');
   protected filterInStock = signal(false);
@@ -137,27 +138,7 @@ export class ProductListComponent implements OnInit {
     this.loadProducts(1);
   }
 
-  protected formatCurrency(amount: number): string {
-    return new Intl.NumberFormat('en-UG', {
-      style: 'currency',
-      currency: 'UGX',
-      maximumFractionDigits: 0
-    }).format(amount);
-  }
-
-  protected formatDate(dateString: string): string {
-    const date = new Date(dateString);
-    return date.toLocaleDateString('en-US', {
-      year: 'numeric',
-      month: 'short',
-      day: 'numeric'
-    });
-  }
-
-  protected deleteProduct(id: string, event: Event): void {
-    event.preventDefault();
-    event.stopPropagation();
-
+  protected deleteProduct(id: string): void {
     if (confirm('Are you sure you want to delete this product?')) {
       this.productsService.deleteProduct(id).subscribe({
         next: () => {
@@ -170,24 +151,6 @@ export class ProductListComponent implements OnInit {
         }
       });
     }
-  }
-
-  protected getCategoryName(categoryId: string): string {
-    const category = this.categories().find(cat => cat.id === categoryId);
-    return category ? category.name : 'Unknown';
-  }
-
-  protected getBrandName(brandId: string): string {
-    const brand = this.brands().find(b => b.id === brandId);
-    return brand ? brand.name : 'Unknown';
-  }
-
-  protected getPrimaryImage(product: Product): string {
-    if (product.images && product.images.length > 0) {
-      const primaryImage = product.images.find(img => img.is_primary);
-      return primaryImage ? primaryImage.image : product.images[0].image;
-    }
-    return 'assets/images/placeholder-product.jpg';
   }
 
   public handSortProducts() {

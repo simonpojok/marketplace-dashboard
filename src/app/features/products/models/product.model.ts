@@ -16,6 +16,7 @@ export interface Product {
   has_variations: boolean;
   is_active: boolean;
   is_featured: boolean;
+  primary_image: string;
   images: ProductImage[];
   variations: ProductVariation[];
   created_at: string;

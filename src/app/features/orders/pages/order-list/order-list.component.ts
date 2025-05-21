@@ -1,4 +1,4 @@
-import {Component, OnInit, inject, signal} from '@angular/core';
+import {Component, OnInit, inject, signal, model} from '@angular/core';
 import {CommonModule} from '@angular/common';
 import {RouterModule, ActivatedRoute} from '@angular/router';
 import {FormsModule} from '@angular/forms';
@@ -25,7 +25,7 @@ export class OrderListComponent implements OnInit {
   protected totalOrders = signal(0);
   protected currentPage = signal(1);
   protected pageSize = signal(10);
-  protected searchTerm = signal('');
+  protected searchTerm = model('');
   protected selectedStatus = signal<OrderStatus | '' | undefined>('');
   protected selectedPaymentMethod = signal('');
   protected dateFrom = signal('');
@@ -71,7 +71,6 @@ export class OrderListComponent implements OnInit {
 
   protected loadOrders(page: number = 1): void {
     this.isLoading.set(true);
-
     const params: OrderFilterParams = {
       page,
       page_size: this.pageSize(),
