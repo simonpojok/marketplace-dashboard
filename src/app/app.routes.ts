@@ -1,6 +1,6 @@
-import { Routes } from '@angular/router';
-import { authGuard } from './core/auth/guards/auth.guard';
-import { nonAuthGuard } from './core/auth/guards/non-auth.guard';
+import {Routes} from '@angular/router';
+import {authGuard} from './core/auth/guards/auth.guard';
+import {nonAuthGuard} from './core/auth/guards/non-auth.guard';
 
 export const routes: Routes = [
   {
@@ -25,24 +25,24 @@ export const routes: Routes = [
           .then(m => m.DashboardComponent),
         title: 'Dashboard'
       },
-      // {
-      //   path: 'products',
-      //   loadChildren: () => import('./features/products/products.routes')
-      //     .then(m => m.PRODUCTS_ROUTES),
-      //   title: 'Products Management'
-      // },
-      // {
-      //   path: 'orders',
-      //   loadChildren: () => import('./features/orders/orders.routes')
-      //     .then(m => m.ORDERS_ROUTES),
-      //   title: 'Orders Management'
-      // },
-      // {
-      //   path: 'customers',
-      //   loadChildren: () => import('./features/customers/customers.routes')
-      //     .then(m => m.CUSTOMERS_ROUTES),
-      //   title: 'Customers Management'
-      // },
+      {
+        path: 'products',
+        loadChildren: () => import('./features/products/products.routes')
+          .then(m => m.PRODUCTS_ROUTES),
+        title: 'Products Management'
+      },
+      {
+        path: 'orders',
+        loadChildren: () => import('./features/orders/orders.routes')
+          .then(m => m.ORDERS_ROUTES),
+        title: 'Orders Management'
+      },
+      {
+        path: 'customers',
+        loadChildren: () => import('./features/customers/customers.routes')
+          .then(m => m.CUSTOMERS_ROUTES),
+        title: 'Customers Management'
+      },
       {
         path: 'settings',
         loadChildren: () => import('./features/settings/settings.routes')

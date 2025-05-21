@@ -1,0 +1,360 @@
+<div class="space-y-6">
+  <!-- Loading Indicator -->
+  <div *ngIf="isLoading()" class="flex justify-center py-12">
+    <div class="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-primary-500"></div>
+  </div>
+
+  <div *ngIf="!isLoading() && order()">
+    <!-- Page Header with Actions -->
+    <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between">
+      <div>
+        <h1 class="text-2xl font-bold text-gray-900 dark:text-white">Order #{{ order()?.order_number }}</h1>
+        <p class="mt-1 text-sm text-gray-600 dark:text-gray-300">
+          Placed on {{ formatDate(order()?.created_at || '') }}
+        </p>
+      </div>
+      <div class="mt-4 sm:mt-0 flex flex-wrap gap-3">
+        <button
+          (click)="toggleUpdateStatus()"
+          class="flex items-center justify-center px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg shadow-sm text-sm font-medium text-gray-700 dark:text-gray-200 bg-white dark:bg-dark-bg-secondary hover:bg-gray-50 dark:hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500"
+        >
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-2" fill="none" viewBox="0 0 24 24"
+               stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                  d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/>
+          </svg>
+          Update Status
+        </button>
+        <a
+          [routerLink]="'/orders'"
+          class="flex items-center justify-center px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg shadow-sm text-sm font-medium text-gray-700 dark:text-gray-200 bg-white dark:bg-dark-bg-secondary hover:bg-gray-50 dark:hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500"
+        >
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-2" fill="none" viewBox="0 0 24 24"
+               stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"/>
+          </svg>
+          Back to Orders
+        </a>
+      </div>
+    </div>
+
+    <!-- Update Status Form (conditional display) -->
+    <div *ngIf="showUpdateStatus()"
+         class="bg-white dark:bg-dark-bg-secondary shadow-sm rounded-lg border border-gray-200 dark:border-dark-border p-6">
+      <h2 class="text-lg font-medium text-gray-900 dark:text-white mb-4">Update Order Status</h2>
+      <form [formGroup]="statusForm" (ngSubmit)="updateOrderStatus()">
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <!-- Status -->
+          <div>
+            <label for="status" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Status</label>
+            <select
+              id="status"
+              formControlName="status"
+              class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500 dark:bg-gray-800 dark:text-white"
+            >
+              <option *ngFor="let status of statusOptions" [value]="status.value">{{ status.label }}</option>
+            </select>
+          </div>
+
+          <!-- Tracking Number (shown only for shipped status) -->
+          <div *ngIf="statusForm.get('status')?.value === 'shipped'">
+            <label for="tracking_number" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Tracking
+              Number</label>
+            <input
+              type="text"
+              id="tracking_number"
+              formControlName="tracking_number"
+              class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500 dark:bg-gray-800 dark:text-white"
+              placeholder="Enter tracking number"
+            >
+          </div>
+
+          <!-- Payment Status -->
+          <div>
+            <div class="flex items-center h-full">
+              <input
+                type="checkbox"
+                id="payment_status"
+                formControlName="payment_status"
+                class="h-4 w-4 text-primary-600 focus:ring-primary-500 border-gray-300 dark:border-gray-600 rounded"
+              >
+              <label for="payment_status" class="ml-2 block text-sm text-gray-700 dark:text-gray-300">
+                Mark as Paid
+              </label>
+            </div>
+          </div>
+        </div>
+
+        <!-- Notes -->
+        <div class="mt-4">
+          <label for="notes" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Notes</label>
+          <textarea
+            id="notes"
+            formControlName="notes"
+            rows="3"
+            class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500 dark:bg-gray-800 dark:text-white"
+            placeholder="Add notes about this status change"
+          ></textarea>
+        </div>
+
+        <!-- Form Actions -->
+        <div class="mt-6 flex justify-end space-x-3">
+          <button
+            type="button"
+            (click)="cancelUpdate()"
+            class="px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg shadow-sm text-sm font-medium text-gray-700 dark:text-gray-200 bg-white dark:bg-dark-bg-secondary hover:bg-gray-50 dark:hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500"
+          >
+            Cancel
+          </button>
+          <button
+            type="submit"
+            [disabled]="isUpdating() || statusForm.invalid"
+            class="px-4 py-2 border border-transparent rounded-lg shadow-sm text-sm font-medium text-white bg-primary-600 hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            <svg *ngIf="isUpdating()" class="animate-spin -ml-1 mr-2 h-4 w-4 text-white inline-block"
+                 xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+              <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+              <path class="opacity-75" fill="currentColor"
+                    d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+            </svg>
+            {{ isUpdating() ? 'Updating...' : 'Update Status' }}
+          </button>
+        </div>
+      </form>
+    </div>
+
+    <!-- Order Details -->
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+      <!-- Left Column - Order Info & Status -->
+      <div class="lg:col-span-2 space-y-6">
+        <!-- Status and Payment Info Card -->
+        <div
+          class="bg-white dark:bg-dark-bg-secondary shadow-sm rounded-lg border border-gray-200 dark:border-dark-border overflow-hidden">
+          <div class="px-6 py-4 border-b border-gray-200 dark:border-dark-border">
+            <h2 class="text-lg font-medium text-gray-900 dark:text-white">Order Status</h2>
+          </div>
+          <div class="p-6">
+            <div class="flex flex-wrap gap-4 sm:gap-8">
+              <!-- Status -->
+              <div>
+                <p class="text-sm font-medium text-gray-500 dark:text-gray-400">Status</p>
+                <span
+                  [ngClass]="getStatusClass(order()?.status || 'pending')"
+                  class="mt-1 inline-flex px-3 py-1 rounded-full text-sm font-medium"
+                >
+                  {{ order()?.status_display || order()?.status }}
+                </span>
+              </div>
+
+              <!-- Payment Method -->
+              <div>
+                <p class="text-sm font-medium text-gray-500 dark:text-gray-400">Payment Method</p>
+                <p class="mt-1 text-sm text-gray-900 dark:text-white">
+                  {{ order()?.payment_method_display || order()?.payment_method }}
+                </p>
+              </div>
+
+              <!-- Payment Status -->
+              <div>
+                <p class="text-sm font-medium text-gray-500 dark:text-gray-400">Payment Status</p>
+                <span
+                  [ngClass]="order()?.payment_status ? 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300' : 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-300'"
+                  class="mt-1 inline-flex px-3 py-1 rounded-full text-sm font-medium"
+                >
+                  {{ order()?.payment_status ? 'Paid' : 'Pending' }}
+                </span>
+              </div>
+
+              <!-- Tracking Number (if available) -->
+              <div *ngIf="order()?.tracking_number">
+                <p class="text-sm font-medium text-gray-500 dark:text-gray-400">Tracking Number</p>
+                <p class="mt-1 text-sm text-gray-900 dark:text-white">
+                  {{ order()?.tracking_number }}
+                </p>
+              </div>
+
+              <!-- Delivery Time Preference -->
+              <div>
+                <p class="text-sm font-medium text-gray-500 dark:text-gray-400">Delivery Preference</p>
+                <p class="mt-1 text-sm text-gray-900 dark:text-white">
+                  {{ order()?.preferred_delivery_time_display || order()?.preferred_delivery_time }}
+                </p>
+              </div>
+            </div>
+
+            <!-- Status History -->
+            <div class="mt-6">
+              <h3 class="text-sm font-medium text-gray-700 dark:text-gray-300 mb-3">Status History</h3>
+              <div class="border-l-2 border-gray-200 dark:border-gray-700 pl-4 space-y-4">
+                <div *ngFor="let history of order()?.status_history" class="relative">
+                  <!-- Status Dot -->
+                  <div
+                    class="absolute -left-6 mt-1 w-4 h-4 rounded-full bg-primary-500 border-2 border-white dark:border-dark-bg-secondary"></div>
+
+                  <!-- Status Info -->
+                  <div>
+                    <p class="text-sm font-medium text-gray-900 dark:text-white">
+                      <span [ngClass]="getStatusClass(history.status)"
+                            class="px-2 py-0.5 rounded-full text-xs font-medium">
+                        {{ history.status_display || history.status }}
+                      </span>
+                      <span class="ml-2 text-gray-500 dark:text-gray-400">{{ formatDate(history.created_at) }}</span>
+                    </p>
+                    <p *ngIf="history.notes" class="mt-1 text-sm text-gray-600 dark:text-gray-400">
+                      {{ history.notes }}
+                    </p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Order Items Card -->
+        <div
+          class="bg-white dark:bg-dark-bg-secondary shadow-sm rounded-lg border border-gray-200 dark:border-dark-border overflow-hidden">
+          <div class="px-6 py-4 border-b border-gray-200 dark:border-dark-border">
+            <h2 class="text-lg font-medium text-gray-900 dark:text-white">Order Items</h2>
+          </div>
+          <div class="p-6">
+            <div class="overflow-x-auto">
+              <table class="min-w-full divide-y divide-gray-200 dark:divide-dark-border">
+                <thead>
+                <tr class="text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                  <th class="pb-3">Product</th>
+                  <th class="pb-3">Price</th>
+                  <th class="pb-3">Qty</th>
+                  <th class="pb-3 text-right">Total</th>
+                </tr>
+                </thead>
+                <tbody class="divide-y divide-gray-200 dark:divide-dark-border">
+                <tr *ngFor="let item of order()?.items" class="py-4">
+                  <td class="py-4 pr-4">
+                    <div class="flex items-center">
+                      <div class="flex-shrink-0 h-10 w-10 bg-gray-100 dark:bg-gray-700 rounded-lg"></div>
+                      <div class="ml-4">
+                        <div class="text-sm font-medium text-gray-900 dark:text-white">{{ item.product_name }}</div>
+                        <div class="text-xs text-gray-500 dark:text-gray-400">
+                          <span>SKU: {{ item.product_sku }}</span>
+                          <span *ngIf="item.variation_details" class="ml-2">{{ item.variation_details }}</span>
+                        </div>
+                      </div>
+                    </div>
+                  </td>
+                  <td class="py-4 text-sm text-gray-900 dark:text-white">{{ formatCurrency(item.price) }}</td>
+                  <td class="py-4 text-sm text-gray-900 dark:text-white">{{ item.quantity }}</td>
+                  <td
+                    class="py-4 text-sm text-gray-900 dark:text-white text-right">{{ formatCurrency(item.total_price) }}
+                  </td>
+                </tr>
+                </tbody>
+                <tfoot>
+                <tr>
+                  <td colspan="3" class="pt-4 text-sm font-medium text-gray-700 dark:text-gray-300 text-right">
+                    Subtotal
+                  </td>
+                  <td
+                    class="pt-4 text-sm font-medium text-gray-900 dark:text-white text-right">{{ formatCurrency(order()?.total_price || 0) }}
+                  </td>
+                </tr>
+                <tr>
+                  <td colspan="3" class="pt-2 text-sm font-medium text-gray-700 dark:text-gray-300 text-right">
+                    Shipping
+                  </td>
+                  <td
+                    class="pt-2 text-sm font-medium text-gray-900 dark:text-white text-right">{{ formatCurrency(order()?.shipping_cost || 0) }}
+                  </td>
+                </tr>
+                <tr>
+                  <td colspan="3" class="pt-2 text-sm font-medium text-gray-700 dark:text-gray-300 text-right">Tax</td>
+                  <td
+                    class="pt-2 text-sm font-medium text-gray-900 dark:text-white text-right">{{ formatCurrency(order()?.tax || 0) }}
+                  </td>
+                </tr>
+                <tr>
+                  <td colspan="3" class="pt-2 text-base font-medium text-gray-900 dark:text-white text-right">Total</td>
+                  <td
+                    class="pt-2 text-base font-bold text-gray-900 dark:text-white text-right">{{ formatCurrency(order()?.grand_total || 0) }}
+                  </td>
+                </tr>
+                </tfoot>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Right Column - Customer Info -->
+      <div class="space-y-6">
+        <!-- Customer Info Card -->
+        <div
+          class="bg-white dark:bg-dark-bg-secondary shadow-sm rounded-lg border border-gray-200 dark:border-dark-border overflow-hidden">
+          <div class="px-6 py-4 border-b border-gray-200 dark:border-dark-border">
+            <h2 class="text-lg font-medium text-gray-900 dark:text-white">Customer Information</h2>
+          </div>
+          <div class="p-6">
+            <div class="mb-4">
+              <h3 class="text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Contact Information</h3>
+              <p class="text-sm text-gray-900 dark:text-white">{{ order()?.full_name }}</p>
+              <p class="text-sm text-gray-900 dark:text-white mt-1">{{ order()?.phone_number }}</p>
+              <p class="text-sm text-gray-900 dark:text-white mt-1">{{ order()?.email }}</p>
+            </div>
+            <div>
+              <h3 class="text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Delivery Address</h3>
+              <p class="text-sm text-gray-900 dark:text-white whitespace-pre-line">{{ order()?.address }}</p>
+            </div>
+            <div *ngIf="order()?.delivery_notes" class="mt-4">
+              <h3 class="text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Delivery Notes</h3>
+              <p class="text-sm text-gray-900 dark:text-white">{{ order()?.delivery_notes }}</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Quick Actions Card -->
+        <div
+          class="bg-white dark:bg-dark-bg-secondary shadow-sm rounded-lg border border-gray-200 dark:border-dark-border overflow-hidden">
+          <div class="px-6 py-4 border-b border-gray-200 dark:border-dark-border">
+            <h2 class="text-lg font-medium text-gray-900 dark:text-white">Quick Actions</h2>
+          </div>
+          <div class="p-6">
+            <div class="space-y-3">
+              <button
+                type="button"
+                class="w-full flex items-center justify-center px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg shadow-sm text-sm font-medium text-gray-700 dark:text-gray-200 bg-white dark:bg-dark-bg-secondary hover:bg-gray-50 dark:hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500"
+              >
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-2" fill="none" viewBox="0 0 24 24"
+                     stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/>
+                </svg>
+                Send Email to Customer
+              </button>
+              <button
+                type="button"
+                class="w-full flex items-center justify-center px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg shadow-sm text-sm font-medium text-gray-700 dark:text-gray-200 bg-white dark:bg-dark-bg-secondary hover:bg-gray-50 dark:hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500"
+              >
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-2" fill="none" viewBox="0 0 24 24"
+                     stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"/>
+                </svg>
+                Print Invoice
+              </button>
+              <button
+                type="button"
+                class="w-full flex items-center justify-center px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg shadow-sm text-sm font-medium text-gray-700 dark:text-gray-200 bg-white dark:bg-dark-bg-secondary hover:bg-gray-50 dark:hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500"
+              >
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-2" fill="none" viewBox="0 0 24 24"
+                     stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+                </svg>
+                Generate Delivery Note
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

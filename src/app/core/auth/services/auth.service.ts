@@ -101,6 +101,7 @@ export class AuthService {
   getProfile(): Observable<User> {
     return this.http.get<User>(`${this.apiUrl}/users/profile/`).pipe(
       tap(user => {
+        console.log(user);
         this.userSignal.set(user);
       })
     );
