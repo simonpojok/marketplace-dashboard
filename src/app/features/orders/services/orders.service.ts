@@ -3,7 +3,7 @@ import {HttpClient, HttpParams} from '@angular/common/http';
 import {Observable} from 'rxjs';
 import {environment} from '../../../../environments/environment';
 import {Order, OrderFilterParams, OrderUpdateParams} from '../models/order.model';
-import {OrderListResponse} from '../models/order-liist-response.model';
+import {OrderListResponse} from '../models/order-list-response.model';
 
 @Injectable({
   providedIn: 'root'
