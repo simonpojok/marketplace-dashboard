@@ -9,7 +9,7 @@ import {ToastService} from '../../../../core/services/toast.service';
   selector: 'app-product-detail',
   standalone: true,
   imports: [CommonModule, RouterModule],
-  templateUrl: 'product-detail.component.html',
+  templateUrl: './product-detail.component.html',
   styles: []
 })
 export class ProductDetailComponent implements OnInit {
@@ -20,6 +20,7 @@ export class ProductDetailComponent implements OnInit {
 
   // Reactive state
   protected isLoading = signal(true);
+  protected isDeletingProduct = signal(false);
   protected product = signal<Product | null>(null);
   protected selectedImageIndex = signal(0);
 
@@ -38,6 +39,13 @@ export class ProductDetailComponent implements OnInit {
     this.productsService.getProduct(id).subscribe({
       next: (product) => {
         this.product.set(product);
+
+        // Find the primary image and set it as selected by default
+        if (product.images && product.images.length > 0) {
+          const primaryIndex = product.images.findIndex(img => img.is_primary);
+          this.selectedImageIndex.set(primaryIndex !== -1 ? primaryIndex : 0);
+        }
+
         this.isLoading.set(false);
       },
       error: (error) => {
@@ -73,17 +81,49 @@ export class ProductDetailComponent implements OnInit {
   protected deleteProduct(): void {
     if (!this.product()) return;
 
-    if (confirm('Are you sure you want to delete this product?')) {
+    if (confirm('Are you sure you want to delete this product? This action cannot be undone.')) {
+      this.isDeletingProduct.set(true);
+
       this.productsService.deleteProduct(this.product()!.id).subscribe({
         next: () => {
+          this.isDeletingProduct.set(false);
           this.toastService.success('Product deleted successfully');
           this.router.navigate(['/products']);
         },
         error: (error) => {
+          this.isDeletingProduct.set(false);
           console.error('Error deleting product:', error);
           this.toastService.error('Failed to delete product');
         }
       });
+    }
+  }
+
+  protected hasDiscount(): boolean {
+    return !!this.product()?.discount_price;
+  }
+
+  protected handMoreImages(): boolean {
+    if (this.product()?.images) {
+      // @ts-ignore
+      return this.product()?.images.length > 0;
+    }
+    return false;
+  }
+
+  protected productImage(): string {
+    return this.product()?.images[this.selectedImageIndex()]?.image ?? '';
+  }
+
+  protected getStockStatusClass(): string {
+    const stockQty = this.product()?.stock_quantity || 0;
+
+    if (stockQty === 0) {
+      return 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-300';
+    } else if (stockQty < 10) {
+      return 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-300';
+    } else {
+      return 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300';
     }
   }
 }

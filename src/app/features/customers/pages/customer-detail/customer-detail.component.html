@@ -203,7 +203,7 @@
               </div>
               <div *ngIf="customer()?.last_order_date" class="col-span-2">
                 <p class="text-sm font-medium text-gray-500 dark:text-gray-400">Last Order</p>
-                <p class="mt-1 text-sm text-gray-900 dark:text-white">{{ formatDate(customer()?.last_order_date) }}</p>
+                <p class="mt-1 text-sm text-gray-900 dark:text-white">{{ formatDate(customer()?.last_order_date ?? '') }}</p>
               </div>
             </div>
           </div>

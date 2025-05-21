@@ -5,11 +5,12 @@ import {FormsModule} from '@angular/forms';
 import {OrdersService} from '../../services/orders.service';
 import {Order, OrderFilterParams, OrderStatus} from '../../models/order.model';
 import {ToastService} from '../../../../core/services/toast.service';
+import {FindLabelPipe} from '../../../../shared/pipes/find-label.pipe';
 
 @Component({
   selector: 'app-order-list',
   standalone: true,
-  imports: [CommonModule, RouterModule, FormsModule],
+  imports: [CommonModule, RouterModule, FormsModule, FindLabelPipe],
   templateUrl: 'order-list.component.html',
   styles: []
 })

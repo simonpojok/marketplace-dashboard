@@ -37,7 +37,7 @@
           <input
             type="text"
             id="search"
-            [(ngModel)]="searchTerm()"
+            [(ngModel)]="searchTerm"
             (keyup.enter)="onSearch()"
             class="w-full pl-10 pr-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500 dark:bg-gray-800 dark:text-white"
             placeholder="Order #, customer name..."
@@ -57,7 +57,7 @@
         <label for="status" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Status</label>
         <select
           id="status"
-          [(ngModel)]="selectedStatus()"
+          [(ngModel)]="selectedStatus"
           (change)="onFilter()"
           class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500 dark:bg-gray-800 dark:text-white"
         >
@@ -72,7 +72,7 @@
           Method</label>
         <select
           id="paymentMethod"
-          [(ngModel)]="selectedPaymentMethod()"
+          [(ngModel)]="selectedPaymentMethod"
           (change)="onFilter()"
           class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500 dark:bg-gray-800 dark:text-white"
         >
@@ -87,7 +87,7 @@
         <input
           type="date"
           id="dateFrom"
-          [(ngModel)]="dateFrom()"
+          [(ngModel)]="dateFrom"
           (change)="onFilter()"
           class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500 dark:bg-gray-800 dark:text-white"
         >
@@ -99,7 +99,7 @@
         <input
           type="date"
           id="dateTo"
-          [(ngModel)]="dateTo()"
+          [(ngModel)]="dateTo"
           (change)="onFilter()"
           class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500 dark:bg-gray-800 dark:text-white"
         >

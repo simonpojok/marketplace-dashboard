@@ -18,20 +18,41 @@
           [routerLink]="['/products/edit', product()?.id]"
           class="flex items-center justify-center px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg shadow-sm text-sm font-medium text-gray-700 dark:text-gray-200 bg-white dark:bg-dark-bg-secondary hover:bg-gray-50 dark:hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500"
         >
-          <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-2" fill="none" viewBox="0 0 24 24"
+               stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                  d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"/>
           </svg>
           Edit
         </a>
         <button
           (click)="deleteProduct()"
-          class="flex items-center justify-center px-4 py-2 border border-red-300 dark:border-red-700 rounded-lg shadow-sm text-sm font-medium text-red-700 dark:text-red-400 bg-white dark:bg-dark-bg-secondary hover:bg-red-50 dark:hover:bg-red-900/20 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500"
+          [disabled]="isDeletingProduct()"
+          class="flex items-center justify-center px-4 py-2 border border-red-300 dark:border-red-700 rounded-lg shadow-sm text-sm font-medium text-red-700 dark:text-red-400 bg-white dark:bg-dark-bg-secondary hover:bg-red-50 dark:hover:bg-red-900/20 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 disabled:opacity-50 disabled:cursor-not-allowed"
         >
-          <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+          <svg *ngIf="isDeletingProduct()" class="animate-spin -ml-1 mr-2 h-4 w-4 text-red-600 dark:text-red-400"
+               xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+            <path class="opacity-75" fill="currentColor"
+                  d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
           </svg>
-          Delete
+          <svg *ngIf="!isDeletingProduct()" xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-2" fill="none"
+               viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                  d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
+          </svg>
+          {{ isDeletingProduct() ? 'Deleting...' : 'Delete' }}
         </button>
+        <a
+          [routerLink]="['/products/list']"
+          class="flex items-center justify-center px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg shadow-sm text-sm font-medium text-gray-700 dark:text-gray-200 bg-white dark:bg-dark-bg-secondary hover:bg-gray-50 dark:hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500"
+        >
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-2" fill="none" viewBox="0 0 24 24"
+               stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"/>
+          </svg>
+          Back to List
+        </a>
       </div>
     </div>
 
@@ -40,35 +61,49 @@
       <!-- Left Column - Images -->
       <div class="lg:col-span-1 space-y-4">
         <!-- Main Product Image -->
-        <div class="bg-white dark:bg-dark-bg-secondary shadow-sm rounded-lg border border-gray-200 dark:border-dark-border overflow-hidden">
+        <div
+          class="bg-white dark:bg-dark-bg-secondary shadow-sm rounded-lg border border-gray-200 dark:border-dark-border overflow-hidden">
           <div class="relative pt-[100%]">
             <img
-              *ngIf="product()?.images && product()?.images.length > 0"
-              [src]="product()?.images[selectedImageIndex()]?.image"
-              [alt]="product()?.images[selectedImageIndex()]?.alt_text || product()?.name"
+              *ngIf="handMoreImages()"
+              [src]="productImage()"
               class="absolute inset-0 w-full h-full object-cover"
             >
-            <div *ngIf="!product()?.images || product()?.images.length === 0" class="absolute inset-0 flex items-center justify-center bg-gray-100 dark:bg-gray-700">
-              <svg xmlns="http://www.w3.org/2000/svg" class="h-20 w-20 text-gray-400 dark:text-gray-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+            <div *ngIf="!handMoreImages()"
+                 class="absolute inset-0 flex items-center justify-center bg-gray-100 dark:bg-gray-700">
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-20 w-20 text-gray-400 dark:text-gray-500" fill="none"
+                   viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                      d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/>
               </svg>
             </div>
           </div>
         </div>
 
         <!-- Thumbnail Images -->
-        <div *ngIf="product()?.images && product()?.images.length > 1" class="grid grid-cols-5 gap-2">
+        <div *ngIf="handMoreImages()" class="grid grid-cols-5 gap-2">
           <div
             *ngFor="let image of product()?.images; let i = index"
             (click)="setSelectedImage(i)"
+            class="relative pt-[100%] bg-white dark:bg-dark-bg-secondary border rounded-md overflow-hidden cursor-pointer hover:border-primary-500 dark:hover:border-primary-500 transition-colors"
             [class.border-primary-500]="i === selectedImageIndex()"
-            class="relative pt-[100%] bg-white dark:bg-dark-bg-secondary border border-gray-200 dark:border-dark-border rounded-md overflow-hidden cursor-pointer hover:border-primary-500 dark:hover:border-primary-500"
+            [class.border-gray-200]="i !== selectedImageIndex()"
+            [class.dark:border-primary-500]="i === selectedImageIndex()"
+            [class.dark:border-dark-border]="i !== selectedImageIndex()"
           >
             <img
               [src]="image.image"
               [alt]="image.alt_text || product()?.name"
               class="absolute inset-0 w-full h-full object-cover"
             >
+            <!-- Primary Badge -->
+            <div *ngIf="image.is_primary"
+                 class="absolute top-1 right-1 bg-primary-500 text-white text-xs rounded-full h-4 w-4 flex items-center justify-center">
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3" fill="none" viewBox="0 0 24 24"
+                   stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+              </svg>
+            </div>
           </div>
         </div>
       </div>
@@ -76,7 +111,8 @@
       <!-- Right Column - Info -->
       <div class="lg:col-span-2 space-y-6">
         <!-- Basic Info Card -->
-        <div class="bg-white dark:bg-dark-bg-secondary shadow-sm rounded-lg border border-gray-200 dark:border-dark-border overflow-hidden">
+        <div
+          class="bg-white dark:bg-dark-bg-secondary shadow-sm rounded-lg border border-gray-200 dark:border-dark-border overflow-hidden">
           <div class="px-6 py-4 border-b border-gray-200 dark:border-dark-border">
             <h2 class="text-lg font-medium text-gray-900 dark:text-white">Product Information</h2>
           </div>
@@ -88,15 +124,34 @@
               </div>
               <div>
                 <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">Category</dt>
-                <dd class="mt-1 text-sm text-gray-900 dark:text-white">{{ product()?.category_details?.name || 'N/A' }}</dd>
+                <dd class="mt-1 text-sm text-gray-900 dark:text-white">
+                  <a
+                    *ngIf="product()?.category_details"
+                    [routerLink]="['/products/categories/edit', product()?.category_details?.id]"
+                    class="text-primary-600 hover:text-primary-800 dark:text-primary-400 dark:hover:text-primary-300"
+                  >
+                    {{ product()?.category_details?.name }}
+                  </a>
+                  <span *ngIf="!product()?.category_details">N/A</span>
+                </dd>
               </div>
               <div>
                 <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">Brand</dt>
-                <dd class="mt-1 text-sm text-gray-900 dark:text-white">{{ product()?.brand_details?.name || 'N/A' }}</dd>
+                <dd class="mt-1 text-sm text-gray-900 dark:text-white">
+                  <a
+                    *ngIf="product()?.brand_details"
+                    [routerLink]="['/products/brands/edit', product()?.brand_details?.id]"
+                    class="text-primary-600 hover:text-primary-800 dark:text-primary-400 dark:hover:text-primary-300"
+                  >
+                    {{ product()?.brand_details?.name }}
+                  </a>
+                  <span *ngIf="!product()?.brand_details">N/A</span>
+                </dd>
               </div>
               <div>
                 <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">Created</dt>
-                <dd class="mt-1 text-sm text-gray-900 dark:text-white">{{ formatDate(product()?.created_at || '') }}</dd>
+                <dd class="mt-1 text-sm text-gray-900 dark:text-white">{{ formatDate(product()?.created_at || '') }}
+                </dd>
               </div>
               <div>
                 <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">Status</dt>
@@ -113,13 +168,16 @@
                 <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">Features</dt>
                 <dd class="mt-1 text-sm">
                   <div class="flex flex-wrap gap-2">
-                    <span *ngIf="product()?.is_featured" class="px-2.5 py-0.5 rounded-full text-xs font-medium bg-primary-100 text-primary-800 dark:bg-primary-900/30 dark:text-primary-300">
+                    <span *ngIf="product()?.is_featured"
+                          class="px-2.5 py-0.5 rounded-full text-xs font-medium bg-primary-100 text-primary-800 dark:bg-primary-900/30 dark:text-primary-300">
                       Featured
                     </span>
-                    <span *ngIf="product()?.has_variations" class="px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300">
+                    <span *ngIf="product()?.has_variations"
+                          class="px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300">
                       Has Variations
                     </span>
-                    <span *ngIf="product()?.discount_price" class="px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-300">
+                    <span *ngIf="hasDiscount()"
+                          class="px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-300">
                       On Sale
                     </span>
                   </div>
@@ -130,32 +188,48 @@
         </div>
 
         <!-- Price & Stock Card -->
-        <div class="bg-white dark:bg-dark-bg-secondary shadow-sm rounded-lg border border-gray-200 dark:border-dark-border overflow-hidden">
+        <div
+          class="bg-white dark:bg-dark-bg-secondary shadow-sm rounded-lg border border-gray-200 dark:border-dark-border overflow-hidden">
           <div class="px-6 py-4 border-b border-gray-200 dark:border-dark-border">
             <h2 class="text-lg font-medium text-gray-900 dark:text-white">Pricing & Inventory</h2>
           </div>
           <div class="p-6">
             <div class="grid grid-cols-1 sm:grid-cols-2 gap-x-4 gap-y-6">
+              <!-- Regular Price -->
               <div>
                 <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">Regular Price</dt>
-                <dd class="mt-1 text-lg font-medium text-gray-900 dark:text-white">{{ formatCurrency(product()?.price || 0) }}</dd>
-              </div>
-              <div *ngIf="product()?.discount_price">
-                <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">Sale Price</dt>
-                <dd class="mt-1">
-                  <span class="text-lg font-medium text-green-600 dark:text-green-400">{{ formatCurrency(product()?.discount_price || 0) }}</span>
-                  <span class="ml-2 text-sm font-medium text-green-600 dark:text-green-400">(-{{ product()?.discount_percentage }}%)</span>
+                <dd class="mt-1 text-lg font-medium text-gray-900 dark:text-white">
+                  {{ formatCurrency(product()?.price || 0) }}
                 </dd>
               </div>
+
+              <!-- Sale Price if available -->
+              <div *ngIf="hasDiscount()">
+                <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">Sale Price</dt>
+                <dd class="mt-1">
+                  <span class="text-lg font-medium text-green-600 dark:text-green-400">
+                    {{ formatCurrency(product()?.discount_price || 0) }}
+                  </span>
+                  <span class="ml-2 text-sm font-medium text-green-600 dark:text-green-400">
+                    (-{{ product()?.discount_percentage }}%)
+                  </span>
+                </dd>
+              </div>
+
+              <!-- Current Selling Price if no discount -->
+              <div *ngIf="!hasDiscount()">
+                <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">Current Price</dt>
+                <dd class="mt-1 text-lg font-medium text-gray-900 dark:text-white">
+                  {{ formatCurrency(product()?.current_price || 0) }}
+                </dd>
+              </div>
+
+              <!-- Stock Quantity -->
               <div>
                 <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">Stock Quantity</dt>
                 <dd class="mt-1 text-sm">
                   <span
-                    [ngClass]="
-                      product()?.stock_quantity === 0 ? 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-300' :
-                      (product()?.stock_quantity < 10 ? 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-300' :
-                      'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300')
-                    "
+                    [ngClass]="getStockStatusClass()"
                     class="px-2.5 py-0.5 rounded-full text-xs font-medium"
                   >
                     {{ product()?.stock_quantity || 0 }} units
@@ -167,7 +241,8 @@
         </div>
 
         <!-- Description Card -->
-        <div class="bg-white dark:bg-dark-bg-secondary shadow-sm rounded-lg border border-gray-200 dark:border-dark-border overflow-hidden">
+        <div
+          class="bg-white dark:bg-dark-bg-secondary shadow-sm rounded-lg border border-gray-200 dark:border-dark-border overflow-hidden">
           <div class="px-6 py-4 border-b border-gray-200 dark:border-dark-border">
             <h2 class="text-lg font-medium text-gray-900 dark:text-white">Description</h2>
           </div>
@@ -182,7 +257,8 @@
         </div>
 
         <!-- Variations Card -->
-        <div *ngIf="product()?.has_variations && product()?.variations && product()?.variations.length > 0" class="bg-white dark:bg-dark-bg-secondary shadow-sm rounded-lg border border-gray-200 dark:border-dark-border overflow-hidden">
+        <div *ngIf="product()?.has_variations"
+             class="bg-white dark:bg-dark-bg-secondary shadow-sm rounded-lg border border-gray-200 dark:border-dark-border overflow-hidden">
           <div class="px-6 py-4 border-b border-gray-200 dark:border-dark-border">
             <h2 class="text-lg font-medium text-gray-900 dark:text-white">Product Variations</h2>
           </div>
@@ -191,37 +267,47 @@
               <table class="min-w-full divide-y divide-gray-200 dark:divide-dark-border">
                 <thead class="bg-gray-50 dark:bg-gray-800">
                 <tr>
-                  <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                  <th scope="col"
+                      class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
                     SKU
                   </th>
-                  <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                  <th scope="col"
+                      class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
                     Attributes
                   </th>
-                  <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                  <th scope="col"
+                      class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
                     Price
                   </th>
-                  <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                  <th scope="col"
+                      class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
                     Stock
                   </th>
-                  <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                  <th scope="col"
+                      class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
                     Status
                   </th>
                 </tr>
                 </thead>
                 <tbody class="bg-white dark:bg-dark-bg-secondary divide-y divide-gray-200 dark:divide-dark-border">
-                <tr *ngFor="let variation of product()?.variations" class="hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors">
+                <tr *ngFor="let variation of product()?.variations"
+                    class="hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors">
                   <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white">
                     {{ variation.sku }}
                   </td>
                   <td class="px-6 py-4 whitespace-nowrap">
                     <div class="flex items-center">
                       <!-- Color Swatch if available -->
-                      <div *ngIf="variation.color_code" class="w-6 h-6 rounded-full border border-gray-300 dark:border-gray-600 mr-2" [style.background-color]="variation.color_code"></div>
+                      <div *ngIf="variation.color_code"
+                           class="w-6 h-6 rounded-full border border-gray-300 dark:border-gray-600 mr-2"
+                           [style.background-color]="variation.color_code"></div>
 
                       <div>
                         <div *ngIf="variation.size" class="text-sm text-gray-900 dark:text-white">
                           Size: {{ variation.size_display || variation.size }}
-                          <span *ngIf="variation.size === 'CUSTOM' && variation.custom_attribute">({{ variation.custom_attribute }})</span>
+                          <span
+                            *ngIf="variation.size === 'CUSTOM' && variation.custom_attribute">({{ variation.custom_attribute }}
+                            )</span>
                         </div>
                         <div *ngIf="variation.color" class="text-sm text-gray-900 dark:text-white">
                           Color: {{ variation.color }}
@@ -230,7 +316,9 @@
                     </div>
                   </td>
                   <td class="px-6 py-4 whitespace-nowrap">
-                    <div class="text-sm font-medium text-gray-900 dark:text-white">{{ formatCurrency(variation.final_price) }}</div>
+                    <div
+                      class="text-sm font-medium text-gray-900 dark:text-white">{{ formatCurrency(variation.final_price) }}
+                    </div>
                     <div *ngIf="variation.price_adjustment !== 0" class="text-xs text-gray-500 dark:text-gray-400">
                       {{ variation.price_adjustment > 0 ? '+' : '' }}{{ formatCurrency(variation.price_adjustment) }}
                     </div>
@@ -248,12 +336,12 @@
                     </div>
                   </td>
                   <td class="px-6 py-4 whitespace-nowrap">
-                      <span
-                        [ngClass]="variation.is_active ? 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300' : 'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-300'"
-                        class="px-2.5 py-0.5 rounded-full text-xs font-medium"
-                      >
-                        {{ variation.is_active ? 'Active' : 'Inactive' }}
-                      </span>
+                    <span
+                      [ngClass]="variation.is_active ? 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300' : 'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-300'"
+                      class="px-2.5 py-0.5 rounded-full text-xs font-medium"
+                    >
+                      {{ variation.is_active ? 'Active' : 'Inactive' }}
+                    </span>
                   </td>
                 </tr>
                 </tbody>
