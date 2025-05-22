@@ -39,26 +39,26 @@
         (slugGenerated)="generateSlug()">
       </app-product-basic-info>
 
-<!--      &lt;!&ndash; Pricing & Inventory Component &ndash;&gt;-->
-<!--      <app-product-pricing-->
-<!--        [formGroup]="productForm"-->
-<!--        [discountPercentage]="discountPercentage()"-->
-<!--        [hasVariations]="hasVariations()">-->
-<!--      </app-product-pricing>-->
+      <!-- Pricing & Inventory Component -->
+      <app-product-pricing
+        [formGroup]="productForm"
+        [discountPercentage]="discountPercentage()"
+        [hasVariations]="hasVariations()">
+      </app-product-pricing>
 
-<!--      &lt;!&ndash; Product Images Component &ndash;&gt;-->
-<!--      <app-product-images-->
-<!--        [imagesFormArray]="imagesFormArray"-->
-<!--        [isEdit]="isEdit()"-->
-<!--        (filesChanged)="onImageFilesChanged($event)"-->
-<!--        (imageRemoved)="onImageRemoved($event)">-->
-<!--      </app-product-images>-->
+      <!-- Product Images Component -->
+      <app-product-images
+        [imagesFormArray]="imagesFormArray"
+        [isEdit]="isEdit()"
+        (filesChanged)="onImageFilesChanged($event)"
+        (imageRemoved)="onImageRemoved($event)">
+      </app-product-images>
 
-<!--      &lt;!&ndash; Variations Component &ndash;&gt;-->
-<!--      <app-product-variations-->
-<!--        *ngIf="hasVariations()"-->
-<!--        [variationsFormArray]="variationsFormArray">-->
-<!--      </app-product-variations>-->
+      <!-- Variations Component -->
+      <app-product-variations
+        *ngIf="hasVariations()"
+        [variationsFormArray]="variationsFormArray">
+      </app-product-variations>
 
       <!-- Form Actions -->
       <div class="flex justify-end space-x-3">

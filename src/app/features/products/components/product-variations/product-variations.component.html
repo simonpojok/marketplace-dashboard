@@ -27,7 +27,7 @@
         <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">Click 'Add Variation' to create product variations</p>
       </div>
 
-      <div *ngFor="let variationGroup of variationsFormArray.controls; let i = index"
+      <div *ngFor="let variationGroup of variationGroups; let i = index"
            class="mb-6 p-4 border border-gray-200 dark:border-gray-700 rounded-lg">
         <div [formGroup]="variationGroup">
           <div class="grid grid-cols-1 gap-4">

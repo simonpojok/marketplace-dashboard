@@ -6,12 +6,9 @@ import {ProductsService} from '../../services/products.service';
 import {Product, Category, Brand} from '../../models/product.model';
 import {ToastService} from '../../../../core/services/toast.service';
 import {ProductBasicInfoComponent} from '../../components/product-basic-info/product-basic-info.component';
-
-// Import sub-components
-// import {ProductBasicInfoComponent} from './components/product-basic-info/product-basic-info.component';
-// import {ProductPricingComponent} from './components/product-pricing/product-pricing.component';
-// import {ProductImagesComponent} from './components/product-images/product-images.component';
-// import {ProductVariationsComponent} from './components/product-variations/product-variations.component';
+import {ProductPricingComponent} from '../../components/product-pricing/product-pricing.component';
+import {ProductImagesComponent} from '../../components/product-images/product-images.component';
+import {ProductVariationsComponent} from '../../components/product-variations/product-variations.component';
 
 @Component({
   selector: 'app-product-form',
@@ -21,9 +18,9 @@ import {ProductBasicInfoComponent} from '../../components/product-basic-info/pro
     RouterModule,
     ReactiveFormsModule,
     ProductBasicInfoComponent,
-    // ProductPricingComponent,
-    // ProductImagesComponent,
-    // ProductVariationsComponent
+    ProductPricingComponent,
+    ProductImagesComponent,
+    ProductVariationsComponent
   ],
   templateUrl: './product-form.component.html',
   styles: []
