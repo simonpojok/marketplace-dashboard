@@ -1,14 +1,17 @@
-import { Component, OnInit, inject, signal } from '@angular/core';
-import { CommonModule } from '@angular/common';
-import { RouterModule, ActivatedRoute, Router } from '@angular/router';
-import { FormArray, FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
-import { ProductsService } from '../../services/products.service';
-import { Product, Category, Brand } from '../../models/product.model';
-import { ToastService } from '../../../../core/services/toast.service';
-import { BasicInfoFormComponent } from '../../components/basic-info-form/basic-info-form.component';
-import { PricingInventoryFormComponent } from '../../components/pricing-inventory-form/pricing-inventory-form.component';
-import { ProductImagesFormComponent } from '../../components/product-images-form/product-images-form.component';
-import { ProductVariationsFormComponent } from '../../components/product-variations-form/product-variations-form.component';
+import {Component, OnInit, inject, signal} from '@angular/core';
+import {CommonModule} from '@angular/common';
+import {RouterModule, ActivatedRoute, Router} from '@angular/router';
+import {FormArray, FormBuilder, FormGroup, ReactiveFormsModule, Validators} from '@angular/forms';
+import {ProductsService} from '../../services/products.service';
+import {Product, Category, Brand} from '../../models/product.model';
+import {ToastService} from '../../../../core/services/toast.service';
+import {ProductBasicInfoComponent} from '../../components/product-basic-info/product-basic-info.component';
+
+// Import sub-components
+// import {ProductBasicInfoComponent} from './components/product-basic-info/product-basic-info.component';
+// import {ProductPricingComponent} from './components/product-pricing/product-pricing.component';
+// import {ProductImagesComponent} from './components/product-images/product-images.component';
+// import {ProductVariationsComponent} from './components/product-variations/product-variations.component';
 
 @Component({
   selector: 'app-product-form',
@@ -17,10 +20,10 @@ import { ProductVariationsFormComponent } from '../../components/product-variati
     CommonModule,
     RouterModule,
     ReactiveFormsModule,
-    BasicInfoFormComponent,
-    PricingInventoryFormComponent,
-    ProductImagesFormComponent,
-    ProductVariationsFormComponent
+    ProductBasicInfoComponent,
+    // ProductPricingComponent,
+    // ProductImagesComponent,
+    // ProductVariationsComponent
   ],
   templateUrl: './product-form.component.html',
   styles: []
@@ -40,12 +43,11 @@ export class ProductFormComponent implements OnInit {
   protected categories = signal<Category[]>([]);
   protected brands = signal<Brand[]>([]);
   protected hasVariations = signal(false);
+  protected imageFiles = signal<File[]>([]);
+  protected removedImageIds = signal<string[]>([]);
 
   // Form controls
   protected productForm!: FormGroup;
-
-  // File uploads
-  protected uploadedImages: { file: File, preview: string }[] = [];
 
   ngOnInit(): void {
     this.initForm();
@@ -174,292 +176,161 @@ export class ProductFormComponent implements OnInit {
     }
 
     this.isSaving.set(true);
-
-    // Create FormData to handle file uploads
-    const formData = new FormData();
-
-    // Add basic form fields
     const productData = this.prepareProductData();
-    for (const key in productData) {
-      if (key !== 'images' && key !== 'variations') {
-        formData.append(key, productData[key]);
-      }
-    }
-
-    // Add images - handle both file uploads and URLs
-    this.processImagesForFormData(formData);
-
-    // Add variations
-    this.processVariationsForFormData(formData);
 
     if (this.isEdit()) {
-      this.updateProduct(formData);
+      // Update existing product
+      this.productsService.handleUpdateProduct(this.product()!.id, productData).subscribe({
+        next: (product) => {
+          this.isSaving.set(false);
+          this.toastService.success('Product updated successfully');
+          this.router.navigate(['/products/view', product.id]);
+        },
+        error: (error) => {
+          console.error('Error updating product:', error);
+          this.toastService.error('Failed to update product');
+          this.isSaving.set(false);
+        }
+      });
     } else {
-      this.createProduct(formData);
+      // Create new product
+      this.productsService.handleCreateProduct(productData).subscribe({
+        next: (product) => {
+          this.isSaving.set(false);
+          this.toastService.success('Product created successfully');
+          this.router.navigate(['/products/view', product.id]);
+        },
+        error: (error) => {
+          console.error('Error creating product:', error);
+          this.toastService.error('Failed to create product');
+          this.isSaving.set(false);
+        }
+      });
     }
+  }
+
+  private prepareProductData(): FormData {
+    const formData = new FormData();
+    const formValue = this.productForm.value;
+
+    // Add basic product data
+    Object.keys(formValue).forEach(key => {
+      if (key !== 'images' && key !== 'variations' && formValue[key] !== null && formValue[key] !== '') {
+        if (key === 'has_variations' || key === 'is_active' || key === 'is_featured') {
+          formData.append(key, formValue[key].toString());
+        } else {
+          formData.append(key, formValue[key]);
+        }
+      }
+    });
+
+    // Add image files
+    this.imageFiles().forEach((file, index) => {
+      formData.append(`image_files`, file);
+    });
+
+    // Add image data (URLs and metadata)
+    if (formValue.images && formValue.images.length > 0) {
+      formData.append('images', JSON.stringify(formValue.images));
+    }
+
+    // Add variations data
+    if (formValue.variations && formValue.variations.length > 0) {
+      const cleanedVariations = formValue.variations.map((variation: any) => {
+        const cleaned = {...variation};
+        // Remove empty fields
+        Object.keys(cleaned).forEach(key => {
+          if (cleaned[key] === '' || cleaned[key] === null) {
+            delete cleaned[key];
+          }
+        });
+        return cleaned;
+      });
+      formData.append('variations', JSON.stringify(cleanedVariations));
+    }
+
+    // Add removed image IDs for update operations
+    if (this.isEdit() && this.removedImageIds().length > 0) {
+      formData.append('removed_image_ids', JSON.stringify(this.removedImageIds()));
+    }
+
+    return formData;
   }
 
   private markFormGroupTouched(formGroup: FormGroup): void {
     Object.keys(formGroup.controls).forEach(key => {
       const control = formGroup.get(key);
-      if (control instanceof FormArray) {
-        for (let i = 0; i < control.length; i++) {
-          this.markFormGroupTouched(control.at(i) as FormGroup);
-        }
-      } else if (control instanceof FormGroup) {
+      if (control instanceof FormGroup) {
         this.markFormGroupTouched(control);
+      } else if (control instanceof FormArray) {
+        control.controls.forEach(arrayControl => {
+          if (arrayControl instanceof FormGroup) {
+            this.markFormGroupTouched(arrayControl);
+          } else {
+            arrayControl.markAsTouched();
+          }
+        });
       } else {
         control?.markAsTouched();
       }
     });
   }
 
-  private processImagesForFormData(formData: FormData): void {
-    const imagesArray = this.productForm.get('images') as FormArray;
-
-    for (let i = 0; i < imagesArray.length; i++) {
-      const imageGroup = imagesArray.at(i) as FormGroup;
-      const imageId = imageGroup.get('id')?.value;
-
-      if (imageId) {
-        formData.append(`images[${i}][id]`, imageId);
-      }
-
-      const uploadedImage = this.uploadedImages.find(img => img.preview === imageGroup.get('image')?.value);
-
-      if (uploadedImage) {
-        formData.append(`images[${i}][image]`, uploadedImage.file);
-      } else {
-        formData.append(`images[${i}][image]`, imageGroup.get('image')?.value || '');
-      }
-
-      formData.append(`images[${i}][alt_text]`, imageGroup.get('alt_text')?.value || '');
-      formData.append(`images[${i}][is_primary]`, imageGroup.get('is_primary')?.value ? 'true' : 'false');
-      formData.append(`images[${i}][display_order]`, imageGroup.get('display_order')?.value || '0');
-    }
-  }
-
-  private processVariationsForFormData(formData: FormData): void {
-    const variationsArray = this.productForm.get('variations') as FormArray;
-
-    for (let i = 0; i < variationsArray.length; i++) {
-      const variationGroup = variationsArray.at(i) as FormGroup;
-      const variationData = variationGroup.value;
-
-      if (variationData.id) {
-        formData.append(`variations[${i}][id]`, variationData.id);
-      }
-
-      for (const key in variationData) {
-        if (key !== 'id' && variationData[key] !== null && variationData[key] !== '') {
-          formData.append(`variations[${i}][${key}]`, variationData[key]);
-        }
-      }
-
-      const variationImage = variationGroup.get('image')?.value;
-      if (variationImage && this.uploadedImages.some(img => img.preview === variationImage)) {
-        const uploadedImage = this.uploadedImages.find(img => img.preview === variationImage);
-        if (uploadedImage) {
-          formData.append(`variations[${i}][image]`, uploadedImage.file);
-        }
-      }
-    }
-  }
-
-  private updateProduct(formData: FormData): void {
-    this.productsService.handleUpdateProduct(this.product()!.id, formData).subscribe({
-      next: (product) => {
-        this.isSaving.set(false);
-        this.toastService.success('Product updated successfully');
-        this.router.navigate(['/products/view', product.id]);
-      },
-      error: (error) => {
-        console.error('Error updating product:', error);
-        this.toastService.error('Failed to update product');
-        this.isSaving.set(false);
-      }
-    });
-  }
-
-  private createProduct(formData: FormData): void {
-    this.productsService.handleCreateProduct(formData).subscribe({
-      next: (product) => {
-        this.isSaving.set(false);
-        this.toastService.success('Product created successfully');
-        this.router.navigate(['/products/view', product.id]);
-      },
-      error: (error) => {
-        console.error('Error creating product:', error);
-        this.toastService.error('Failed to create product');
-        this.isSaving.set(false);
-      }
-    });
-  }
-
-  private prepareProductData(): any {
-    const formData = {...this.productForm.value};
-
-    if (!formData.slug) {
-      delete formData.slug;
-    }
-
-    if (!formData.sku) {
-      delete formData.sku;
-    }
-
-    if (!formData.brand) {
-      delete formData.brand;
-    }
-
-    if (formData.variations && formData.variations.length > 0) {
-      formData.variations = formData.variations.map((variation: any) => {
-        if (!variation.size) delete variation.size;
-        if (!variation.color) delete variation.color;
-        if (!variation.color_code) delete variation.color_code;
-        if (!variation.custom_attribute) delete variation.custom_attribute;
-        return variation;
-      });
-    }
-
-    return formData;
-  }
-
-  // Image handling
-  protected createImageFormGroup(image: any = null): FormGroup {
+  private createImageFormGroup(image: any = null): FormGroup {
     return this.fb.group({
       id: [image?.id || null],
-      image: [image?.image || '', Validators.required],
+      image: [image?.image || ''],
       alt_text: [image?.alt_text || ''],
       is_primary: [image?.is_primary || false],
-      display_order: [image?.display_order || 0]
+      display_order: [image?.display_order || 0],
+      file: [null] // For new file uploads
     });
   }
 
-  protected get imagesFormArray(): FormArray {
-    return this.productForm.get('images') as FormArray;
-  }
-
-  protected onImageFilesSelected(files: FileList): void {
-    for (let i = 0; i < files.length; i++) {
-      const file = files[i];
-
-      if (!file.type.match('image.*')) continue;
-
-      const reader = new FileReader();
-      reader.onload = (event: any) => {
-        const preview = event.target.result;
-
-        this.uploadedImages.push({ file, preview });
-
-        const imageGroup = this.createImageFormGroup();
-        imageGroup.patchValue({
-          image: preview,
-          alt_text: file.name.split('.')[0],
-          is_primary: this.imagesFormArray.length === 0
-        });
-
-        this.imagesFormArray.push(imageGroup);
-      };
-
-      reader.readAsDataURL(file);
-    }
-  }
-
-  protected onDrop(event: DragEvent): void {
-    event.preventDefault();
-    if (event.dataTransfer?.files) {
-      this.onImageFilesSelected(event.dataTransfer.files);
-    }
-  }
-
-  protected onDragOver(event: DragEvent): void {
-    event.preventDefault();
-  }
-
-  protected addImage(): void {
-    this.imagesFormArray.push(this.createImageFormGroup());
-  }
-
-  protected removeImage(index: number): void {
-    const imageControl = this.imagesFormArray.at(index);
-    const imageUrl = imageControl.get('image')?.value;
-
-    const uploadedImageIndex = this.uploadedImages.findIndex(img => img.preview === imageUrl);
-    if (uploadedImageIndex !== -1) {
-      this.uploadedImages.splice(uploadedImageIndex, 1);
-    }
-
-    this.imagesFormArray.removeAt(index);
-  }
-
-  protected setPrimaryImage(index: number): void {
-    const imagesArray = this.imagesFormArray;
-    for (let i = 0; i < imagesArray.length; i++) {
-      imagesArray.at(i).get('is_primary')?.setValue(i === index);
-    }
-  }
-
-  protected handleVariationImageUpload(event: Event, variationIndex: number): void {
-    const input = event.target as HTMLInputElement;
-    if (!input.files?.length) return;
-
-    const file = input.files[0];
-
-    if (!file.type.match('image.*')) return;
-
-    const reader = new FileReader();
-    reader.onload = (e: any) => {
-      const preview = e.target.result;
-
-      this.uploadedImages.push({ file, preview });
-
-      const variationGroup = this.variationsFormArray.at(variationIndex) as FormGroup;
-      variationGroup.get('image')?.setValue(preview);
-    };
-
-    reader.readAsDataURL(file);
-  }
-
-  // Variation handling
-  protected createVariationFormGroup(variation: any = null): FormGroup {
+  private createVariationFormGroup(variation: any = null): FormGroup {
     return this.fb.group({
       id: [variation?.id || null],
       sku: [variation?.sku || ''],
-      type: [variation?.type || 'size'],
       size: [variation?.size || ''],
       color: [variation?.color || ''],
       color_code: [variation?.color_code || ''],
-      screen_size: [variation?.screen_size || ''],
       memory: [variation?.memory || ''],
       storage: [variation?.storage || ''],
-      processor: [variation?.processor || ''],
       custom_attribute: [variation?.custom_attribute || ''],
       price_adjustment: [variation?.price_adjustment || 0],
       stock_quantity: [variation?.stock_quantity || 0, [Validators.required, Validators.min(0)]],
-      image: [variation?.image || null],
+      image: [variation?.image || ''],
       is_active: [variation?.is_active ?? true]
     });
+  }
+
+  private ensureVariationsExist(): void {
+    const variationsArray = this.productForm.get('variations') as FormArray;
+    if (variationsArray.length === 0) {
+      variationsArray.push(this.createVariationFormGroup());
+    }
+  }
+
+  // Event handlers for child components
+  protected onImageFilesChanged(files: File[]): void {
+    this.imageFiles.set(files);
+  }
+
+  protected onImageRemoved(imageId: string): void {
+    if (imageId) {
+      this.removedImageIds.update(ids => [...ids, imageId]);
+    }
+  }
+
+  // Getters for child components
+  protected get imagesFormArray(): FormArray {
+    return this.productForm.get('images') as FormArray;
   }
 
   protected get variationsFormArray(): FormArray {
     return this.productForm.get('variations') as FormArray;
   }
 
-  protected addVariation(): void {
-    this.variationsFormArray.push(this.createVariationFormGroup());
-  }
-
-  protected removeVariation(index: number): void {
-    this.variationsFormArray.removeAt(index);
-  }
-
-  private ensureVariationsExist(): void {
-    if (this.variationsFormArray.length === 0) {
-      this.addVariation();
-    }
-  }
-
-  // Helper methods for template
   protected generateSlug(): void {
     const nameControl = this.productForm.get('name');
     const slugControl = this.productForm.get('slug');
@@ -483,13 +354,5 @@ export class ProductFormComponent implements OnInit {
       return Math.round(((price - discountPrice) / price) * 100);
     }
     return 0;
-  }
-
-  protected formatCurrency(amount: number): string {
-    return new Intl.NumberFormat('en-UG', {
-      style: 'currency',
-      currency: 'UGX',
-      maximumFractionDigits: 0
-    }).format(amount);
   }
 }

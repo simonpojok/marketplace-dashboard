@@ -1,0 +1,270 @@
+<div class="bg-white dark:bg-dark-bg-secondary shadow-sm rounded-lg border border-gray-200 dark:border-dark-border overflow-hidden">
+  <div class="p-6">
+    <div class="flex justify-between items-center mb-4">
+      <h2 class="text-lg font-medium text-gray-900 dark:text-white">Product Variations</h2>
+      <button
+        type="button"
+        (click)="addVariation()"
+        class="inline-flex items-center px-3 py-1.5 border border-transparent text-sm font-medium rounded-md text-primary-700 dark:text-primary-300 bg-primary-100 dark:bg-primary-900/30 hover:bg-primary-200 dark:hover:bg-primary-900/40 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500"
+      >
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
+        </svg>
+        Add Variation
+      </button>
+    </div>
+
+    <!-- Variation Form Groups -->
+    <div>
+      <div *ngIf="variationsFormArray.length === 0"
+           class="text-center py-8 border border-dashed border-gray-300 dark:border-gray-600 rounded-lg">
+        <svg xmlns="http://www.w3.org/2000/svg" class="mx-auto h-12 w-12 text-gray-400 dark:text-gray-500"
+             fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+        </svg>
+        <h3 class="mt-2 text-sm font-medium text-gray-900 dark:text-white">No variations added</h3>
+        <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">Click 'Add Variation' to create product variations</p>
+      </div>
+
+      <div *ngFor="let variationGroup of variationsFormArray.controls; let i = index"
+           class="mb-6 p-4 border border-gray-200 dark:border-gray-700 rounded-lg">
+        <div [formGroup]="variationGroup">
+          <div class="grid grid-cols-1 gap-4">
+            <!-- Mobile responsive grid for phones -->
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+              <!-- Size -->
+              <div>
+                <label [for]="'size-' + i" class="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                  Size
+                </label>
+                <select
+                  [id]="'size-' + i"
+                  formControlName="size"
+                  class="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm dark:bg-gray-800 dark:text-white"
+                >
+                  <option value="">No Size</option>
+                  <option *ngFor="let sizeOption of getSizeChoices()" [value]="sizeOption.value">
+                    {{ sizeOption.label }}
+                  </option>
+                </select>
+              </div>
+
+              <!-- Color -->
+              <div>
+                <label [for]="'color-' + i" class="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                  Color
+                </label>
+                <input
+                  [id]="'color-' + i"
+                  type="text"
+                  formControlName="color"
+                  class="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm dark:bg-gray-800 dark:text-white"
+                  placeholder="e.g., Red, Blue"
+                >
+              </div>
+
+              <!-- Memory -->
+              <div>
+                <label [for]="'memory-' + i" class="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                  Memory/RAM
+                </label>
+                <select
+                  [id]="'memory-' + i"
+                  formControlName="memory"
+                  class="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm dark:bg-gray-800 dark:text-white"
+                >
+                  <option value="">No Memory</option>
+                  <option *ngFor="let memoryOption of getMemoryChoices()" [value]="memoryOption.value">
+                    {{ memoryOption.label }}
+                  </option>
+                </select>
+              </div>
+
+              <!-- Storage -->
+              <div>
+                <label [for]="'storage-' + i" class="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                  Storage
+                </label>
+                <select
+                  [id]="'storage-' + i"
+                  formControlName="storage"
+                  class="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm dark:bg-gray-800 dark:text-white"
+                >
+                  <option value="">No Storage</option>
+                  <option *ngFor="let storageOption of getStorageChoices()" [value]="storageOption.value">
+                    {{ storageOption.label }}
+                  </option>
+                </select>
+              </div>
+            </div>
+
+            <!-- Custom Size (if CUSTOM is selected) -->
+            <div *ngIf="variationGroup.get('size')?.value === 'CUSTOM'" class="grid grid-cols-1">
+              <div>
+                <label [for]="'custom-size-' + i" class="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                  Custom Size/Attribute
+                </label>
+                <input
+                  [id]="'custom-size-' + i"
+                  type="text"
+                  formControlName="custom_attribute"
+                  class="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm dark:bg-gray-800 dark:text-white"
+                  placeholder="Enter custom size or attribute"
+                >
+              </div>
+            </div>
+
+            <!-- Second row for color code and pricing -->
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+              <!-- Color Code -->
+              <div>
+                <label [for]="'color-code-' + i" class="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                  Color Code
+                </label>
+                <div class="mt-1 flex items-center space-x-2">
+                  <input
+                    [id]="'color-code-' + i"
+                    type="color"
+                    formControlName="color_code"
+                    class="h-8 w-16 rounded border border-gray-300 dark:border-gray-600"
+                  >
+                  <input
+                    type="text"
+                    formControlName="color_code"
+                    class="flex-1 rounded-md border-gray-300 dark:border-gray-600 shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm dark:bg-gray-800 dark:text-white"
+                    placeholder="#000000"
+                  >
+                </div>
+              </div>
+
+              <!-- Price Adjustment -->
+              <div>
+                <label [for]="'price-adjustment-' + i" class="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                  Price Adjustment
+                </label>
+                <div class="mt-1 relative rounded-md shadow-sm">
+                  <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                    <span class="text-gray-500 dark:text-gray-400 sm:text-sm">UGX</span>
+                  </div>
+                  <input
+                    [id]="'price-adjustment-' + i"
+                    type="number"
+                    formControlName="price_adjustment"
+                    step="0.01"
+                    class="block w-full pl-12 rounded-md border-gray-300 dark:border-gray-600 shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm dark:bg-gray-800 dark:text-white"
+                    placeholder="0.00"
+                  >
+                </div>
+              </div>
+
+              <!-- Stock Quantity -->
+              <div>
+                <label [for]="'stock-quantity-' + i" class="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                  Stock Quantity *
+                </label>
+                <input
+                  [id]="'stock-quantity-' + i"
+                  type="number"
+                  formControlName="stock_quantity"
+                  min="0"
+                  class="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm dark:bg-gray-800 dark:text-white"
+                  placeholder="0"
+                >
+                <div *ngIf="variationGroup.get('stock_quantity')?.invalid && variationGroup.get('stock_quantity')?.touched"
+                     class="mt-1 text-sm text-red-600 dark:text-red-400">
+                  Stock quantity is required
+                </div>
+              </div>
+
+              <!-- SKU -->
+              <div>
+                <label [for]="'sku-' + i" class="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                  SKU
+                </label>
+                <input
+                  [id]="'sku-' + i"
+                  type="text"
+                  formControlName="sku"
+                  class="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm dark:bg-gray-800 dark:text-white"
+                  placeholder="auto-generated"
+                >
+              </div>
+            </div>
+
+            <!-- Third row for image and actions -->
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
+              <!-- Image URL -->
+              <div>
+                <label [for]="'variation-image-' + i" class="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                  Variation Image URL
+                </label>
+                <input
+                  [id]="'variation-image-' + i"
+                  type="url"
+                  formControlName="image"
+                  class="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm dark:bg-gray-800 dark:text-white"
+                  placeholder="https://example.com/variation-image.jpg"
+                >
+              </div>
+
+              <!-- Actions -->
+              <div class="flex items-end justify-between">
+                <div class="flex items-center">
+                  <input
+                    [id]="'variation-active-' + i"
+                    type="checkbox"
+                    formControlName="is_active"
+                    class="h-4 w-4 text-primary-600 border-gray-300 rounded focus:ring-primary-500 dark:bg-gray-800 dark:border-gray-600"
+                  >
+                  <label [for]="'variation-active-' + i" class="ml-2 text-sm text-gray-700 dark:text-gray-300">
+                    Active
+                  </label>
+                </div>
+
+                <button
+                  type="button"
+                  (click)="removeVariation(i)"
+                  class="inline-flex items-center px-2.5 py-1.5 border border-transparent text-xs font-medium rounded text-red-700 dark:text-red-300 bg-red-100 dark:bg-red-900/30 hover:bg-red-200 dark:hover:bg-red-900/40 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500"
+                >
+                  <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                          d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
+                  </svg>
+                  Remove
+                </button>
+              </div>
+            </div>
+
+            <!-- Variation Preview -->
+            <div *ngIf="hasVariationData(variationGroup)"
+                 class="mt-4 p-3 bg-gray-50 dark:bg-gray-800 rounded-md">
+              <h4 class="text-sm font-medium text-gray-900 dark:text-white mb-2">Variation Preview</h4>
+              <div class="text-sm text-gray-600 dark:text-gray-400">
+                    <span *ngIf="variationGroup.get('size')?.value" class="inline-block mr-3">
+                      <strong>Size:</strong> {{ getDisplaySize(variationGroup) }}
+                    </span>
+                <span *ngIf="variationGroup.get('color')?.value" class="inline-block mr-3">
+                      <strong>Color:</strong>
+                      <span class="inline-flex items-center">
+                        {{ variationGroup.get('color')?.value }}
+                        <span *ngIf="variationGroup.get('color_code')?.value"
+                              class="ml-1 w-4 h-4 rounded-full border border-gray-300 dark:border-gray-600"
+                              [style.background-color]="variationGroup.get('color_code')?.value">
+                        </span>
+                      </span>
+                    </span>
+                <span *ngIf="variationGroup.get('memory')?.value" class="inline-block mr-3">
+                      <strong>Memory:</strong> {{ variationGroup.get('memory')?.value }}
+                    </span>
+                <span *ngIf="variationGroup.get('storage')?.value" class="inline-block mr-3">
+                      <strong>Storage:</strong> {{ variationGroup.get('storage')?.value }}
+                    </span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
