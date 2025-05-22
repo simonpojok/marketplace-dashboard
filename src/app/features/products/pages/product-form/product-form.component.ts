@@ -5,31 +5,9 @@ import {FormBuilder, FormGroup, ReactiveFormsModule, Validators} from '@angular/
 import {ProductsService} from '../../services/products.service';
 import {Product, Category, Brand} from '../../models/product.model';
 import {ToastService} from '../../../../core/services/toast.service';
+import {ProductImage} from '../models/product-image.models';
+import {ProductVariation} from '../models/product-variation.models';
 
-interface ProductImage {
-  id?: string;
-  file?: File;
-  url?: string;
-  alt_text: string;
-  is_primary: boolean;
-  display_order: number;
-  preview?: string;
-}
-
-interface ProductVariation {
-  id?: string;
-  sku: string;
-  size: string;
-  color: string;
-  color_code: string;
-  memory: string;
-  storage: string;
-  custom_attribute: string;
-  price_adjustment: number;
-  stock_quantity: number;
-  image_url: string;
-  is_active: boolean;
-}
 
 @Component({
   selector: 'app-product-form',
@@ -91,37 +69,37 @@ export class ProductFormComponent implements OnInit {
 
   // Options
   protected sizeOptions = [
-    { value: 'XS', label: 'Extra Small' },
-    { value: 'S', label: 'Small' },
-    { value: 'M', label: 'Medium' },
-    { value: 'L', label: 'Large' },
-    { value: 'XL', label: 'Extra Large' },
-    { value: 'XXL', label: 'Double Extra Large' },
-    { value: '3XL', label: 'Triple Extra Large' },
-    { value: 'CUSTOM', label: 'Custom Size' }
+    {value: 'XS', label: 'Extra Small'},
+    {value: 'S', label: 'Small'},
+    {value: 'M', label: 'Medium'},
+    {value: 'L', label: 'Large'},
+    {value: 'XL', label: 'Extra Large'},
+    {value: 'XXL', label: 'Double Extra Large'},
+    {value: '3XL', label: 'Triple Extra Large'},
+    {value: 'CUSTOM', label: 'Custom Size'}
   ];
 
   protected memoryOptions = [
-    { value: '2GB', label: '2 GB' },
-    { value: '3GB', label: '3 GB' },
-    { value: '4GB', label: '4 GB' },
-    { value: '6GB', label: '6 GB' },
-    { value: '8GB', label: '8 GB' },
-    { value: '12GB', label: '12 GB' },
-    { value: '16GB', label: '16 GB' },
-    { value: '32GB', label: '32 GB' },
-    { value: '64GB', label: '64 GB' }
+    {value: '2GB', label: '2 GB'},
+    {value: '3GB', label: '3 GB'},
+    {value: '4GB', label: '4 GB'},
+    {value: '6GB', label: '6 GB'},
+    {value: '8GB', label: '8 GB'},
+    {value: '12GB', label: '12 GB'},
+    {value: '16GB', label: '16 GB'},
+    {value: '32GB', label: '32 GB'},
+    {value: '64GB', label: '64 GB'}
   ];
 
   protected storageOptions = [
-    { value: '16GB', label: '16 GB' },
-    { value: '32GB', label: '32 GB' },
-    { value: '64GB', label: '64 GB' },
-    { value: '128GB', label: '128 GB' },
-    { value: '256GB', label: '256 GB' },
-    { value: '512GB', label: '512 GB' },
-    { value: '1TB', label: '1 TB' },
-    { value: '2TB', label: '2 TB' }
+    {value: '16GB', label: '16 GB'},
+    {value: '32GB', label: '32 GB'},
+    {value: '64GB', label: '64 GB'},
+    {value: '128GB', label: '128 GB'},
+    {value: '256GB', label: '256 GB'},
+    {value: '512GB', label: '512 GB'},
+    {value: '1TB', label: '1 TB'},
+    {value: '2TB', label: '2 TB'}
   ];
 
   ngOnInit(): void {
@@ -269,7 +247,7 @@ export class ProductFormComponent implements OnInit {
         this.isSaving.set(false);
         const message = this.isEdit() ? 'Product updated successfully' : 'Product created successfully';
         this.toastService.success(message);
-        this.router.navigate(['/products/view', product.id]);
+        this.router.navigate(['/products/view', product.id]).then(console.log);
       },
       error: (error) => {
         console.error('Error saving product:', error);
@@ -317,7 +295,7 @@ export class ProductFormComponent implements OnInit {
     // Add variations data
     if (this.hasVariations() && this.variations().length > 0) {
       const variationsData = this.variations().map(variation => {
-        const cleanedVariation: any = { ...variation };
+        const cleanedVariation: any = {...variation};
         // Remove empty fields
         Object.keys(cleanedVariation).forEach(key => {
           if (cleanedVariation[key] === '' || cleanedVariation[key] === null) {
@@ -364,7 +342,7 @@ export class ProductFormComponent implements OnInit {
     this.images.update(images => {
       const newImages = images.filter((_, i) => i !== index);
       // Reorder remaining images
-      return newImages.map((img, i) => ({ ...img, display_order: i }));
+      return newImages.map((img, i) => ({...img, display_order: i}));
     });
   }
 
@@ -409,14 +387,14 @@ export class ProductFormComponent implements OnInit {
 
   protected setPrimaryImage(index: number): void {
     this.images.update(images =>
-      images.map((img, i) => ({ ...img, is_primary: i === index }))
+      images.map((img, i) => ({...img, is_primary: i === index}))
     );
   }
 
   protected updateImageAltText(index: number, altText: string): void {
     this.images.update(images => {
       const newImages = [...images];
-      newImages[index] = { ...newImages[index], alt_text: altText };
+      newImages[index] = {...newImages[index], alt_text: altText};
       return newImages;
     });
   }
@@ -424,7 +402,7 @@ export class ProductFormComponent implements OnInit {
   protected updateImageUrl(index: number, url: string): void {
     this.images.update(images => {
       const newImages = [...images];
-      newImages[index] = { ...newImages[index], url: url, preview: url };
+      newImages[index] = {...newImages[index], url: url, preview: url};
       return newImages;
     });
   }
@@ -454,7 +432,7 @@ export class ProductFormComponent implements OnInit {
   protected updateVariation(index: number, field: string, value: any): void {
     this.variations.update(variations => {
       const newVariations = [...variations];
-      newVariations[index] = { ...newVariations[index], [field]: value };
+      newVariations[index] = {...newVariations[index], [field]: value};
       return newVariations;
     });
   }
