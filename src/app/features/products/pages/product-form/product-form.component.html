@@ -5,7 +5,7 @@
   </div>
 
   <div *ngIf="!isLoading()">
-    <!-- Page Header with Actions -->
+    <!-- Page Header -->
     <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between">
       <div class="mb-5">
         <h1 class="text-2xl font-bold text-gray-900 dark:text-white">
@@ -30,38 +30,651 @@
 
     <!-- Product Form -->
     <form [formGroup]="productForm" (ngSubmit)="handleCreateProduct()" class="space-y-8">
-      <!-- Basic Details Component -->
-      <app-product-basic-info
-        [formGroup]="productForm"
-        [categories]="categories()"
-        [brands]="brands()"
-        [isEdit]="isEdit()"
-        (slugGenerated)="generateSlug()">
-      </app-product-basic-info>
 
-      <!-- Pricing & Inventory Component -->
-      <app-product-pricing
-        [formGroup]="productForm"
-        [discountPercentage]="discountPercentage()"
-        [hasVariations]="hasVariations()">
-      </app-product-pricing>
+      <!-- Basic Information -->
+      <div class="bg-white dark:bg-dark-bg-secondary shadow-sm rounded-lg border border-gray-200 dark:border-dark-border overflow-hidden">
+        <div class="px-6 py-4 border-b border-gray-200 dark:border-dark-border">
+          <h2 class="text-lg font-medium text-gray-900 dark:text-white">Basic Information</h2>
+        </div>
+        <div class="p-6">
+          <div class="grid grid-cols-1 gap-y-6 gap-x-4 sm:grid-cols-6">
+            <!-- Product Name -->
+            <div class="sm:col-span-4">
+              <label for="name" class="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                Product Name <span class="text-red-500">*</span>
+              </label>
+              <input
+                type="text"
+                id="name"
+                formControlName="name"
+                (blur)="generateSlug()"
+                class="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm dark:bg-gray-800 dark:text-white"
+                placeholder="Enter product name"
+              >
+              <div *ngIf="productForm.get('name')?.invalid && productForm.get('name')?.touched"
+                   class="mt-1 text-sm text-red-600 dark:text-red-400">
+                Product name is required and must be at least 3 characters
+              </div>
+            </div>
 
-      <!-- Product Images Component -->
-      <app-product-images
-        [imagesFormArray]="imagesFormArray"
-        [isEdit]="isEdit()"
-        (filesChanged)="onImageFilesChanged($event)"
-        (imageRemoved)="onImageRemoved($event)">
-      </app-product-images>
+            <!-- Slug -->
+            <div class="sm:col-span-2">
+              <label for="slug" class="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                URL Slug
+              </label>
+              <input
+                type="text"
+                id="slug"
+                readonly
+                formControlName="slug"
+                class="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm dark:bg-gray-800 dark:text-white bg-gray-50 dark:bg-gray-700"
+                placeholder="auto-generated"
+              >
+              <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">
+                Auto-generated from product name
+              </p>
+            </div>
 
-      <!-- Variations Component -->
-      <app-product-variations
-        *ngIf="hasVariations()"
-        [variationsFormArray]="variationsFormArray">
-      </app-product-variations>
+            <!-- SKU -->
+            <div class="sm:col-span-2">
+              <label for="sku" class="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                SKU
+              </label>
+              <input
+                type="text"
+                id="sku"
+                formControlName="sku"
+                class="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm dark:bg-gray-800 dark:text-white"
+                placeholder="Leave empty to auto-generate"
+              >
+            </div>
+
+            <!-- Category -->
+            <div class="sm:col-span-2">
+              <label for="category" class="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                Category <span class="text-red-500">*</span>
+              </label>
+              <select
+                id="category"
+                formControlName="category"
+                class="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm dark:bg-gray-800 dark:text-white"
+              >
+                <option value="">Select Category</option>
+                <option *ngFor="let category of categories()" [value]="category.id">
+                  {{ category.name }}
+                </option>
+              </select>
+              <div *ngIf="productForm.get('category')?.invalid && productForm.get('category')?.touched"
+                   class="mt-1 text-sm text-red-600 dark:text-red-400">
+                Category is required
+              </div>
+            </div>
+
+            <!-- Brand -->
+            <div class="sm:col-span-2">
+              <label for="brand" class="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                Brand
+              </label>
+              <select
+                id="brand"
+                formControlName="brand"
+                class="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm dark:bg-gray-800 dark:text-white"
+              >
+                <option value="">No Brand</option>
+                <option *ngFor="let brand of brands()" [value]="brand.id">
+                  {{ brand.name }}
+                </option>
+              </select>
+            </div>
+
+            <!-- Description -->
+            <div class="sm:col-span-6">
+              <label for="description" class="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                Description
+              </label>
+              <textarea
+                id="description"
+                formControlName="description"
+                rows="4"
+                class="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm dark:bg-gray-800 dark:text-white"
+                placeholder="Enter product description"
+              ></textarea>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Pricing & Inventory -->
+      <div class="bg-white dark:bg-dark-bg-secondary shadow-sm rounded-lg border border-gray-200 dark:border-dark-border overflow-hidden">
+        <div class="px-6 py-4 border-b border-gray-200 dark:border-dark-border">
+          <h2 class="text-lg font-medium text-gray-900 dark:text-white">Pricing & Inventory</h2>
+        </div>
+        <div class="p-6">
+          <div class="grid grid-cols-1 gap-y-6 gap-x-4 sm:grid-cols-6">
+            <!-- Regular Price -->
+            <div class="sm:col-span-2">
+              <label for="price" class="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                Regular Price <span class="text-red-500">*</span>
+              </label>
+              <div class="mt-1 relative rounded-md shadow-sm">
+                <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                  <span class="text-gray-500 dark:text-gray-400 sm:text-sm">UGX</span>
+                </div>
+                <input
+                  type="number"
+                  id="price"
+                  formControlName="price"
+                  min="0"
+                  step="0.01"
+                  class="block w-full pl-12 rounded-md border-gray-300 dark:border-gray-600 shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm dark:bg-gray-800 dark:text-white"
+                  placeholder="0.00"
+                >
+              </div>
+              <div *ngIf="productForm.get('price')?.invalid && productForm.get('price')?.touched"
+                   class="mt-1 text-sm text-red-600 dark:text-red-400">
+                Price is required and must be a positive number
+              </div>
+            </div>
+
+            <!-- Sale Price -->
+            <div class="sm:col-span-2">
+              <label for="discount_price" class="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                Sale Price
+              </label>
+              <div class="mt-1 relative rounded-md shadow-sm">
+                <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                  <span class="text-gray-500 dark:text-gray-400 sm:text-sm">UGX</span>
+                </div>
+                <input
+                  type="number"
+                  id="discount_price"
+                  formControlName="discount_price"
+                  min="0"
+                  step="0.01"
+                  class="block w-full pl-12 rounded-md border-gray-300 dark:border-gray-600 shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm dark:bg-gray-800 dark:text-white"
+                  placeholder="0.00"
+                >
+              </div>
+              <div *ngIf="getDiscountPercentage() > 0" class="mt-1 text-sm text-green-600 dark:text-green-400">
+                {{ getDiscountPercentage() }}% off
+              </div>
+            </div>
+
+            <!-- Stock Quantity -->
+            <div class="sm:col-span-2">
+              <label for="stock_quantity" class="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                Stock Quantity <span class="text-red-500">*</span>
+              </label>
+              <input
+                type="number"
+                id="stock_quantity"
+                formControlName="stock_quantity"
+                min="0"
+                class="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm dark:bg-gray-800 dark:text-white"
+                placeholder="0"
+              >
+              <div *ngIf="productForm.get('stock_quantity')?.invalid && productForm.get('stock_quantity')?.touched"
+                   class="mt-1 text-sm text-red-600 dark:text-red-400">
+                Stock quantity is required and cannot be negative
+              </div>
+            </div>
+
+            <!-- Options & Features -->
+            <div class="sm:col-span-6">
+              <fieldset>
+                <legend class="text-sm font-medium text-gray-700 dark:text-gray-300 mb-4">Options & Features</legend>
+                <div class="space-y-4">
+                  <!-- Has Variations -->
+                  <div class="relative flex items-start">
+                    <div class="flex items-center h-5">
+                      <input
+                        id="has_variations"
+                        type="checkbox"
+                        formControlName="has_variations"
+                        class="h-4 w-4 text-primary-600 border-gray-300 rounded focus:ring-primary-500 dark:bg-gray-800 dark:border-gray-600"
+                      >
+                    </div>
+                    <div class="ml-3 text-sm">
+                      <label for="has_variations" class="font-medium text-gray-700 dark:text-gray-300">Has Variations</label>
+                      <p class="text-gray-500 dark:text-gray-400">Product has multiple variations (sizes, colors, memory, etc.)</p>
+                    </div>
+                  </div>
+
+                  <!-- Is Active -->
+                  <div class="relative flex items-start">
+                    <div class="flex items-center h-5">
+                      <input
+                        id="is_active"
+                        type="checkbox"
+                        formControlName="is_active"
+                        class="h-4 w-4 text-primary-600 border-gray-300 rounded focus:ring-primary-500 dark:bg-gray-800 dark:border-gray-600"
+                      >
+                    </div>
+                    <div class="ml-3 text-sm">
+                      <label for="is_active" class="font-medium text-gray-700 dark:text-gray-300">Is Active</label>
+                      <p class="text-gray-500 dark:text-gray-400">Product is visible and available for purchase</p>
+                    </div>
+                  </div>
+
+                  <!-- Is Featured -->
+                  <div class="relative flex items-start">
+                    <div class="flex items-center h-5">
+                      <input
+                        id="is_featured"
+                        type="checkbox"
+                        formControlName="is_featured"
+                        class="h-4 w-4 text-primary-600 border-gray-300 rounded focus:ring-primary-500 dark:bg-gray-800 dark:border-gray-600"
+                      >
+                    </div>
+                    <div class="ml-3 text-sm">
+                      <label for="is_featured" class="font-medium text-gray-700 dark:text-gray-300">Is Featured</label>
+                      <p class="text-gray-500 dark:text-gray-400">Product will be showcased in featured sections</p>
+                    </div>
+                  </div>
+                </div>
+              </fieldset>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Product Images -->
+      <div class="bg-white dark:bg-dark-bg-secondary shadow-sm rounded-lg border border-gray-200 dark:border-dark-border overflow-hidden">
+        <div class="px-6 py-4 border-b border-gray-200 dark:border-dark-border">
+          <div class="flex justify-between items-center">
+            <h2 class="text-lg font-medium text-gray-900 dark:text-white">Product Images</h2>
+            <button
+              type="button"
+              (click)="addImage()"
+              class="inline-flex items-center px-3 py-1.5 border border-transparent text-sm font-medium rounded-md text-primary-700 dark:text-primary-300 bg-primary-100 dark:bg-primary-900/30 hover:bg-primary-200 dark:hover:bg-primary-900/40 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500"
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
+              </svg>
+              Add Image
+            </button>
+          </div>
+        </div>
+        <div class="p-6">
+          <div *ngIf="images().length === 0" class="text-center py-8 border border-dashed border-gray-300 dark:border-gray-600 rounded-lg">
+            <svg xmlns="http://www.w3.org/2000/svg" class="mx-auto h-12 w-12 text-gray-400 dark:text-gray-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/>
+            </svg>
+            <h3 class="mt-2 text-sm font-medium text-gray-900 dark:text-white">No images added</h3>
+            <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">Click 'Add Image' to upload product images</p>
+          </div>
+
+          <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+            <div *ngFor="let image of images(); let i = index" class="space-y-4">
+              <!-- Image Upload/Preview -->
+              <div class="relative">
+                <!-- Image Preview -->
+                <div *ngIf="image.preview" class="relative w-full h-48 rounded-lg overflow-hidden border border-gray-300 dark:border-gray-600 image-preview">
+                  <img [src]="image.preview" [alt]="image.alt_text" class="w-full h-full object-cover">
+                  <button
+                    type="button"
+                    (click)="removeImage(i)"
+                    class="absolute top-2 right-2 bg-red-500 text-white rounded-full p-1 hover:bg-red-600 focus:outline-none"
+                  >
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                    </svg>
+                  </button>
+                  <!-- Primary Badge -->
+                  <div *ngIf="image.is_primary" class="absolute top-2 left-2 bg-primary-500 text-white text-xs px-2 py-1 rounded-md">
+                    Primary
+                  </div>
+                </div>
+
+                <!-- Upload Area -->
+                <div
+                  *ngIf="!image.preview"
+                  class="w-full h-48 border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-lg flex items-center justify-center hover:border-primary-500 dark:hover:border-primary-500 transition-colors cursor-pointer"
+                  [class.drag-over]="dragOver()"
+                  (dragover)="onDragOver($event)"
+                  (dragleave)="onDragLeave($event)"
+                  (drop)="onImageDrop($event, i)"
+                  (click)="fileInput.click()"
+                >
+                  <div class="text-center">
+                    <svg class="mx-auto h-12 w-12 text-gray-400 dark:text-gray-500" stroke="currentColor" fill="none" viewBox="0 0 48 48">
+                      <path d="M28 8H12a4 4 0 00-4 4v20m32-12v8m0 0v8a4 4 0 01-4 4H12a4 4 0 01-4-4v-4m32-4l-3.172-3.172a4 4 0 00-5.656 0L28 28M8 32l9.172-9.172a4 4 0 015.656 0L28 28m0 0l4 4m4-24h8m-4-4v8m-12 4h.02" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                    </svg>
+                    <div class="mt-4">
+                      <span class="mt-2 block text-sm font-medium text-gray-900 dark:text-white">
+                        Drop an image here, or
+                        <span class="text-primary-600 dark:text-primary-400 hover:text-primary-500">browse</span>
+                      </span>
+                      <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                        PNG, JPG, GIF up to 10MB
+                      </p>
+                    </div>
+                  </div>
+                  <input
+                    #fileInput
+                    type="file"
+                    class="sr-only"
+                    accept="image/*"
+                    (change)="onImageFileSelected($event, i)"
+                  >
+                </div>
+              </div>
+
+              <!-- Image Details -->
+              <div class="space-y-3">
+                <!-- Image URL Input -->
+                <div>
+                  <label [for]="'image-url-' + i" class="block text-xs font-medium text-gray-700 dark:text-gray-300">
+                    Or enter image URL
+                  </label>
+                  <input
+                    [id]="'image-url-' + i"
+                    type="url"
+                    [value]="image.url || ''"
+                    (input)="onImageTextChange($event, i, 'url')"
+                    class="mt-1 block w-full text-sm rounded-md border-gray-300 dark:border-gray-600 shadow-sm focus:border-primary-500 focus:ring-primary-500 dark:bg-gray-800 dark:text-white"
+                    placeholder="https://example.com/image.jpg"
+                  >
+                </div>
+
+                <!-- Alt Text -->
+                <div>
+                  <label [for]="'alt-text-' + i" class="block text-xs font-medium text-gray-700 dark:text-gray-300">
+                    Alt Text
+                  </label>
+                  <input
+                    [id]="'alt-text-' + i"
+                    type="text"
+                    [value]="image.alt_text"
+                    (input)="onImageTextChange($event, i, 'alt_text')"
+                    class="mt-1 block w-full text-sm rounded-md border-gray-300 dark:border-gray-600 shadow-sm focus:border-primary-500 focus:ring-primary-500 dark:bg-gray-800 dark:text-white"
+                    placeholder="Describe the image"
+                  >
+                </div>
+
+                <!-- Primary Image Checkbox -->
+                <div class="flex items-center justify-between">
+                  <div class="flex items-center">
+                    <input
+                      [id]="'is-primary-' + i"
+                      type="radio"
+                      [checked]="image.is_primary"
+                      (change)="setPrimaryImage(i)"
+                      name="primary_image"
+                      class="h-4 w-4 text-primary-600 border-gray-300 focus:ring-primary-500 dark:bg-gray-800 dark:border-gray-600"
+                    >
+                    <label [for]="'is-primary-' + i" class="ml-2 text-xs text-gray-700 dark:text-gray-300">
+                      Primary Image
+                    </label>
+                  </div>
+                  <button
+                    type="button"
+                    (click)="removeImage(i)"
+                    class="text-xs text-red-600 dark:text-red-400 hover:text-red-800 dark:hover:text-red-300"
+                  >
+                    Remove
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Product Variations -->
+      <div *ngIf="hasVariations()" class="bg-white dark:bg-dark-bg-secondary shadow-sm rounded-lg border border-gray-200 dark:border-dark-border overflow-hidden">
+        <div class="px-6 py-4 border-b border-gray-200 dark:border-dark-border">
+          <div class="flex justify-between items-center">
+            <h2 class="text-lg font-medium text-gray-900 dark:text-white">Product Variations</h2>
+            <button
+              type="button"
+              (click)="addVariation()"
+              class="inline-flex items-center px-3 py-1.5 border border-transparent text-sm font-medium rounded-md text-primary-700 dark:text-primary-300 bg-primary-100 dark:bg-primary-900/30 hover:bg-primary-200 dark:hover:bg-primary-900/40 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500"
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
+              </svg>
+              Add Variation
+            </button>
+          </div>
+        </div>
+        <div class="p-6">
+          <div *ngIf="variations().length === 0" class="text-center py-8 border border-dashed border-gray-300 dark:border-gray-600 rounded-lg">
+            <svg xmlns="http://www.w3.org/2000/svg" class="mx-auto h-12 w-12 text-gray-400 dark:text-gray-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+            </svg>
+            <h3 class="mt-2 text-sm font-medium text-gray-900 dark:text-white">No variations added</h3>
+            <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">Click 'Add Variation' to create product variations</p>
+          </div>
+
+          <div class="space-y-6">
+            <div *ngFor="let variation of variations(); let i = index" class="variation-card p-6 rounded-lg">
+              <div class="space-y-4">
+                <!-- Variation Attributes Row 1 -->
+                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 grid-responsive">
+                  <!-- Size -->
+                  <div>
+                    <label [for]="'size-' + i" class="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                      Size
+                    </label>
+                    <select
+                      [id]="'size-' + i"
+                      [value]="variation.size"
+                      (change)="onVariationSelectChange($event, i, 'size')"
+                      class="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm dark:bg-gray-800 dark:text-white"
+                    >
+                      <option value="">No Size</option>
+                      <option *ngFor="let option of sizeOptions" [value]="option.value">
+                        {{ option.label }}
+                      </option>
+                    </select>
+                  </div>
+
+                  <!-- Color -->
+                  <div>
+                    <label [for]="'color-' + i" class="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                      Color
+                    </label>
+                    <input
+                      [id]="'color-' + i"
+                      type="text"
+                      [value]="variation.color"
+                      (input)="onVariationTextChange($event, i, 'color')"
+                      class="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm dark:bg-gray-800 dark:text-white"
+                      placeholder="e.g., Red, Blue"
+                    >
+                  </div>
+
+                  <!-- Memory -->
+                  <div>
+                    <label [for]="'memory-' + i" class="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                      Memory/RAM
+                    </label>
+                    <select
+                      [id]="'memory-' + i"
+                      [value]="variation.memory"
+                      (change)="onVariationSelectChange($event, i, 'memory')"
+                      class="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm dark:bg-gray-800 dark:text-white"
+                    >
+                      <option value="">No Memory</option>
+                      <option *ngFor="let option of memoryOptions" [value]="option.value">
+                        {{ option.label }}
+                      </option>
+                    </select>
+                  </div>
+
+                  <!-- Storage -->
+                  <div>
+                    <label [for]="'storage-' + i" class="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                      Storage
+                    </label>
+                    <select
+                      [id]="'storage-' + i"
+                      [value]="variation.storage"
+                      (change)="onVariationSelectChange($event, i, 'storage')"
+                      class="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm dark:bg-gray-800 dark:text-white"
+                    >
+                      <option value="">No Storage</option>
+                      <option *ngFor="let option of storageOptions" [value]="option.value">
+                        {{ option.label }}
+                      </option>
+                    </select>
+                  </div>
+                </div>
+
+                <!-- Custom Size (if CUSTOM is selected) -->
+                <div *ngIf="variation.size === 'CUSTOM'">
+                  <label [for]="'custom-size-' + i" class="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                    Custom Size/Attribute
+                  </label>
+                  <input
+                    [id]="'custom-size-' + i"
+                    type="text"
+                    [value]="variation.custom_attribute"
+                    (input)="onVariationTextChange($event, i, 'custom_attribute')"
+                    class="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm dark:bg-gray-800 dark:text-white"
+                    placeholder="Enter custom size or attribute"
+                  >
+                </div>
+
+                <!-- Variation Attributes Row 2 -->
+                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 grid-responsive">
+                  <!-- Color Code -->
+                  <div>
+                    <label [for]="'color-code-' + i" class="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                      Color Code
+                    </label>
+                    <div class="mt-1 flex items-center space-x-2">
+                      <input
+                        type="color"
+                        [value]="variation.color_code"
+                        (input)="onVariationTextChange($event, i, 'color_code')"
+                        class="h-10 w-16 rounded border border-gray-300 dark:border-gray-600 cursor-pointer"
+                      >
+                      <input
+                        [id]="'color-code-' + i"
+                        type="text"
+                        [value]="variation.color_code"
+                        (input)="onVariationTextChange($event, i, 'color_code')"
+                        class="flex-1 rounded-md border-gray-300 dark:border-gray-600 shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm dark:bg-gray-800 dark:text-white"
+                        placeholder="#000000"
+                      >
+                    </div>
+                  </div>
+
+                  <!-- Price Adjustment -->
+                  <div>
+                    <label [for]="'price-adjustment-' + i" class="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                      Price Adjustment
+                    </label>
+                    <div class="mt-1 relative rounded-md shadow-sm">
+                      <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                        <span class="text-gray-500 dark:text-gray-400 sm:text-sm">UGX</span>
+                      </div>
+                      <input
+                        [id]="'price-adjustment-' + i"
+                        type="number"
+                        [value]="variation.price_adjustment"
+                        (input)="onVariationNumberChange($event, i, 'price_adjustment')"
+                        step="0.01"
+                        class="block w-full pl-12 rounded-md border-gray-300 dark:border-gray-600 shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm dark:bg-gray-800 dark:text-white"
+                        placeholder="0.00"
+                      >
+                    </div>
+                  </div>
+
+                  <!-- Stock Quantity -->
+                  <div>
+                    <label [for]="'stock-quantity-' + i" class="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                      Stock Quantity <span class="text-red-500">*</span>
+                    </label>
+                    <input
+                      [id]="'stock-quantity-' + i"
+                      type="number"
+                      [value]="variation.stock_quantity"
+                      (input)="onVariationNumberChange($event, i, 'stock_quantity')"
+                      min="0"
+                      class="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm dark:bg-gray-800 dark:text-white"
+                      placeholder="0"
+                    >
+                  </div>
+
+                  <!-- SKU -->
+                  <div>
+                    <label [for]="'sku-' + i" class="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                      SKU
+                    </label>
+                    <input
+                      [id]="'sku-' + i"
+                      type="text"
+                      [value]="variation.sku"
+                      (input)="onVariationTextChange($event, i, 'sku')"
+                      class="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm dark:bg-gray-800 dark:text-white"
+                      placeholder="auto-generated"
+                    >
+                  </div>
+                </div>
+
+                <!-- Image URL and Actions Row -->
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
+                  <!-- Image URL -->
+                  <div>
+                    <label [for]="'variation-image-' + i" class="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                      Variation Image URL
+                    </label>
+                    <input
+                      [id]="'variation-image-' + i"
+                      type="url"
+                      [value]="variation.image_url"
+                      (input)="onVariationTextChange($event, i, 'image_url')"
+                      class="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm dark:bg-gray-800 dark:text-white"
+                      placeholder="https://example.com/variation-image.jpg"
+                    >
+                  </div>
+
+                  <!-- Actions -->
+                  <div class="flex items-end justify-between">
+                    <div class="flex items-center">
+                      <input
+                        [id]="'variation-active-' + i"
+                        type="checkbox"
+                        [checked]="variation.is_active"
+                        (change)="onVariationCheckboxChange($event, i, 'is_active')"
+                        class="h-4 w-4 text-primary-600 border-gray-300 rounded focus:ring-primary-500 dark:bg-gray-800 dark:border-gray-600"
+                      >
+                      <label [for]="'variation-active-' + i" class="ml-2 text-sm text-gray-700 dark:text-gray-300">
+                        Active
+                      </label>
+                    </div>
+
+                    <button
+                      type="button"
+                      (click)="removeVariation(i)"
+                      class="inline-flex items-center px-2.5 py-1.5 border border-transparent text-xs font-medium rounded text-red-700 dark:text-red-300 bg-red-100 dark:bg-red-900/30 hover:bg-red-200 dark:hover:bg-red-900/40 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500"
+                    >
+                      <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
+                      </svg>
+                      Remove
+                    </button>
+                  </div>
+                </div>
+
+                <!-- Variation Preview -->
+                <div class="mt-4 p-3 bg-gray-50 dark:bg-gray-800 rounded-md">
+                  <h4 class="text-sm font-medium text-gray-900 dark:text-white mb-2">Variation Preview</h4>
+                  <div class="text-sm text-gray-600 dark:text-gray-400">
+                    {{ getVariationDisplay(variation) }}
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
 
       <!-- Form Actions -->
-      <div class="flex justify-end space-x-3">
+      <div class="flex justify-end space-x-3 pt-6 border-t border-gray-200 dark:border-dark-border">
         <a
           routerLink="/products"
           class="inline-flex justify-center py-2 px-4 border border-gray-300 dark:border-gray-600 shadow-sm text-sm font-medium rounded-md text-gray-700 dark:text-gray-200 bg-white dark:bg-dark-bg-secondary hover:bg-gray-50 dark:hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500"
