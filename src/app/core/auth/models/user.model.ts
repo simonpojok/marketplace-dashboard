@@ -6,3 +6,4 @@ export interface User {
   address: string | null;
   date_joined: string;
 }
+

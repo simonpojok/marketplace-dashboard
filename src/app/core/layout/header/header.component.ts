@@ -5,6 +5,7 @@ import { AuthService } from '../../auth/services/auth.service';
 import { ThemeService } from '../../services/theme.service';
 import { User } from '../../auth/models/user.model';
 import {toObservable} from '@angular/core/rxjs-interop';
+import {UserProfile} from '../../auth/models/user-profile.model';
 
 @Component({
   selector: 'app-header',
@@ -21,12 +22,12 @@ export class HeaderComponent {
   protected themeService = inject(ThemeService);
 
   protected userMenuOpen = false;
-  protected user: User | null = null;
+  protected userProfile: UserProfile | null = null;
 
   constructor() {
     // Subscribe to user changes
-    toObservable(this.authService.user).subscribe(user => {
-      this.user = user;
+    toObservable(this.authService.profile).subscribe(user => {
+      this.userProfile = user;
     });
   }
 
@@ -52,7 +53,7 @@ export class HeaderComponent {
 
   protected getUserInitialAvatar(): string {
     // If user has a name, create an avatar with initials
-    const name = this.user?.name || 'User';
+    const name = this.userProfile?.user.name || 'User';
     const initials = name
       .split(' ')
       .map(n => n[0])

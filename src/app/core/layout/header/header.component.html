@@ -68,7 +68,7 @@
             alt="User"
             class="h-8 w-8 rounded-full bg-primary-100 dark:bg-primary-900"
           />
-          <span class="hidden md:block font-medium">{{ user?.name || 'User' }}</span>
+          <span class="hidden md:block font-medium">{{ userProfile?.user?.name || 'User' }}</span>
           <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
           </svg>
@@ -78,9 +78,9 @@
         <div *ngIf="userMenuOpen"
              class="absolute right-0 mt-2 w-48 bg-white dark:bg-dark-bg-secondary shadow-lg rounded-lg border border-gray-200 dark:border-dark-border overflow-hidden z-50">
           <div class="p-3 border-b border-gray-200 dark:border-dark-border">
-            <div class="font-medium text-gray-900 dark:text-dark-text-primary">{{ user?.name || 'User' }}</div>
+            <div class="font-medium text-gray-900 dark:text-dark-text-primary">{{ userProfile?.user?.name || 'User' }}</div>
             <div
-              class="text-sm text-gray-500 dark:text-dark-text-secondary truncate">{{ user?.email || user?.phone_number }}
+              class="text-sm text-gray-500 dark:text-dark-text-secondary truncate">{{ userProfile?.user?.email || userProfile?.user?.phone_number }}
             </div>
           </div>
 

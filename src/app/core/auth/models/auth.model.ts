@@ -1,4 +1,4 @@
-import {User} from './user.model';
+import {UserProfile} from './user-profile.model';
 
 export interface LoginCredentials {
   phone_number: string;
@@ -17,6 +17,6 @@ export interface RegisterCredentials {
 export interface AuthResponse {
   access: string;
   refresh: string;
-  user: User;
+  user: UserProfile;
   message: string;
 }

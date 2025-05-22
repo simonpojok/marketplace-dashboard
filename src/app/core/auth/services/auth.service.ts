@@ -10,6 +10,7 @@ import {
 } from '../models/auth.model';
 import { User } from '../models/user.model';
 import {Tokens} from '../models/tokens.model';
+import {UserProfile} from '../models/user-profile.model';
 
 @Injectable({
   providedIn: 'root'
@@ -21,12 +22,12 @@ export class AuthService {
   private tokenKey = environment.tokenKey;
 
   // Use signals for reactive state management
-  private userSignal = signal<User | null>(null);
+  private userProfile = signal<UserProfile | null>(null);
   private isAuthenticatedSignal = signal<boolean>(false);
   private isLoadingSignal = signal<boolean>(false);
 
   // Expose read-only signals
-  readonly user = this.userSignal.asReadonly();
+  readonly profile = this.userProfile.asReadonly();
   readonly isAuthenticated = this.isAuthenticatedSignal.asReadonly();
   readonly isLoading = this.isLoadingSignal.asReadonly();
 
@@ -98,11 +99,10 @@ export class AuthService {
     );
   }
 
-  getProfile(): Observable<User> {
-    return this.http.get<User>(`${this.apiUrl}/users/profile/`).pipe(
+  getProfile(): Observable<UserProfile> {
+    return this.http.get<UserProfile>(`${this.apiUrl}/users/profile/`).pipe(
       tap(user => {
-        console.log(user);
-        this.userSignal.set(user);
+        this.userProfile.set(user);
       })
     );
   }
@@ -136,7 +136,7 @@ export class AuthService {
   private handleAuthSuccess(response: AuthResponse): void {
     const { access, refresh, user } = response;
     this.storeTokens({ access, refresh });
-    this.userSignal.set(user);
+    this.userProfile.set(user);
     this.isAuthenticatedSignal.set(true);
     this.isLoadingSignal.set(false);
     this.router.navigate(['/dashboard']).then(console.log);
@@ -148,7 +148,7 @@ export class AuthService {
 
   private clearAuthState(): void {
     localStorage.removeItem(this.tokenKey);
-    this.userSignal.set(null);
+    this.userProfile.set(null);
     this.isAuthenticatedSignal.set(false);
     this.isLoadingSignal.set(false);
     this.router.navigate(['/auth/login']).then(console.log);

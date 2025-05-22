@@ -7,6 +7,7 @@ import {environment} from '../../../../../environments/environment';
 import {AuthService} from '../../../../core/auth/services/auth.service';
 import {ToastService} from '../../../../core/services/toast.service';
 import {User} from '../../../../core/auth/models/user.model';
+import {UserProfile} from '../../../../core/auth/models/user-profile.model';
 
 @Component({
   selector: 'app-profile-settings',
@@ -27,7 +28,7 @@ export class ProfileSettingsComponent implements OnInit {
   protected submitted = false;
 
   // User data
-  protected user: User | null = null;
+  protected userProfile: UserProfile | null = null;
 
   // Form group
   protected profileForm = this.fb.group({
@@ -46,15 +47,15 @@ export class ProfileSettingsComponent implements OnInit {
     this.isLoading.set(true);
 
     // Get user data from auth service
-    this.user = this.authService.user();
+    this.userProfile = this.authService.profile();
 
-    if (this.user) {
+    if (this.userProfile) {
       // Populate form with user data
       this.profileForm.patchValue({
-        name: this.user.name || '',
-        phone_number: this.user.phone_number || '',
-        email: this.user.email || '',
-        address: this.user.address || ''
+        name: this.userProfile.user.name || '',
+        phone_number: this.userProfile.user.phone_number || '',
+        email: this.userProfile.user.email || '',
+        address: this.userProfile.user.address || ''
       });
 
       this.isLoading.set(false);
@@ -62,14 +63,14 @@ export class ProfileSettingsComponent implements OnInit {
       // If user data is not available in the auth service, fetch it
       this.authService.getProfile().subscribe({
         next: (user) => {
-          this.user = user;
+          this.userProfile = user;
 
           // Populate form with user data
           this.profileForm.patchValue({
-            name: user.name || '',
-            phone_number: user.phone_number || '',
-            email: user.email || '',
-            address: user.address || ''
+            name: user.user.name || '',
+            phone_number: user.user.phone_number || '',
+            email: user.user.email || '',
+            address: user.user.address || ''
           });
 
           this.isLoading.set(false);
@@ -135,19 +136,19 @@ export class ProfileSettingsComponent implements OnInit {
     this.submitted = false;
 
     // Reset form to original values
-    if (this.user) {
+    if (this.userProfile) {
       this.profileForm.patchValue({
-        name: this.user.name || '',
-        phone_number: this.user.phone_number || '',
-        email: this.user.email || '',
-        address: this.user.address || '',
+        name: this.userProfile.user.name || '',
+        phone_number: this.userProfile.user.phone_number || '',
+        email: this.userProfile.user.email || '',
+        address: this.userProfile.user.address || '',
         bio: ''
       });
     }
   }
 
   protected getInitials(): string {
-    const name = this.user?.name || 'User';
+    const name = this.userProfile?.user.name || 'User';
 
     return name
       .split(' ')
