@@ -1,4 +1,4 @@
-import {Component, Input, signal} from '@angular/core';
+import {Component, Input} from '@angular/core';
 import {CommonModule} from '@angular/common';
 import {FormArray, FormBuilder, FormGroup, ReactiveFormsModule, Validators} from '@angular/forms';
 
@@ -7,13 +7,7 @@ import {FormArray, FormBuilder, FormGroup, ReactiveFormsModule, Validators} from
   standalone: true,
   imports: [CommonModule, ReactiveFormsModule],
   templateUrl: 'product-variations.component.html',
-  styles: [`
-    @media (max-width: 640px) {
-      .grid {
-        grid-template-columns: 1fr !important;
-      }
-    }
-  `]
+  styles: []
 })
 export class ProductVariationsComponent {
   @Input() variationsFormArray!: FormArray;
@@ -27,7 +21,7 @@ export class ProductVariationsComponent {
   protected addVariation(): void {
     const variationGroup = this.fb.group({
       id: [null],
-      sku: [''],
+      sku: [''], // Auto-generated
       size: [''],
       color: [''],
       color_code: [''],
@@ -36,7 +30,6 @@ export class ProductVariationsComponent {
       custom_attribute: [''],
       price_adjustment: [0],
       stock_quantity: [0, [Validators.required, Validators.min(0)]],
-      image: [''],
       is_active: [true]
     });
 
@@ -102,5 +95,31 @@ export class ProductVariationsComponent {
       return variationGroup.get('custom_attribute')?.value || 'Custom';
     }
     return this.getSizeChoices().find(s => s.value === size)?.label || size;
+  }
+
+  protected getVariationSummary(variationGroup: FormGroup): string {
+    const attributes = [];
+
+    const size = variationGroup.get('size')?.value;
+    if (size) {
+      attributes.push(this.getDisplaySize(variationGroup));
+    }
+
+    const color = variationGroup.get('color')?.value;
+    if (color) {
+      attributes.push(color);
+    }
+
+    const memory = variationGroup.get('memory')?.value;
+    if (memory) {
+      attributes.push(memory);
+    }
+
+    const storage = variationGroup.get('storage')?.value;
+    if (storage) {
+      attributes.push(storage);
+    }
+
+    return attributes.length > 0 ? attributes.join(' • ') : 'No attributes set';
   }
 }
