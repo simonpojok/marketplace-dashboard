@@ -41,7 +41,7 @@ export class CustomersService {
       });
     }
 
-    return this.http.get<CustomerOrdersResponse>(`${this.apiOrdersUrl}/customer/${id}/`, {params: httpParams});
+    return this.http.get<CustomerOrdersResponse>(`${this.apiOrdersUrl}/orders/customer/${id}/`, {params: httpParams});
   }
 
   updateCustomer(id: string, data: Partial<Customer>): Observable<Customer> {
