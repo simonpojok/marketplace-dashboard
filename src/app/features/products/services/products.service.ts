@@ -9,7 +9,7 @@ import {Product, Category, Brand, ProductListResponse} from '../models/product.m
 })
 export class ProductsService {
   private http = inject(HttpClient);
-  private apiUrl = `${environment.apiUrl}${environment.apiVersion}/products`;
+  private apiUrl = `${environment.apiUrl}${environment.apiVersion}/admin`;
 
   // Products
   getProducts(params?: any): Observable<ProductListResponse> {
