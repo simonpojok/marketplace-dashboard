@@ -60,3 +60,4 @@ For more information on using the Angular CLI, including detailed command refere
 
 
 scp -r dist/marketplace-dashboard/browser/* root@38.242.248.94:/var/www/marketplace-dashboard/
+ng build --configuration production

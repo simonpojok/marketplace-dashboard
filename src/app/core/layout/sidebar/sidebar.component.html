@@ -16,11 +16,12 @@
             class="flex items-center px-3 py-2 rounded-lg text-gray-700 dark:text-dark-text-primary hover:bg-gray-100 dark:hover:bg-gray-700 group transition-colors duration-200"
             [title]="collapsed ? item.label : ''"
           >
-            <!-- Icon -->
-            <span
-              class="flex-shrink-0 w-5 h-5"
-              [innerHTML]="item.icon"
-            ></span>
+            <!-- Icon with theme filtering -->
+            <img
+              [src]="getIconPath(item.icon)"
+              [alt]="item.label"
+              class="flex-shrink-0 w-5 h-5 icon-themed"
+            />
             <!-- Label -->
             <span
               class="ml-3 transition-opacity duration-300"
@@ -41,11 +42,12 @@
               [title]="collapsed ? item.label : ''"
             >
               <div class="flex items-center">
-                <!-- Icon -->
-                <span
-                  class="flex-shrink-0 w-5 h-5"
-                  [innerHTML]="item.icon"
-                ></span>
+                <!-- Icon with theme filtering -->
+                <img
+                  [src]="getIconPath(item.icon)"
+                  [alt]="item.label"
+                  class="flex-shrink-0 w-5 h-5 icon-themed"
+                />
                 <!-- Label -->
                 <span
                   class="ml-3 transition-opacity duration-300"
@@ -80,11 +82,12 @@
                 class="block px-3 py-2 rounded-lg text-gray-700 dark:text-dark-text-primary hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors duration-200"
               >
                 <div class="flex items-center">
-                      <span
-                        *ngIf="child.icon"
-                        class="flex-shrink-0 mr-2 w-4 h-4"
-                        [innerHTML]="child.icon"
-                      ></span>
+                  <img
+                    *ngIf="child.icon"
+                    [src]="getIconPath(child.icon)"
+                    [alt]="child.label"
+                    class="flex-shrink-0 mr-2 w-4 h-4 icon-themed"
+                  />
                   {{ child.label }}
                 </div>
               </a>
@@ -104,11 +107,12 @@
                 routerLinkActive="bg-primary-50 dark:bg-primary-900/20 text-primary-700 dark:text-primary-400"
                 class="flex items-center px-3 py-2 text-sm text-gray-700 dark:text-dark-text-primary hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors duration-200"
               >
-                    <span
-                      *ngIf="child.icon"
-                      class="flex-shrink-0 mr-2 w-4 h-4"
-                      [innerHTML]="child.icon"
-                    ></span>
+                <img
+                  *ngIf="child.icon"
+                  [src]="getIconPath(child.icon)"
+                  [alt]="child.label"
+                  class="flex-shrink-0 mr-2 w-4 h-4 icon-themed"
+                />
                 {{ child.label }}
               </a>
             </div>
