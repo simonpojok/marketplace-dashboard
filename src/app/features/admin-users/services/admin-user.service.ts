@@ -57,7 +57,7 @@ export class AdminUserService {
    * Create a new admin user
    */
   createAdminUser(userData: CreateAdminUserRequest): Observable<{ message: string; user: AdminUserDetail }> {
-    return this.http.post<{ message: string; user: AdminUserDetail }>(this.apiUrl, userData);
+    return this.http.post<{ message: string; user: AdminUserDetail }>(`${this.apiUrl}/`, userData);
   }
 
   /**
