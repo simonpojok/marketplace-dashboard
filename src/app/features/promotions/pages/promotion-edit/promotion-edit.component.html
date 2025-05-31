@@ -1,0 +1,378 @@
+<div class="space-y-6">
+  <!-- Page Header -->
+  <div class="flex items-center justify-between">
+    <div>
+      <h1 class="text-2xl font-bold text-gray-900 dark:text-white">Edit Promotion</h1>
+      <p class="mt-1 text-sm text-gray-600 dark:text-gray-300">
+        Update promotion details and settings
+      </p>
+    </div>
+    <button
+      type="button"
+      (click)="onCancel()"
+      class="flex items-center px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg shadow-sm text-sm font-medium text-gray-700 dark:text-gray-200 bg-white dark:bg-dark-bg-secondary hover:bg-gray-50 dark:hover:bg-gray-700"
+    >
+      <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+      </svg>
+      Back to Promotion
+    </button>
+  </div>
+
+  <!-- Loading State -->
+  <div *ngIf="isLoading()" class="flex justify-center py-12">
+    <div class="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-primary-500"></div>
+  </div>
+
+  <!-- Promotion Form -->
+  <form *ngIf="!isLoading()" [formGroup]="promotionForm" (ngSubmit)="onSubmit()" class="space-y-6">
+    <!-- Basic Information -->
+    <div class="bg-white dark:bg-dark-bg-secondary p-6 rounded-lg border border-gray-200 dark:border-dark-border">
+      <h3 class="text-lg font-medium text-gray-900 dark:text-white mb-4">Basic Information</h3>
+
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <!-- Campaign (Read-only) -->
+        <div class="md:col-span-2">
+          <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+            Campaign
+          </label>
+          <input
+            type="text"
+            [value]="promotion()?.campaign_name || ''"
+            readonly
+            class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg shadow-sm bg-gray-50 dark:bg-gray-700 text-gray-500 dark:text-gray-400"
+          >
+          <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">Campaign cannot be changed after creation</p>
+        </div>
+
+        <!-- Promotion Name -->
+        <div class="md:col-span-2">
+          <label for="name" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+            Promotion Name *
+          </label>
+          <input
+            type="text"
+            id="name"
+            formControlName="name"
+            class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500 dark:bg-gray-800 dark:text-white"
+            placeholder="Enter promotion name"
+          >
+          <div *ngIf="promotionForm.get('name')?.invalid && promotionForm.get('name')?.touched" class="mt-1 text-sm text-red-600 dark:text-red-400">
+            Promotion name is required
+          </div>
+        </div>
+
+        <!-- Description -->
+        <div class="md:col-span-2">
+          <label for="description" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+            Description
+          </label>
+          <textarea
+            id="description"
+            formControlName="description"
+            rows="3"
+            class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500 dark:bg-gray-800 dark:text-white"
+            placeholder="Describe the promotion"
+          ></textarea>
+        </div>
+      </div>
+    </div>
+
+    <!-- Discount Configuration -->
+    <div class="bg-white dark:bg-dark-bg-secondary p-6 rounded-lg border border-gray-200 dark:border-dark-border">
+      <h3 class="text-lg font-medium text-gray-900 dark:text-white mb-4">Discount Configuration</h3>
+
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <!-- Discount Type (Read-only if has usage) -->
+        <div>
+          <label for="discount_type" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+            Discount Type *
+          </label>
+          <select
+            id="discount_type"
+            formControlName="discount_type"
+            [disabled]="hasUsage()"
+            (change)="onDiscountTypeChange()"
+            class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500 dark:bg-gray-800 dark:text-white disabled:bg-gray-50 disabled:text-gray-500 dark:disabled:bg-gray-700"
+          >
+            <option value="">Select discount type</option>
+            <option *ngFor="let type of discountTypeOptions" [value]="type.value">{{ type.label }}</option>
+          </select>
+          <div *ngIf="hasUsage()" class="mt-1 text-xs text-yellow-600 dark:text-yellow-400">
+            Discount type cannot be changed as this promotion has been used
+          </div>
+          <div *ngIf="promotionForm.get('discount_type')?.invalid && promotionForm.get('discount_type')?.touched" class="mt-1 text-sm text-red-600 dark:text-red-400">
+            Discount type is required
+          </div>
+        </div>
+
+        <!-- Discount Value -->
+        <div *ngIf="showDiscountValue()">
+          <label for="discount_value" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+            Discount Value *
+            <span class="text-xs text-gray-500 dark:text-gray-400">
+                  ({{ getDiscountValueLabel() }})
+                </span>
+          </label>
+          <input
+            type="number"
+            id="discount_value"
+            formControlName="discount_value"
+            [min]="0"
+            [max]="getDiscountValueMax()"
+            step="0.01"
+            class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500 dark:bg-gray-800 dark:text-white"
+            [placeholder]="getDiscountValuePlaceholder()"
+          >
+          <div *ngIf="promotionForm.get('discount_value')?.invalid && promotionForm.get('discount_value')?.touched" class="mt-1 text-sm text-red-600 dark:text-red-400">
+            Valid discount value is required
+          </div>
+        </div>
+
+        <!-- Max Discount Amount (for percentage) -->
+        <div *ngIf="selectedDiscountType() === 'percentage'" class="md:col-span-2">
+          <label for="max_discount_amount" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+            Maximum Discount Amount (UGX)
+          </label>
+          <input
+            type="number"
+            id="max_discount_amount"
+            formControlName="max_discount_amount"
+            min="0"
+            class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500 dark:bg-gray-800 dark:text-white"
+            placeholder="No maximum limit"
+          >
+        </div>
+
+        <!-- Buy X Get Y Fields -->
+        <div *ngIf="selectedDiscountType() === 'buy_x_get_y'" class="md:col-span-2">
+          <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div>
+              <label for="buy_quantity" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                Buy Quantity *
+              </label>
+              <input
+                type="number"
+                id="buy_quantity"
+                formControlName="buy_quantity"
+                min="1"
+                class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500 dark:bg-gray-800 dark:text-white"
+                placeholder="2"
+              >
+            </div>
+            <div>
+              <label for="get_quantity" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                Get Quantity *
+              </label>
+              <input
+                type="number"
+                id="get_quantity"
+                formControlName="get_quantity"
+                min="1"
+                class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500 dark:bg-gray-800 dark:text-white"
+                placeholder="1"
+              >
+            </div>
+            <div>
+              <label for="get_discount_percentage" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                Get Discount (%)
+              </label>
+              <input
+                type="number"
+                id="get_discount_percentage"
+                formControlName="get_discount_percentage"
+                min="0"
+                max="100"
+                class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500 dark:bg-gray-800 dark:text-white"
+                placeholder="100"
+              >
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Apply To Section -->
+    <div class="bg-white dark:bg-dark-bg-secondary p-6 rounded-lg border border-gray-200 dark:border-dark-border">
+      <h3 class="text-lg font-medium text-gray-900 dark:text-white mb-4">Apply To</h3>
+
+      <div class="space-y-4">
+        <!-- Apply To -->
+        <div>
+          <label for="apply_to" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+            Apply Discount To *
+          </label>
+          <select
+            id="apply_to"
+            formControlName="apply_to"
+            [disabled]="hasUsage()"
+            (change)="onApplyToChange()"
+            class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500 dark:bg-gray-800 dark:text-white disabled:bg-gray-50 disabled:text-gray-500 dark:disabled:bg-gray-700"
+          >
+            <option value="">Select what to apply discount to</option>
+            <option *ngFor="let option of applyToOptions" [value]="option.value">{{ option.label }}</option>
+          </select>
+          <div *ngIf="hasUsage()" class="mt-1 text-xs text-yellow-600 dark:text-yellow-400">
+            Apply to selection cannot be changed as this promotion has been used
+          </div>
+          <div *ngIf="promotionForm.get('apply_to')?.invalid && promotionForm.get('apply_to')?.touched" class="mt-1 text-sm text-red-600 dark:text-red-400">
+            Apply to selection is required
+          </div>
+        </div>
+
+        <!-- Current Selections Display -->
+        <div *ngIf="promotion() && selectedApplyTo() !== 'order'" class="p-4 bg-gray-50 dark:bg-gray-700 rounded-lg">
+          <h4 class="text-sm font-medium text-gray-900 dark:text-white mb-2">
+            Current {{ selectedApplyTo() | titlecase }} Selection:
+          </h4>
+          <div class="text-sm text-gray-600 dark:text-gray-400">
+            <div *ngIf="selectedApplyTo() === 'products' && promotion()?.products_details?.length">
+              {{ promotion()?.products_details?.length }} products selected
+            </div>
+            <div *ngIf="selectedApplyTo() === 'categories' && promotion()?.categories_details?.length">
+              {{ promotion()?.categories_details?.length }} categories selected
+            </div>
+            <div *ngIf="selectedApplyTo() === 'brands' && promotion()?.brands_details?.length">
+              {{ promotion()?.brands_details?.length }} brands selected
+            </div>
+            <div *ngIf="!hasSelections()">
+              No specific {{ selectedApplyTo() }} selected
+            </div>
+          </div>
+          <p class="text-xs text-gray-500 dark:text-gray-400 mt-2">
+            Product/Category/Brand selection editing will be implemented in future updates
+          </p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Conditions -->
+    <div class="bg-white dark:bg-dark-bg-secondary p-6 rounded-lg border border-gray-200 dark:border-dark-border">
+      <h3 class="text-lg font-medium text-gray-900 dark:text-white mb-4">Conditions</h3>
+
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <!-- Minimum Quantity -->
+        <div>
+          <label for="minimum_quantity" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+            Minimum Quantity
+          </label>
+          <input
+            type="number"
+            id="minimum_quantity"
+            formControlName="minimum_quantity"
+            min="1"
+            class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500 dark:bg-gray-800 dark:text-white"
+            placeholder="No minimum"
+          >
+        </div>
+
+        <!-- Minimum Amount -->
+        <div>
+          <label for="minimum_amount" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+            Minimum Amount (UGX)
+          </label>
+          <input
+            type="number"
+            id="minimum_amount"
+            formControlName="minimum_amount"
+            min="0"
+            class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500 dark:bg-gray-800 dark:text-white"
+            placeholder="No minimum"
+          >
+        </div>
+      </div>
+    </div>
+
+    <!-- Settings -->
+    <div class="bg-white dark:bg-dark-bg-secondary p-6 rounded-lg border border-gray-200 dark:border-dark-border">
+      <h3 class="text-lg font-medium text-gray-900 dark:text-white mb-4">Settings</h3>
+
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <!-- Priority -->
+        <div>
+          <label for="priority" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+            Priority
+          </label>
+          <input
+            type="number"
+            id="priority"
+            formControlName="priority"
+            min="0"
+            max="10"
+            class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500 dark:bg-gray-800 dark:text-white"
+            placeholder="0"
+          >
+          <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">Higher values = higher priority</p>
+        </div>
+
+        <!-- Checkboxes -->
+        <div class="space-y-4">
+          <div class="flex items-center">
+            <input
+              type="checkbox"
+              id="is_active"
+              formControlName="is_active"
+              class="h-4 w-4 text-primary-600 focus:ring-primary-500 border-gray-300 rounded"
+            >
+            <label for="is_active" class="ml-2 block text-sm text-gray-700 dark:text-gray-300">
+              Active promotion
+            </label>
+          </div>
+
+          <div class="flex items-center">
+            <input
+              type="checkbox"
+              id="is_stackable"
+              formControlName="is_stackable"
+              class="h-4 w-4 text-primary-600 focus:ring-primary-500 border-gray-300 rounded"
+            >
+            <label for="is_stackable" class="ml-2 block text-sm text-gray-700 dark:text-gray-300">
+              Can be combined with other promotions
+            </label>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Usage Warning -->
+    <div *ngIf="hasUsage()" class="bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-700 rounded-lg p-4">
+      <div class="flex">
+        <div class="flex-shrink-0">
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-yellow-400" viewBox="0 0 20 20" fill="currentColor">
+            <path fill-rule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clip-rule="evenodd" />
+          </svg>
+        </div>
+        <div class="ml-3">
+          <h3 class="text-sm font-medium text-yellow-800 dark:text-yellow-200">
+            Promotion Has Been Used
+          </h3>
+          <div class="mt-2 text-sm text-yellow-700 dark:text-yellow-300">
+            <p>This promotion has been used {{ promotion()?.usage_count }} times. Some fields cannot be modified to maintain data integrity.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Form Actions -->
+    <div class="flex justify-end space-x-3 pt-6 border-t border-gray-200 dark:border-gray-700">
+      <button
+        type="button"
+        (click)="onCancel()"
+        class="px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg shadow-sm text-sm font-medium text-gray-700 dark:text-gray-200 bg-white dark:bg-dark-bg-secondary hover:bg-gray-50 dark:hover:bg-gray-700"
+      >
+        Cancel
+      </button>
+      <button
+        type="submit"
+        [disabled]="promotionForm.invalid || isSubmitting()"
+        class="px-4 py-2 border border-transparent rounded-lg shadow-sm text-sm font-medium text-white bg-primary-600 hover:bg-primary-700 disabled:opacity-50 disabled:cursor-not-allowed"
+      >
+        <svg *ngIf="isSubmitting()" class="animate-spin -ml-1 mr-2 h-4 w-4 text-white inline-block" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+          <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+          <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+        </svg>
+        {{ isSubmitting() ? 'Updating...' : 'Update Promotion' }}
+      </button>
+    </div>
+  </form>
+</div>

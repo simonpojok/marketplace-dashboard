@@ -48,7 +48,13 @@ export const routes: Routes = [
         loadChildren: () => import('./features/settings/settings.routes')
           .then(m => m.SETTINGS_ROUTES),
         title: 'Settings'
-      }
+      },
+      {
+        path: 'promotions',
+        loadChildren: () => import('./features/promotions/promotions.routes')
+          .then(m => m.PROMOTIONS_ROUTES),
+        title: 'Promotions'
+      },
     ]
   },
   {

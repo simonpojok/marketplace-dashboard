@@ -149,14 +149,14 @@ export class PromotionsService {
     return this.http.post<Coupon>(`${this.apiUrl}/admin/coupons/`, data);
   }
 
-  createBulkCoupons(data: {
+  createBulkCoupons(data: Partial<{
     campaign: string;
     count: number;
     coupon_type?: string;
     max_uses?: number;
     max_uses_per_user?: number;
     prefix?: string;
-  }): Observable<{ message: string; coupons: Coupon[] }> {
+  }>): Observable<{ message: string; coupons: Coupon[] }> {
     return this.http.post<{ message: string; coupons: Coupon[] }>(
       `${this.apiUrl}/admin/coupons/bulk_create/`, data
     );

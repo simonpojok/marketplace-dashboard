@@ -1,0 +1,31 @@
+<div class="space-y-6">
+  <!-- Page Header -->
+  <div class="flex items-center justify-between">
+    <div>
+      <h1 class="text-2xl font-bold text-gray-900 dark:text-white">Create Campaign</h1>
+      <p class="mt-1 text-sm text-gray-600 dark:text-gray-300">
+        Create a new marketing campaign with promotions and coupons
+      </p>
+    </div>
+    <button
+      type="button"
+      (click)="onCancel()"
+      class="flex items-center px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg shadow-sm text-sm font-medium text-gray-700 dark:text-gray-200 bg-white dark:bg-dark-bg-secondary hover:bg-gray-50 dark:hover:bg-gray-700"
+    >
+      <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+      </svg>
+      Back to Campaigns
+    </button>
+  </div>
+
+  <!-- Campaign Form -->
+  <div class="bg-white dark:bg-dark-bg-secondary rounded-lg border border-gray-200 dark:border-dark-border shadow-sm">
+    <app-campaign-form
+      [isEdit]="false"
+      [isSubmitting]="isSubmitting"
+      (formSubmit)="onSubmit($event)"
+      (formCancel)="onCancel()"
+    ></app-campaign-form>
+  </div>
+</div>

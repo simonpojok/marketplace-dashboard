@@ -1,0 +1,211 @@
+<div class="space-y-6">
+  <!-- Page Header -->
+  <div class="flex flex-col md:flex-row md:items-center md:justify-between">
+    <div>
+      <h1 class="text-2xl font-bold text-gray-900 dark:text-white">Campaign Analytics</h1>
+      <p class="mt-1 text-sm text-gray-600 dark:text-gray-300">
+        Performance insights and metrics for {{ analytics()?.campaign?.name }}
+      </p>
+    </div>
+    <div class="mt-4 md:mt-0 flex gap-3">
+      <button
+        type="button"
+        (click)="refreshAnalytics()"
+        [disabled]="isLoading()"
+        class="flex items-center px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg shadow-sm text-sm font-medium text-gray-700 dark:text-gray-200 bg-white dark:bg-dark-bg-secondary hover:bg-gray-50 dark:hover:bg-gray-700 disabled:opacity-50"
+      >
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-2" fill="none" viewBox="0 0 24 24"
+             stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/>
+        </svg>
+        Refresh
+      </button>
+      <a
+        [routerLink]="['/promotions/campaigns', campaignId]"
+        class="flex items-center px-4 py-2 border border-transparent rounded-lg text-sm font-medium text-white bg-primary-600 hover:bg-primary-700"
+      >
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-2" fill="none" viewBox="0 0 24 24"
+             stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"/>
+        </svg>
+        Back to Campaign
+      </a>
+    </div>
+  </div>
+
+  <!-- Loading State -->
+  <div *ngIf="isLoading()" class="flex justify-center py-12">
+    <div class="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-primary-500"></div>
+  </div>
+
+  <!-- Analytics Content -->
+  <div *ngIf="!isLoading() && analytics()" class="space-y-6">
+    <!-- Campaign Overview -->
+    <div class="bg-white dark:bg-dark-bg-secondary p-6 rounded-lg border border-gray-200 dark:border-dark-border">
+      <h3 class="text-lg font-medium text-gray-900 dark:text-white mb-4">Campaign Overview</h3>
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+        <div class="text-center">
+          <p
+            class="text-2xl font-bold text-gray-900 dark:text-white">{{ analytics()?.campaign?.total_usage_count || 0 }}</p>
+          <p class="text-sm text-gray-500 dark:text-gray-400">Total Uses</p>
+        </div>
+        <div class="text-center">
+          <p
+            class="text-2xl font-bold text-primary-600 dark:text-primary-400">{{ formatCurrency(analytics()?.financial_impact?.total_discount_given || 0) }}</p>
+          <p class="text-sm text-gray-500 dark:text-gray-400">Total Discount Given</p>
+        </div>
+        <div class="text-center">
+          <p
+            class="text-2xl font-bold text-green-600 dark:text-green-400">{{ analytics()?.financial_impact?.total_orders_affected || 0 }}</p>
+          <p class="text-sm text-gray-500 dark:text-gray-400">Orders Affected</p>
+        </div>
+        <div class="text-center">
+          <p
+            class="text-2xl font-bold text-indigo-600 dark:text-indigo-400">{{ analytics()?.user_engagement?.unique_users || 0 }}</p>
+          <p class="text-sm text-gray-500 dark:text-gray-400">Unique Users</p>
+        </div>
+      </div>
+
+      <!-- Usage Progress -->
+      <div *ngIf="analytics()?.campaign?.max_usage_total" class="mt-6">
+        <div class="flex justify-between text-sm text-gray-600 dark:text-gray-400 mb-2">
+          <span>Campaign Usage</span>
+          <span>{{ analytics()?.campaign?.total_usage_count }} / {{ analytics()?.campaign?.max_usage_total }}</span>
+        </div>
+        <div class="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-3">
+          <div
+            class="bg-primary-500 h-3 rounded-full"
+            [style.width.%]="analytics()?.campaign?.usage_percentage || 0"
+          ></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Financial Impact -->
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+      <div class="bg-white dark:bg-dark-bg-secondary p-6 rounded-lg border border-gray-200 dark:border-dark-border">
+        <h3 class="text-lg font-medium text-gray-900 dark:text-white mb-4">Financial Impact</h3>
+        <div class="space-y-4">
+          <div class="flex justify-between">
+            <span class="text-sm text-gray-600 dark:text-gray-400">Total Discount Given</span>
+            <span
+              class="text-sm font-medium text-gray-900 dark:text-white">{{ formatCurrency(analytics()?.financial_impact?.total_discount_given || 0) }}</span>
+          </div>
+          <div class="flex justify-between">
+            <span class="text-sm text-gray-600 dark:text-gray-400">Average Discount per Order</span>
+            <span
+              class="text-sm font-medium text-gray-900 dark:text-white">{{ formatCurrency(analytics()?.financial_impact?.average_discount_per_order || 0) }}</span>
+          </div>
+          <div class="flex justify-between">
+            <span class="text-sm text-gray-600 dark:text-gray-400">Average Order Value</span>
+            <span
+              class="text-sm font-medium text-gray-900 dark:text-white">{{ formatCurrency(analytics()?.financial_impact?.average_order_value || 0) }}</span>
+          </div>
+          <div class="flex justify-between">
+            <span class="text-sm text-gray-600 dark:text-gray-400">Orders Affected</span>
+            <span
+              class="text-sm font-medium text-gray-900 dark:text-white">{{ analytics()?.financial_impact?.total_orders_affected || 0 }}</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="bg-white dark:bg-dark-bg-secondary p-6 rounded-lg border border-gray-200 dark:border-dark-border">
+        <h3 class="text-lg font-medium text-gray-900 dark:text-white mb-4">User Engagement</h3>
+        <div class="space-y-4">
+          <div class="flex justify-between">
+            <span class="text-sm text-gray-600 dark:text-gray-400">Unique Users</span>
+            <span
+              class="text-sm font-medium text-gray-900 dark:text-white">{{ analytics()?.user_engagement?.unique_users || 0 }}</span>
+          </div>
+          <div class="flex justify-between">
+            <span class="text-sm text-gray-600 dark:text-gray-400">Repeat Users</span>
+            <span
+              class="text-sm font-medium text-gray-900 dark:text-white">{{ analytics()?.user_engagement?.repeat_users || 0 }}</span>
+          </div>
+          <div class="flex justify-between">
+            <span class="text-sm text-gray-600 dark:text-gray-400">Repeat Rate</span>
+            <span class="text-sm font-medium text-gray-900 dark:text-white">{{ getRepeatRate() }}%</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Promotion Breakdown -->
+    <div class="bg-white dark:bg-dark-bg-secondary p-6 rounded-lg border border-gray-200 dark:border-dark-border">
+      <h3 class="text-lg font-medium text-gray-900 dark:text-white mb-4">Promotion Performance</h3>
+      <div
+        *ngIf="analytics()?.promotion_breakdown && analytics()?.promotion_breakdown?.length || 0 > 0; else noPromotions"
+        class="space-y-4">
+        <div
+          *ngFor="let promotion of analytics()?.promotion_breakdown"
+          class="flex items-center justify-between p-4 bg-gray-50 dark:bg-gray-700 rounded-lg"
+        >
+          <div>
+            <h4 class="font-medium text-gray-900 dark:text-white">{{ promotion.name }}</h4>
+            <p class="text-sm text-gray-600 dark:text-gray-400">{{ promotion.discount_type }}</p>
+          </div>
+          <div class="text-right">
+            <p
+              class="text-lg font-semibold text-gray-900 dark:text-white">{{ formatCurrency(promotion.total_discount) }}</p>
+            <p class="text-sm text-gray-500 dark:text-gray-400">{{ promotion.usage_count }} uses</p>
+          </div>
+        </div>
+      </div>
+      <ng-template #noPromotions>
+        <div class="text-center py-8">
+          <p class="text-gray-500 dark:text-gray-400">No promotion data available</p>
+        </div>
+      </ng-template>
+    </div>
+
+    <!-- Coupon Breakdown -->
+    <div class="bg-white dark:bg-dark-bg-secondary p-6 rounded-lg border border-gray-200 dark:border-dark-border">
+      <h3 class="text-lg font-medium text-gray-900 dark:text-white mb-4">Coupon Performance</h3>
+      <div *ngIf="analytics()?.coupon_breakdown && analytics()?.coupon_breakdown?.length || 0 > 0; else noCoupons"
+           class="space-y-4">
+        <div
+          *ngFor="let coupon of analytics()?.coupon_breakdown"
+          class="flex items-center justify-between p-4 bg-gray-50 dark:bg-gray-700 rounded-lg"
+        >
+          <div>
+            <h4 class="font-medium text-gray-900 dark:text-white font-mono">{{ coupon.code }}</h4>
+            <p class="text-sm text-gray-600 dark:text-gray-400">{{ coupon.coupon_type }}</p>
+          </div>
+          <div class="text-right">
+            <p
+              class="text-lg font-semibold text-gray-900 dark:text-white">{{ formatCurrency(coupon.total_discount) }}</p>
+            <p class="text-sm text-gray-500 dark:text-gray-400">
+              {{ coupon.usage_count }}{{ coupon.max_uses ? ' / ' + coupon.max_uses : '' }} uses
+            </p>
+          </div>
+        </div>
+      </div>
+      <ng-template #noCoupons>
+        <div class="text-center py-8">
+          <p class="text-gray-500 dark:text-gray-400">No coupon data available</p>
+        </div>
+      </ng-template>
+    </div>
+  </div>
+
+  <!-- Error State -->
+  <div *ngIf="!isLoading() && !analytics()" class="text-center py-12">
+    <svg xmlns="http://www.w3.org/2000/svg" class="h-12 w-12 mx-auto text-gray-400 dark:text-gray-500 mb-4" fill="none"
+         viewBox="0 0 24 24" stroke="currentColor">
+      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+            d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+    </svg>
+    <h3 class="text-lg font-medium text-gray-900 dark:text-white mb-2">No Analytics Data</h3>
+    <p class="text-sm text-gray-500 dark:text-gray-400 mb-6">
+      Analytics data is not available for this campaign.
+    </p>
+    <button
+      type="button"
+      (click)="refreshAnalytics()"
+      class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-lg text-white bg-primary-600 hover:bg-primary-700"
+    >
+      Retry
+    </button>
+  </div>
+</div>
