@@ -158,7 +158,7 @@ export class AuthService {
     const token = this.getAccessToken();
     if (token) {
       this.isAuthenticatedSignal.set(true);
-      this.getProfile().subscribe();
+      // this.getProfile().subscribe();
     }
   }
 

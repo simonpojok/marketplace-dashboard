@@ -1,4 +1,14 @@
-import { Component, Input, OnChanges, SimpleChanges, inject, AfterViewInit, ElementRef, ViewChild } from '@angular/core';
+import {
+  Component,
+  Input,
+  OnChanges,
+  SimpleChanges,
+  inject,
+  AfterViewInit,
+  ElementRef,
+  ViewChild,
+  effect
+} from '@angular/core';
 import { CommonModule } from '@angular/common';
 import {SalesTrendData} from '../../models/dashboard.model';
 import {ThemeService} from '../../../../core/services/theme.service';
@@ -19,6 +29,18 @@ export class SalesTrendComponent implements OnChanges, AfterViewInit {
   private chart: any = null;
   private themeService = inject(ThemeService);
 
+  constructor() {
+    effect(() => {
+      const theme = this.themeService.theme();
+
+      if (this.chart) {
+        setTimeout(() => {
+          this.renderChart();
+        }, 0);
+      }
+    });
+  }
+
   ngOnChanges(changes: SimpleChanges): void {
     if (changes['salesData'] && !changes['salesData'].firstChange) {
       this.renderChart();
@@ -31,15 +53,6 @@ export class SalesTrendComponent implements OnChanges, AfterViewInit {
         this.renderChart();
       }, 0);
     }
-
-    // Listen for theme changes and re-render chart
-    toObservable(this.themeService.theme).subscribe(() => {
-      if (this.chart) {
-        setTimeout(() => {
-          this.renderChart();
-        }, 0);
-      }
-    });
   }
 
   onPeriodChange(event: Event): void {
