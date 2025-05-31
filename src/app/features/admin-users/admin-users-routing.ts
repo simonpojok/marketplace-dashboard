@@ -1,8 +1,8 @@
 import {Routes} from '@angular/router';
-import {AdminUsersListComponent} from './components/admin-users-list/admin-users-list.component';
-import {CreateAdminUserComponent} from './components/create-admin-user/create-admin-user.component';
-import {AdminUserDetailComponent} from './components/admin-user-detail/admin-user-detail.component';
-import {EditAdminUserComponent} from './components/edit-admin-user/edit-admin-user.component';
+import {AdminUsersListComponent} from './pages/admin-users-list/admin-users-list.component';
+import {CreateAdminUserComponent} from './pages/create-admin-user/create-admin-user.component';
+import {AdminUserDetailComponent} from './pages/admin-user-detail/admin-user-detail.component';
+import {EditAdminUserComponent} from './pages/edit-admin-user/edit-admin-user.component';
 
 export const ADMIN_ROUTES: Routes = [
   {

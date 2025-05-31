@@ -82,7 +82,7 @@ export class SalesTrendComponent implements OnChanges, AfterViewInit {
     import('chart.js').then((ChartModule) => {
       const Chart = ChartModule.Chart;
 
-      // Register required components
+      // Register required pages
       Chart.register(
         ChartModule.CategoryScale,
         ChartModule.LineController,

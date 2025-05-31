@@ -19,7 +19,31 @@ import {ToastContainerComponent} from '../../../shared/components/toast-containe
     FooterComponent,
     ToastContainerComponent
   ],
-  templateUrl: './main-layout.component.html',
+  template: `
+    <div class="h-screen flex flex-col bg-gray-50 dark:bg-dark-bg-primary text-gray-900 dark:text-dark-text-primary">
+      <!-- Header -->
+      <app-header
+        [sidebarCollapsed]="sidebarCollapsed()"
+        (toggleSidebar)="toggleSidebar()"
+      ></app-header>
+
+      <div class="flex flex-1 overflow-hidden">
+        <!-- Sidebar -->
+        <app-sidebar [collapsed]="sidebarCollapsed()"></app-sidebar>
+
+        <!-- Main Content -->
+        <main class="flex-1 overflow-y-auto p-4 md:p-6">
+          <router-outlet></router-outlet>
+        </main>
+      </div>
+
+      <!-- Footer -->
+      <app-footer></app-footer>
+
+      <!-- Toast Container -->
+      <app-toast-container></app-toast-container>
+    </div>
+  `,
   styles: [`
     :host {
       display: block;
