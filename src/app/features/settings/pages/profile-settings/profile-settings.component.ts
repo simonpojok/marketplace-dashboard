@@ -2,12 +2,9 @@ import {Component, OnInit, inject, signal} from '@angular/core';
 import {CommonModule} from '@angular/common';
 import {RouterModule} from '@angular/router';
 import {FormBuilder, FormGroup, ReactiveFormsModule, Validators} from '@angular/forms';
-import {HttpClient} from '@angular/common/http';
-import {environment} from '../../../../../environments/environment';
 import {AuthService} from '../../../../core/auth/services/auth.service';
 import {ToastService} from '../../../../core/services/toast.service';
-import {User} from '../../../../core/auth/models/user.model';
-import {UserProfile} from '../../../../core/auth/models/user-profile.model';
+import {UpdateUserProfileRequest, UserProfile, UserService} from '../../../../core/services/user.service';
 
 @Component({
   selector: 'app-profile-settings',
@@ -18,8 +15,8 @@ import {UserProfile} from '../../../../core/auth/models/user-profile.model';
 })
 export class ProfileSettingsComponent implements OnInit {
   private fb = inject(FormBuilder);
-  private http = inject(HttpClient);
   private authService = inject(AuthService);
+  private userService = inject(UserService);
   private toastService = inject(ToastService);
 
   // Reactive state with signals
@@ -46,90 +43,136 @@ export class ProfileSettingsComponent implements OnInit {
   private loadUserProfile(): void {
     this.isLoading.set(true);
 
-    // Get user data from auth service
-    this.userProfile = this.authService.profile();
+    // Try to get profile from primary endpoint
+    this.userService.getProfile().subscribe({
+      next: (response) => {
+        this.handleProfileLoaded(response);
+      },
+      error: (error) => {
+        console.error('Error loading user profile:', error);
 
-    if (this.userProfile) {
-      // Populate form with user data
-      this.profileForm.patchValue({
-        name: this.userProfile.user.name || '',
-        phone_number: this.userProfile.user.phone_number || '',
-        email: this.userProfile.user.email || '',
-        address: this.userProfile.user.address || ''
-      });
+        // Try alternative endpoint if the first one fails
+        this.tryAlternativeEndpoint();
+      }
+    });
+  }
 
-      this.isLoading.set(false);
-    } else {
-      // If user data is not available in the auth service, fetch it
-      this.authService.getProfile().subscribe({
-        next: (user) => {
-          this.userProfile = user;
+  private tryAlternativeEndpoint(): void {
+    this.userService.getCurrentUser().subscribe({
+      next: (response) => {
+        this.handleProfileLoaded(response);
+      },
+      error: (error) => {
+        console.error('Error loading user profile from alternative endpoint:', error);
+        this.toastService.error('Failed to load user profile from server');
+        this.isLoading.set(false);
+      }
+    });
+  }
 
-          // Populate form with user data
-          this.profileForm.patchValue({
-            name: user.user.name || '',
-            phone_number: user.user.phone_number || '',
-            email: user.user.email || '',
-            address: user.user.address || ''
-          });
+  private handleProfileLoaded(response: UserProfile): void {
+    console.log('Profile data received:', response);
+    this.userProfile = response;
 
-          this.isLoading.set(false);
-        },
-        error: (error) => {
-          console.error('Error loading user profile:', error);
-          this.toastService.error('Failed to load user profile');
-          this.isLoading.set(false);
-        }
-      });
-    }
+    // Populate form with user data
+    this.profileForm.patchValue({
+      name: response.name || '',
+      phone_number: response.phone_number || '',
+      email: response.email || '',
+      address: response.address || '',
+      bio: response.profile?.bio || ''
+    });
+
+    this.isLoading.set(false);
   }
 
   protected onSubmit(): void {
     this.submitted = true;
 
     if (this.profileForm.invalid) {
+      this.toastService.warning('Please fill in all required fields correctly');
       return;
     }
 
     this.isSaving.set(true);
 
     // Prepare data for API
-    const formData = {
-      name: this.profileForm.value.name,
-      email: this.profileForm.value.email,
-      address: this.profileForm.value.address,
-      bio: this.profileForm.value.bio
+    const formData: UpdateUserProfileRequest = {
+      name: this.profileForm.value.name || undefined,
+      email: this.profileForm.value.email || undefined,
+      address: this.profileForm.value.address || undefined,
+      profile: {
+        bio: this.profileForm.value.bio || undefined
+      }
     };
 
-    // API call to update profile
-    const apiUrl = `${environment.apiUrl}${environment.apiVersion}/users/profile/`;
-    this.http.patch(apiUrl, formData).subscribe({
-      next: (response: any) => {
+    // Remove undefined values
+    Object.keys(formData).forEach(key => {
+      if (formData[key as keyof UpdateUserProfileRequest] === undefined) {
+        delete formData[key as keyof UpdateUserProfileRequest];
+      }
+    });
+
+    if (formData.profile && Object.keys(formData.profile).length === 0) {
+      delete formData.profile;
+    }
+
+    this.userService.updateProfile(formData).subscribe({
+      next: (response) => {
         this.isSaving.set(false);
         this.toastService.success('Profile updated successfully');
+        this.submitted = false;
 
-        // Update user data in auth service
-        this.authService.getProfile().subscribe();
+        // Update local user data
+        this.userProfile = response;
+
+        // Update auth service if it has a method to refresh user data
+        this.refreshAuthService();
       },
       error: (error) => {
         this.isSaving.set(false);
-
-        if (error.status === 400) {
-          // Handle validation errors
-          const errors = error.error;
-
-          if (errors.email) {
-            this.toastService.error(`Email: ${errors.email[0]}`);
-          } else {
-            this.toastService.error('Failed to update profile');
-          }
-        } else {
-          this.toastService.error('An error occurred. Please try again later.');
-        }
-
-        console.error('Error updating profile:', error);
+        this.handleUpdateError(error);
       }
     });
+  }
+
+  private handleUpdateError(error: any): void {
+    console.error('Error updating profile:', error);
+
+    if (error.status === 400) {
+      // Handle validation errors
+      const errors = error.error;
+      console.log('Validation errors:', errors);
+
+      if (errors.email) {
+        this.toastService.error(`Email: ${errors.email[0]}`);
+      } else if (errors.name) {
+        this.toastService.error(`Name: ${errors.name[0]}`);
+      } else if (errors.profile?.bio) {
+        this.toastService.error(`Bio: ${errors.profile.bio[0]}`);
+      } else {
+        this.toastService.error('Failed to update profile. Please check your input.');
+      }
+    } else if (error.status === 401) {
+      this.toastService.error('Session expired. Please log in again.');
+      this.authService.logout().subscribe();
+    } else if (error.status === 403) {
+      this.toastService.error('You do not have permission to perform this action.');
+    } else {
+      this.toastService.error('An error occurred. Please try again later.');
+    }
+  }
+
+  private refreshAuthService(): void {
+    // Update auth service if it has a method to refresh user data
+    if (typeof this.authService.refreshProfile === 'function') {
+      this.authService.refreshProfile();
+    } else if (typeof this.authService.getProfile === 'function') {
+      this.authService.getProfile().subscribe({
+        next: () => console.log('Auth service profile refreshed'),
+        error: (error) => console.log('Error refreshing auth service profile:', error)
+      });
+    }
   }
 
   protected resetForm(): void {
@@ -138,21 +181,21 @@ export class ProfileSettingsComponent implements OnInit {
     // Reset form to original values
     if (this.userProfile) {
       this.profileForm.patchValue({
-        name: this.userProfile.user.name || '',
-        phone_number: this.userProfile.user.phone_number || '',
-        email: this.userProfile.user.email || '',
-        address: this.userProfile.user.address || '',
-        bio: ''
+        name: this.userProfile.name || '',
+        phone_number: this.userProfile.phone_number || '',
+        email: this.userProfile.email || '',
+        address: this.userProfile.address || '',
+        bio: this.userProfile.profile?.bio || ''
       });
     }
   }
 
   protected getInitials(): string {
-    const name = this.userProfile?.user?.name || 'User';
+    const name = this.userProfile?.name || 'User';
 
     return name
       .split(' ')
-      .map(n => n[0])
+      .map((n) => n[0])
       .join('')
       .toUpperCase()
       .substring(0, 2);

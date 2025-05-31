@@ -50,6 +50,7 @@
               formControlName="phone_number"
               class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500 bg-gray-100 dark:bg-gray-700 dark:text-white cursor-not-allowed"
               placeholder="+256 700 000 000"
+              readonly
             />
             <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">
               Phone number cannot be changed. This is your primary identifier.
@@ -140,8 +141,16 @@
         <div class="text-center">
           <!-- Profile Image/Avatar -->
           <div class="inline-block relative">
-            <div
-              class="w-24 h-24 rounded-full bg-primary-100 dark:bg-primary-900/30 flex items-center justify-center mx-auto text-4xl font-medium text-primary-700 dark:text-primary-300"
+            <!-- Show actual avatar if available, otherwise show initials -->
+            <div *ngIf="userProfile?.profile?.avatar" class="w-24 h-24 rounded-full mx-auto overflow-hidden">
+              <img
+                [src]="userProfile?.profile?.avatar"
+                [alt]="userProfile?.name || 'Profile Avatar'"
+                class="w-full h-full object-cover"
+              />
+            </div>
+            <div *ngIf="!userProfile?.profile?.avatar"
+                 class="w-24 h-24 rounded-full bg-primary-100 dark:bg-primary-900/30 flex items-center justify-center mx-auto text-4xl font-medium text-primary-700 dark:text-primary-300"
             >
               {{ getInitials() }}
             </div>
@@ -149,6 +158,7 @@
             <button
               type="button"
               class="absolute bottom-0 right-0 bg-white dark:bg-gray-800 rounded-full p-1.5 border border-gray-300 dark:border-gray-600 shadow-sm hover:bg-gray-50 dark:hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-primary-500"
+              title="Change profile picture"
             >
               <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-gray-500 dark:text-gray-400" fill="none"
                    viewBox="0 0 24 24" stroke="currentColor">
@@ -161,10 +171,13 @@
           </div>
 
           <h3 class="mt-4 text-lg font-medium text-gray-900 dark:text-white">
-            {{ userProfile?.user?.name || 'User' }}
+            {{ userProfile?.name || 'User' }}
           </h3>
           <p class="text-sm text-gray-600 dark:text-gray-400">
-            {{ userProfile?.user?.phone_number }}
+            {{ userProfile?.phone_number || 'No phone number' }}
+          </p>
+          <p *ngIf="userProfile?.email" class="text-sm text-gray-600 dark:text-gray-400">
+            {{ userProfile?.email }}
           </p>
         </div>
 
@@ -172,15 +185,32 @@
           <dl class="divide-y divide-gray-200 dark:divide-dark-border">
             <div class="py-3 flex justify-between text-sm">
               <dt class="text-gray-600 dark:text-gray-400">Account Status</dt>
-              <dd class="text-gray-900 dark:text-white font-medium">Active</dd>
+              <dd class="text-gray-900 dark:text-white font-medium">
+                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400">
+                  {{ userProfile?.is_active ? 'Active' : 'Inactive' }}
+                </span>
+              </dd>
             </div>
             <div class="py-3 flex justify-between text-sm">
               <dt class="text-gray-600 dark:text-gray-400">Member Since</dt>
-              <dd class="text-gray-900 dark:text-white font-medium">{{ formatDate(userProfile?.user?.date_joined || '') }}</dd>
+              <dd class="text-gray-900 dark:text-white font-medium">
+                {{ formatDate(userProfile?.date_joined || '') }}
+              </dd>
             </div>
             <div class="py-3 flex justify-between text-sm">
-              <dt class="text-gray-600 dark:text-gray-400">Role</dt>
-              <dd class="text-gray-900 dark:text-white font-medium">Admin</dd>
+              <dt class="text-gray-600 dark:text-gray-400">Verified</dt>
+              <dd class="text-gray-900 dark:text-white font-medium">
+                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium"
+                      [ngClass]="userProfile?.is_verified ? 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400' : 'bg-gray-100 text-gray-800 dark:bg-gray-900/30 dark:text-gray-400'">
+                  {{ userProfile?.is_verified ? 'Verified' : 'Not Verified' }}
+                </span>
+              </dd>
+            </div>
+            <div *ngIf="userProfile?.profile?.bio" class="py-3">
+              <dt class="text-gray-600 dark:text-gray-400 text-sm mb-2">Bio</dt>
+              <dd class="text-gray-900 dark:text-white text-sm">
+                {{ userProfile?.profile?.bio }}
+              </dd>
             </div>
           </dl>
         </div>

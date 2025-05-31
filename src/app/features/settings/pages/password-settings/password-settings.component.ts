@@ -2,9 +2,8 @@ import {Component, inject, signal} from '@angular/core';
 import {CommonModule} from '@angular/common';
 import {RouterModule} from '@angular/router';
 import {FormBuilder, FormGroup, ReactiveFormsModule, Validators} from '@angular/forms';
-import {HttpClient} from '@angular/common/http';
-import {environment} from '../../../../../environments/environment';
 import {ToastService} from '../../../../core/services/toast.service';
+import {ChangePasswordRequest, UserService} from '../../../../core/services/user.service';
 
 @Component({
   selector: 'app-password-settings',
@@ -15,7 +14,7 @@ import {ToastService} from '../../../../core/services/toast.service';
 })
 export class PasswordSettingsComponent {
   private fb = inject(FormBuilder);
-  private http = inject(HttpClient);
+  private userService = inject(UserService);
   private toastService = inject(ToastService);
 
   // Reactive state with signals
@@ -50,47 +49,53 @@ export class PasswordSettingsComponent {
     this.submitted = true;
 
     if (this.passwordForm.invalid) {
+      this.toastService.warning('Please fill in all fields correctly');
       return;
     }
 
     this.isSubmitting.set(true);
 
     // Prepare data for API
-    const formData = {
-      old_password: this.passwordForm.value.current_password,
-      new_password: this.passwordForm.value.new_password,
-      new_password_confirm: this.passwordForm.value.confirm_password
+    const formData: ChangePasswordRequest = {
+      old_password: this.passwordForm.value.current_password!,
+      new_password: this.passwordForm.value.new_password!,
+      new_password_confirm: this.passwordForm.value.confirm_password!
     };
 
-    // API call to change password
-    const apiUrl = `${environment.apiUrl}${environment.apiVersion}/users/password/change/`;
-    this.http.post(apiUrl, formData).subscribe({
-      next: (response: any) => {
+    this.userService.changePassword(formData).subscribe({
+      next: (response) => {
         this.isSubmitting.set(false);
         this.toastService.success('Password changed successfully');
         this.resetForm();
       },
       error: (error) => {
         this.isSubmitting.set(false);
-
-        if (error.status === 400) {
-          // Handle validation errors
-          const errors = error.error;
-
-          if (errors.old_password) {
-            this.toastService.error(`Current password: ${errors.old_password[0]}`);
-          } else if (errors.new_password) {
-            this.toastService.error(`New password: ${errors.new_password[0]}`);
-          } else {
-            this.toastService.error('Failed to change password');
-          }
-        } else {
-          this.toastService.error('An error occurred. Please try again later.');
-        }
-
-        console.error('Error changing password:', error);
+        this.handlePasswordChangeError(error);
       }
     });
+  }
+
+  private handlePasswordChangeError(error: any): void {
+    console.error('Error changing password:', error);
+
+    if (error.status === 400) {
+      // Handle validation errors
+      const errors = error.error;
+
+      if (errors.old_password) {
+        this.toastService.error(`Current password: ${errors.old_password[0]}`);
+      } else if (errors.new_password) {
+        this.toastService.error(`New password: ${errors.new_password[0]}`);
+      } else if (errors.message) {
+        this.toastService.error(errors.message);
+      } else {
+        this.toastService.error('Failed to change password');
+      }
+    } else if (error.status === 401) {
+      this.toastService.error('Current password is incorrect');
+    } else {
+      this.toastService.error('An error occurred. Please try again later.');
+    }
   }
 
   protected resetForm(): void {

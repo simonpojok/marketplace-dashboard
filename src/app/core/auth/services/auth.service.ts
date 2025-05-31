@@ -161,4 +161,15 @@ export class AuthService {
       this.getProfile().subscribe();
     }
   }
+
+  refreshProfile(): void {
+    this.getProfile().subscribe({
+      next: (profile) => {
+        console.log('Profile refreshed successfully');
+      },
+      error: (error) => {
+        console.error('Error refreshing profile:', error);
+      }
+    });
+  }
 }

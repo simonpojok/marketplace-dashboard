@@ -2,9 +2,9 @@ import {Component, OnInit, inject, signal} from '@angular/core';
 import {CommonModule} from '@angular/common';
 import {RouterModule} from '@angular/router';
 import {FormBuilder, FormsModule, ReactiveFormsModule, Validators} from '@angular/forms';
-import {HttpClient} from '@angular/common/http';
 import {AuthService} from '../../../../core/auth/services/auth.service';
 import {ToastService} from '../../../../core/services/toast.service';
+import {UserService} from '../../../../core/services/user.service';
 
 interface LanguageOption {
   code: string;
@@ -25,8 +25,8 @@ interface TimeZoneOption {
 })
 export class AccountSettingsComponent implements OnInit {
   private fb = inject(FormBuilder);
-  private http = inject(HttpClient);
   private authService = inject(AuthService);
+  private userService = inject(UserService);
   private toastService = inject(ToastService);
 
   // Reactive state with signals
@@ -70,22 +70,29 @@ export class AccountSettingsComponent implements OnInit {
   private loadPreferences(): void {
     this.isLoading.set(true);
 
-    // In a real application, you would fetch the user's preferences from the API
-    // For this example, we'll simulate a delay and then populate the form with fake data
-    setTimeout(() => {
-      this.preferencesForm.patchValue({
-        language: 'en',
-        timezone: 'Africa/Kampala',
-        dateFormat: 'DD/MM/YYYY',
-        currency: 'UGX'
-      });
+    this.userService.getProfile().subscribe({
+      next: (profile) => {
+        // Update form with profile data
+        this.preferencesForm.patchValue({
+          language: profile.profile?.language || 'en',
+          timezone: profile.profile?.timezone || 'Africa/Kampala',
+          dateFormat: 'DD/MM/YYYY', // This might need to be added to backend
+          currency: 'UGX' // This might need to be added to backend
+        });
 
-      this.isLoading.set(false);
-    }, 800);
+        this.isLoading.set(false);
+      },
+      error: (error) => {
+        console.error('Error loading preferences:', error);
+        this.toastService.error('Failed to load account preferences');
+        this.isLoading.set(false);
+      }
+    });
   }
 
   protected onPreferencesSave(): void {
     if (this.preferencesForm.invalid) {
+      this.toastService.warning('Please fill in all required fields');
       return;
     }
 
@@ -93,18 +100,25 @@ export class AccountSettingsComponent implements OnInit {
 
     // Prepare data for API
     const formData = {
-      language: this.preferencesForm.value.language,
-      timezone: this.preferencesForm.value.timezone,
-      date_format: this.preferencesForm.value.dateFormat,
-      currency: this.preferencesForm.value.currency
+      profile: {
+        language: this.preferencesForm.value.language,
+        timezone: this.preferencesForm.value.timezone
+        // dateFormat and currency would need to be added to backend model
+      }
     };
 
-    // In a real application, you would send this data to the API
-    // For this example, we'll simulate a delay and then show a success message
-    setTimeout(() => {
-      this.isSaving.set(false);
-      this.toastService.success('Preferences saved successfully');
-    }, 800);
+    // @ts-ignore
+    this.userService.updateProfile(formData).subscribe({
+      next: (response) => {
+        this.isSaving.set(false);
+        this.toastService.success('Preferences saved successfully');
+      },
+      error: (error) => {
+        this.isSaving.set(false);
+        console.error('Error saving preferences:', error);
+        this.toastService.error('Failed to save preferences');
+      }
+    });
   }
 
   protected resetPreferencesForm(): void {
@@ -123,20 +137,31 @@ export class AccountSettingsComponent implements OnInit {
 
   protected deleteAccount(): void {
     if (this.deleteConfirmation !== 'delete my account') {
+      this.toastService.warning('Please type "delete my account" to confirm');
       return;
     }
 
     this.isDeleting.set(true);
 
-    // In a real application, you would send a request to the API to delete the account
-    // For this example, we'll simulate a delay and then log the user out
-    setTimeout(() => {
-      this.isDeleting.set(false);
-      this.showDeleteModal.set(false);
-      this.toastService.success('Your account has been deleted');
+    this.userService.deleteAccount().subscribe({
+      next: (response) => {
+        this.isDeleting.set(false);
+        this.showDeleteModal.set(false);
+        this.toastService.success('Your account has been deleted');
 
-      // Log the user out
-      this.authService.logout().subscribe();
-    }, 2000);
+        // Log the user out after successful deletion
+        this.authService.logout().subscribe();
+      },
+      error: (error) => {
+        this.isDeleting.set(false);
+        console.error('Error deleting account:', error);
+
+        if (error.status === 403) {
+          this.toastService.error('You do not have permission to delete this account');
+        } else {
+          this.toastService.error('Failed to delete account. Please try again.');
+        }
+      }
+    });
   }
 }
