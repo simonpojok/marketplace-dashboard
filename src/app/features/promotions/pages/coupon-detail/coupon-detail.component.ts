@@ -2,8 +2,8 @@ import {Component, OnInit, inject, signal} from '@angular/core';
 import {CommonModule} from '@angular/common';
 import {ActivatedRoute, Router, RouterModule} from '@angular/router';
 import {PromotionsService} from '../../services/promotions.service';
-import {Coupon} from '../../models/campaign.model';
 import {ToastService} from '../../../../core/services/toast.service';
+import {Coupon} from '../../models/coupon.model';
 
 @Component({
   selector: 'app-coupon-detail',

@@ -3,8 +3,8 @@ import {CommonModule} from '@angular/common';
 import {RouterModule} from '@angular/router';
 import {FormsModule} from '@angular/forms';
 import {PromotionsService} from '../../services/promotions.service';
-import {Promotion, DiscountType} from '../../models/campaign.model';
 import {ToastService} from '../../../../core/services/toast.service';
+import {DiscountType, Promotion} from '../../models/promotion.model';
 
 @Component({
   selector: 'app-promotion-list',
@@ -51,7 +51,7 @@ export class PromotionListComponent implements OnInit {
 
     this.promotionsService.getPromotions().subscribe({
       next: (promotions) => {
-        this.promotions.set(promotions);
+        this.promotions.set(promotions.results);
         this.isLoading.set(false);
       },
       error: (error) => {

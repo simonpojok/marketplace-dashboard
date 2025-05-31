@@ -3,8 +3,8 @@ import { CommonModule } from '@angular/common';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
 import { PromotionsService } from '../../services/promotions.service';
-import { Promotion, PromotionCreateRequest, DiscountType, ApplyTo } from '../../models/campaign.model';
 import { ToastService } from '../../../../core/services/toast.service';
+import {ApplyTo, DiscountType, Promotion, PromotionCreateRequest} from '../../models/promotion.model';
 
 @Component({
   selector: 'app-promotion-edit',

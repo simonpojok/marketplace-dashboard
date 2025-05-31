@@ -2,8 +2,8 @@ import {Component, OnInit, inject, signal} from '@angular/core';
 import {CommonModule} from '@angular/common';
 import {ActivatedRoute, Router, RouterModule} from '@angular/router';
 import {PromotionsService} from '../../services/promotions.service';
-import {CampaignAnalytics} from '../../models/campaign.model';
 import {ToastService} from '../../../../core/services/toast.service';
+import {CampaignAnalytics} from '../../models/promotion-usage.model';
 
 @Component({
   selector: 'app-campaign-analytics',

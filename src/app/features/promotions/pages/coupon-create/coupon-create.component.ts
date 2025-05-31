@@ -3,8 +3,8 @@ import {CommonModule} from '@angular/common';
 import {FormBuilder, ReactiveFormsModule, Validators} from '@angular/forms';
 import {Router, ActivatedRoute} from '@angular/router';
 import {PromotionsService} from '../../services/promotions.service';
-import {CouponCreateRequest, CouponType} from '../../models/campaign.model';
 import {ToastService} from '../../../../core/services/toast.service';
+import {CouponCreateRequest, CouponType} from '../../models/coupon.model';
 
 @Component({
   selector: 'app-coupon-create',

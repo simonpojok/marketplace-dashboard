@@ -1,11 +1,10 @@
-// src/app/features/promotions/pages/promotion-create/promotion-create.component.ts
 import {Component, OnInit, inject, signal} from '@angular/core';
 import {CommonModule} from '@angular/common';
 import {FormBuilder, ReactiveFormsModule, Validators} from '@angular/forms';
 import {Router, ActivatedRoute} from '@angular/router';
 import {PromotionsService} from '../../services/promotions.service';
-import {PromotionCreateRequest, DiscountType, ApplyTo} from '../../models/campaign.model';
 import {ToastService} from '../../../../core/services/toast.service';
+import {ApplyTo, DiscountType, PromotionCreateRequest} from '../../models/promotion.model';
 
 @Component({
   selector: 'app-promotion-create',

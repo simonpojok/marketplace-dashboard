@@ -1,20 +1,22 @@
-import { Injectable, inject } from '@angular/core';
-import { HttpClient, HttpParams } from '@angular/common/http';
-import { Observable } from 'rxjs';
-import { environment } from '../../../../environments/environment';
+import {Injectable, inject} from '@angular/core';
+import {HttpClient, HttpParams} from '@angular/common/http';
+import {Observable} from 'rxjs';
+import {environment} from '../../../../environments/environment';
 import {
   Campaign,
   CampaignListResponse,
   CampaignCreateRequest,
   CampaignFilterParams,
-  CampaignAnalytics,
-  Promotion,
-  PromotionCreateRequest,
+} from '../models/campaign.model';
+import {CampaignAnalytics} from '../models/promotion-usage.model';
+import {
   Coupon,
   CouponCreateRequest,
+  CouponListResponse,
   CouponValidationRequest,
   CouponValidationResponse
-} from '../models/campaign.model';
+} from '../models/coupon.model';
+import {Promotion, PromotionCreateRequest, PromotionListResponse} from '../models/promotion.model';
 
 @Injectable({
   providedIn: 'root'
@@ -36,7 +38,7 @@ export class PromotionsService {
       });
     }
 
-    return this.http.get<CampaignListResponse>(`${this.apiUrl}/admin/campaigns/`, { params: httpParams });
+    return this.http.get<CampaignListResponse>(`${this.apiUrl}/admin/campaigns/`, {params: httpParams});
   }
 
   getCampaign(id: string): Observable<Campaign> {
@@ -106,13 +108,13 @@ export class PromotionsService {
   }
 
   // Promotion methods
-  getPromotions(campaignId?: string): Observable<Promotion[]> {
+  getPromotions(campaignId?: string): Observable<PromotionListResponse> {
     let httpParams = new HttpParams();
     if (campaignId) {
       httpParams = httpParams.set('campaign', campaignId);
     }
 
-    return this.http.get<Promotion[]>(`${this.apiUrl}/admin/promotions/`, { params: httpParams });
+    return this.http.get<PromotionListResponse>(`${this.apiUrl}/admin/promotions/`, {params: httpParams});
   }
 
   getPromotion(id: string): Observable<Promotion> {
@@ -132,13 +134,13 @@ export class PromotionsService {
   }
 
   // Coupon methods
-  getCoupons(campaignId?: string): Observable<Coupon[]> {
+  getCoupons(campaignId?: string): Observable<CouponListResponse> {
     let httpParams = new HttpParams();
     if (campaignId) {
       httpParams = httpParams.set('campaign', campaignId);
     }
 
-    return this.http.get<Coupon[]>(`${this.apiUrl}/admin/coupons/`, { params: httpParams });
+    return this.http.get<CouponListResponse>(`${this.apiUrl}/admin/coupons/`, {params: httpParams});
   }
 
   getCoupon(id: string): Observable<Coupon> {

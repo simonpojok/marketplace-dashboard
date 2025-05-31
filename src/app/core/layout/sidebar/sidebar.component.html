@@ -13,7 +13,8 @@
             [routerLink]="item.route"
             routerLinkActive="bg-primary-50 dark:bg-primary-900/20 text-primary-700 dark:text-primary-400"
             [routerLinkActiveOptions]="{ exact: item.route === '/dashboard' }"
-            class="flex items-center px-3 py-2 rounded-lg text-gray-700 dark:text-dark-text-primary hover:bg-gray-100 dark:hover:bg-gray-700 group"
+            class="flex items-center px-3 py-2 rounded-lg text-gray-700 dark:text-dark-text-primary hover:bg-gray-100 dark:hover:bg-gray-700 group transition-colors duration-200"
+            [title]="collapsed ? item.label : ''"
           >
             <!-- Icon -->
             <span
@@ -34,9 +35,10 @@
             <button
               (click)="toggleSubMenu(item)"
               type="button"
-              class="w-full flex items-center justify-between px-3 py-2 rounded-lg text-gray-700 dark:text-dark-text-primary hover:bg-gray-100 dark:hover:bg-gray-700"
+              class="w-full flex items-center justify-between px-3 py-2 rounded-lg text-gray-700 dark:text-dark-text-primary hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors duration-200"
               [class.bg-gray-100]="item.expanded"
               [class.dark:bg-gray-700]="item.expanded"
+              [title]="collapsed ? item.label : ''"
             >
               <div class="flex items-center">
                 <!-- Icon -->
@@ -75,8 +77,38 @@
                 *ngFor="let child of item.children"
                 [routerLink]="child.route"
                 routerLinkActive="bg-primary-50 dark:bg-primary-900/20 text-primary-700 dark:text-primary-400"
-                class="block px-3 py-2 rounded-lg text-gray-700 dark:text-dark-text-primary hover:bg-gray-100 dark:hover:bg-gray-700"
+                class="block px-3 py-2 rounded-lg text-gray-700 dark:text-dark-text-primary hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors duration-200"
               >
+                <div class="flex items-center">
+                  <span
+                    *ngIf="child.icon"
+                    class="flex-shrink-0 mr-2"
+                    [innerHTML]="child.icon"
+                  ></span>
+                  {{ child.label }}
+                </div>
+              </a>
+            </div>
+
+            <!-- Collapsed Submenu (Tooltip-style) -->
+            <div
+              *ngIf="collapsed && item.children"
+              class="absolute left-16 top-0 bg-white dark:bg-dark-bg-secondary border border-gray-200 dark:border-dark-border rounded-lg shadow-lg py-2 z-50 min-w-48 opacity-0 pointer-events-none group-hover:opacity-100 group-hover:pointer-events-auto transition-opacity duration-200"
+            >
+              <div class="px-3 py-2 border-b border-gray-200 dark:border-dark-border">
+                <span class="text-sm font-medium text-gray-900 dark:text-white">{{ item.label }}</span>
+              </div>
+              <a
+                *ngFor="let child of item.children"
+                [routerLink]="child.route"
+                routerLinkActive="bg-primary-50 dark:bg-primary-900/20 text-primary-700 dark:text-primary-400"
+                class="flex items-center px-3 py-2 text-sm text-gray-700 dark:text-dark-text-primary hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors duration-200"
+              >
+                <span
+                  *ngIf="child.icon"
+                  class="flex-shrink-0 mr-2"
+                  [innerHTML]="child.icon"
+                ></span>
                 {{ child.label }}
               </a>
             </div>

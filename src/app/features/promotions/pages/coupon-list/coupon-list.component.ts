@@ -3,8 +3,8 @@ import {CommonModule} from '@angular/common';
 import {RouterModule} from '@angular/router';
 import {FormsModule} from '@angular/forms';
 import {PromotionsService} from '../../services/promotions.service';
-import {Coupon, CouponType} from '../../models/campaign.model';
 import {ToastService} from '../../../../core/services/toast.service';
+import {Coupon, CouponType} from '../../models/coupon.model';
 
 @Component({
   selector: 'app-coupon-list',
@@ -50,7 +50,7 @@ export class CouponListComponent implements OnInit {
 
     this.promotionsService.getCoupons().subscribe({
       next: (coupons) => {
-        this.coupons.set(coupons);
+        this.coupons.set(coupons.results);
         this.isLoading.set(false);
       },
       error: (error) => {
