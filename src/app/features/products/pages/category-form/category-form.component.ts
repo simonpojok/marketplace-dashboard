@@ -28,6 +28,9 @@ export class CategoryFormComponent implements OnInit {
   protected parentCategories = signal<Category[]>([]);
   protected selectedImage = signal<string | null>(null);
   protected imagePreview = signal<string | null>(null);
+  protected currentCategory = signal<Category | null>(null);
+  protected childrenCategories = signal<Category[]>([]);
+  protected expandedChildren = signal<Record<string, boolean>>({});
 
   // Form
   protected categoryForm!: FormGroup;
@@ -46,6 +49,11 @@ export class CategoryFormComponent implements OnInit {
       this.isEditMode.set(true);
       this.loadCategory(id);
     } else {
+      // Check for parent query parameter when creating new category
+      const parentId = this.route.snapshot.queryParamMap.get('parent');
+      if (parentId) {
+        this.categoryForm.patchValue({ parent: parentId });
+      }
       this.isLoading.set(false);
     }
   }
@@ -81,6 +89,8 @@ export class CategoryFormComponent implements OnInit {
   private loadCategory(id: string): void {
     this.productsService.getCategory(id).subscribe({
       next: (category) => {
+        this.currentCategory.set(category);
+
         this.categoryForm.patchValue({
           name: category.name,
           slug: category.slug,
@@ -94,6 +104,14 @@ export class CategoryFormComponent implements OnInit {
           this.selectedImage.set(category.image);
         }
 
+        // Load children categories if they exist
+        if (category.children && category.children.length > 0) {
+          this.childrenCategories.set(category.children);
+        } else {
+          // Fetch children from API if not included in the response
+          this.loadChildrenCategories(id);
+        }
+
         this.isLoading.set(false);
       },
       error: (error) => {
@@ -101,6 +119,18 @@ export class CategoryFormComponent implements OnInit {
         this.toastService.error('Failed to load category details');
         this.isLoading.set(false);
         this.router.navigate(['/products/categories']);
+      }
+    });
+  }
+
+  private loadChildrenCategories(parentId: string): void {
+    this.productsService.getCategoryChildren(parentId).subscribe({
+      next: (children) => {
+        this.childrenCategories.set(children);
+      },
+      error: (error) => {
+        console.error('Error loading children categories:', error);
+        // Don't show error toast for this as it's not critical
       }
     });
   }
@@ -223,5 +253,67 @@ export class CategoryFormComponent implements OnInit {
 
   protected canDeactivate(): boolean {
     return !this.categoryForm.dirty || this.isSaving();
+  }
+
+  // Children categories management
+  protected toggleChildExpansion(childId: string): void {
+    this.expandedChildren.update(expanded => {
+      const newExpanded = { ...expanded };
+      newExpanded[childId] = !newExpanded[childId];
+      return newExpanded;
+    });
+  }
+
+  protected isChildExpanded(childId: string): boolean {
+    return !!this.expandedChildren()[childId];
+  }
+
+  protected deleteChildCategory(childId: string, event: Event): void {
+    event.preventDefault();
+    event.stopPropagation();
+
+    if (confirm('Are you sure you want to delete this child category?')) {
+      this.productsService.deleteCategory(childId).subscribe({
+        next: () => {
+          this.toastService.success('Child category deleted successfully');
+          // Remove from local state
+          this.childrenCategories.update(children =>
+            children.filter(child => child.id !== childId)
+          );
+        },
+        error: (error) => {
+          console.error('Error deleting child category:', error);
+          this.toastService.error('Failed to delete child category');
+        }
+      });
+    }
+  }
+
+  protected navigateToChildEdit(childId: string): void {
+    this.router.navigate(['/products/categories/edit', childId]);
+  }
+
+  protected createChildCategory(): void {
+    const currentCategoryId = this.categoryId();
+    if (currentCategoryId) {
+      this.router.navigate(['/products/categories/create'], {
+        queryParams: { parent: currentCategoryId }
+      });
+    }
+  }
+
+  protected getChildrenCount(): number {
+    return this.childrenCategories().length;
+  }
+
+  protected hasChildren(): boolean {
+    return this.getChildrenCount() > 0;
+  }
+
+  protected refreshChildren(): void {
+    const categoryId = this.categoryId();
+    if (categoryId) {
+      this.loadChildrenCategories(categoryId);
+    }
   }
 }

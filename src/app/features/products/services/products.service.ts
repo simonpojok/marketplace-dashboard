@@ -142,4 +142,8 @@ export class ProductsService {
   searchProducts(query: string): Observable<Product[]> {
     return this.http.get<Product[]>(`${this.apiUrl}/products/search/`, {params: {q: query}});
   }
+
+  getCategoryChildren(parentId: string): Observable<Category[]> {
+    return this.http.get<Category[]>(`${this.apiUrl}/admin/categories/${parentId}/children/`);
+  }
 }
