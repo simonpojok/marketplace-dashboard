@@ -53,7 +53,7 @@ export class HeaderComponent {
 
   protected getUserInitialAvatar(): string {
     // If user has a name, create an avatar with initials
-    const name = this.userProfile?.user.name || 'User';
+    const name = this.userProfile?.user?.name || 'User';
     const initials = name
       .split(' ')
       .map(n => n[0])

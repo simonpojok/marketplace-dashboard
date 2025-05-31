@@ -148,7 +148,7 @@ export class ProfileSettingsComponent implements OnInit {
   }
 
   protected getInitials(): string {
-    const name = this.userProfile?.user.name || 'User';
+    const name = this.userProfile?.user?.name || 'User';
 
     return name
       .split(' ')

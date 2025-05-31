@@ -57,3 +57,6 @@ Angular CLI does not come with an end-to-end testing framework by default. You c
 ## Additional Resources
 
 For more information on using the Angular CLI, including detailed command references, visit the [Angular CLI Overview and Command Reference](https://angular.dev/tools/cli) page.
+
+
+scp -r dist/marketplace-dashboard/browser/* root@38.242.248.94:/var/www/marketplace-dashboard/

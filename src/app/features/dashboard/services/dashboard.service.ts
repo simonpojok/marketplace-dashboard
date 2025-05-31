@@ -1,6 +1,6 @@
 import { Injectable, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { Observable, of, delay } from 'rxjs';
+import {Observable, of, delay, defer} from 'rxjs';
 import { environment } from '../../../../environments/environment';
 import { DashboardData } from '../models/dashboard.model';
 
@@ -16,8 +16,12 @@ export class DashboardService {
     // return this.http.get<DashboardData>(`${this.apiUrl}/dashboard/summary`);
 
     // For now, let's return mock data with a delay to simulate network latency
-    return of(this.getMockDashboardData()).pipe(
-      delay(800) // Simulate network delay
+    // return of(this.getMockDashboardData()).pipe(
+    //   delay(800) // Simulate network delay
+    // );
+
+    return defer(() => of(this.getMockDashboardData())).pipe(
+      delay(800)
     );
   }
 
