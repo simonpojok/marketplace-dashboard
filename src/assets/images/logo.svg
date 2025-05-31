@@ -1,18 +1,41 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 60">
-  <style>
-    .logo-text { font-family: 'Poppins', sans-serif; font-weight: 600; }
-    .text-primary { fill: #22c55e; }
-    .text-secondary { fill: #111827; }
-    .dark-mode .text-secondary { fill: #f9fafb; }
-  </style>
-  <g>
-    <!-- Logo Icon -->
-    <path class="text-primary" d="M30 10 L45 20 L30 30 L15 20 Z" />
-    <path class="text-primary" d="M30 20 L45 30 L30 40 L15 30 Z" fill-opacity="0.8" />
-    <path class="text-primary" d="M30 30 L45 40 L30 50 L15 40 Z" fill-opacity="0.6" />
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 40 40" class="w-full h-auto">
+  <defs>
+    <!-- Gradient for the shopping cart -->
+    <linearGradient id="cartGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#10B981;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#059669;stop-opacity:1" />
+    </linearGradient>
+  </defs>
 
-    <!-- Logo Text -->
-    <text x="60" y="35" class="logo-text text-secondary" font-size="24">Afrisup</text>
-    <text x="155" y="35" class="logo-text text-primary" font-size="16">Admin</text>
+  <!-- Shopping cart icon centered -->
+  <g transform="translate(4, 4)">
+    <!-- Cart body -->
+    <path d="M4 6 L6 6 L8 20 L26 20 L28 10 L10 10"
+          fill="none"
+          stroke="url(#cartGradient)"
+          stroke-width="2.5"
+          stroke-linecap="round"
+          stroke-linejoin="round"/>
+
+    <!-- Cart handle -->
+    <path d="M0 2 L4 6"
+          stroke="url(#cartGradient)"
+          stroke-width="2.5"
+          stroke-linecap="round"/>
+
+    <!-- Cart wheels -->
+    <circle cx="12" cy="26" r="2"
+            fill="url(#cartGradient)"/>
+    <circle cx="22" cy="26" r="2"
+            fill="url(#cartGradient)"/>
+
+    <!-- Items in cart -->
+    <circle cx="16" cy="14" r="1.5"
+            fill="#F59E0B"
+            opacity="0.8"/>
+    <rect x="19" y="12" width="3" height="2"
+          fill="#EF4444"
+          rx="1"
+          opacity="0.8"/>
   </g>
 </svg>
