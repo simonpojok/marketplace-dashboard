@@ -1,17 +1,24 @@
 import {Component, OnInit, inject, signal} from '@angular/core';
 import {CommonModule} from '@angular/common';
-import {RouterModule, ActivatedRoute, Router} from '@angular/router';
+import {RouterModule, ActivatedRoute, Router, RouteReuseStrategy} from '@angular/router';
 import {FormBuilder, FormGroup, ReactiveFormsModule, Validators} from '@angular/forms';
 import {ProductsService} from '../../services/products.service';
 import {Category} from '../../models/product.model';
 import {ToastService} from '../../../../core/services/toast.service';
+import {CustomReuseStrategy} from '../../../../core/strategies/custom-reuse-strategy';
 
 @Component({
   selector: 'app-category-form',
   standalone: true,
   imports: [CommonModule, RouterModule, ReactiveFormsModule],
   templateUrl: './category-form.component.html',
-  styles: []
+  styles: [],
+  providers: [
+    {
+      provide: RouteReuseStrategy,
+      useClass: CustomReuseStrategy
+    }
+  ]
 })
 export class CategoryFormComponent implements OnInit {
   private fb = inject(FormBuilder);
@@ -290,7 +297,9 @@ export class CategoryFormComponent implements OnInit {
   }
 
   protected navigateToChildEdit(childId: string): void {
-    this.router.navigate(['/products/categories/edit', childId]);
+    this.router.navigateByUrl('/', { skipLocationChange: true }).then(() => {
+      this.router.navigate(['/products/categories/edit', childId]).then();
+    });
   }
 
   protected createChildCategory(): void {

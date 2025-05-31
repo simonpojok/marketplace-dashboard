@@ -27,349 +27,355 @@
     <div class="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-primary-500"></div>
   </div>
 
-  <div *ngIf="!isLoading()" class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-    <!-- Left Column - Category Form -->
-    <div class="lg:col-span-2">
-      <!-- Category Form -->
-      <div class="bg-white dark:bg-dark-bg-secondary shadow-sm rounded-lg border border-gray-200 dark:border-dark-border overflow-hidden">
-        <form [formGroup]="categoryForm" (ngSubmit)="onSubmit()">
-          <div class="p-6">
-            <div class="grid grid-cols-1 gap-6 md:grid-cols-2">
-              <!-- Name -->
-              <div>
-                <label for="name" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                  Category Name <span class="text-red-500">*</span>
-                </label>
-                <input
-                  type="text"
-                  id="name"
-                  formControlName="name"
-                  (blur)="generateSlug()"
-                  class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500 dark:bg-gray-800 dark:text-white"
-                  placeholder="Enter category name"
-                >
-                <div *ngIf="categoryForm.get('name')?.invalid && categoryForm.get('name')?.touched" class="mt-1 text-sm text-red-600 dark:text-red-400">
-                  <span *ngIf="categoryForm.get('name')?.errors?.['required']">Category name is required</span>
-                  <span *ngIf="categoryForm.get('name')?.errors?.['minlength']">Category name must be at least 3 characters</span>
-                </div>
-              </div>
-
-              <!-- Slug -->
-              <div>
-                <label for="slug" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                  Slug <button type="button" (click)="generateSlug()" class="ml-2 text-xs text-primary-600 dark:text-primary-400 hover:underline">Generate</button>
-                </label>
-                <input
-                  type="text"
-                  id="slug"
-                  readonly
-                  formControlName="slug"
-                  class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500 dark:bg-gray-800 dark:text-white"
-                  placeholder="category-slug"
-                >
-                <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">
-                  Used in URLs. Leave blank to auto-generate from name.
-                </p>
-              </div>
-
-              <!-- Parent Category -->
-              <div>
-                <label for="parent" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                  Parent Category
-                </label>
-                <select
-                  id="parent"
-                  formControlName="parent"
-                  class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500 dark:bg-gray-800 dark:text-white"
-                >
-                  <option value="">None (Top Level)</option>
-                  <option *ngFor="let category of parentCategories()" [value]="category.id">{{ category.name }}</option>
-                </select>
-                <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">
-                  Choose a parent category to create a hierarchy.
-                </p>
-              </div>
-
-              <!-- Display Order -->
-              <div>
-                <label for="display_order" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                  Display Order
-                </label>
-                <input
-                  type="number"
-                  id="display_order"
-                  formControlName="display_order"
-                  class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500 dark:bg-gray-800 dark:text-white"
-                  min="0"
-                >
-                <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">
-                  Categories with lower numbers appear first.
-                </p>
-              </div>
-
-              <!-- Status -->
-              <div class="md:col-span-2">
-                <div class="flex items-center">
-                  <input
-                    type="checkbox"
-                    id="is_active"
-                    formControlName="is_active"
-                    class="h-4 w-4 text-primary-600 focus:ring-primary-500 border-gray-300 dark:border-gray-600 rounded"
-                  >
-                  <label for="is_active" class="ml-2 block text-sm text-gray-700 dark:text-gray-300">
-                    Category is active
+  <div *ngIf="!isLoading()">
+    <!-- Full width for create mode, split layout for edit mode -->
+    <div [ngClass]="isEditMode() ? 'grid grid-cols-1 lg:grid-cols-5 gap-6' : ''">
+      <!-- Left Column - Category Form -->
+      <div [ngClass]="isEditMode() ? 'lg:col-span-3' : ''">
+        <!-- Category Form -->
+        <div class="bg-white dark:bg-dark-bg-secondary shadow-sm rounded-lg border border-gray-200 dark:border-dark-border overflow-hidden">
+          <form [formGroup]="categoryForm" (ngSubmit)="onSubmit()">
+            <div class="p-6">
+              <div class="grid grid-cols-1 gap-6 sm:grid-cols-2">
+                <!-- Name -->
+                <div>
+                  <label for="name" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                    Category Name <span class="text-red-500">*</span>
                   </label>
-                </div>
-                <p class="mt-1 text-xs text-gray-500 dark:text-gray-400 ml-6">
-                  Inactive categories will not be visible on the storefront.
-                </p>
-              </div>
-
-              <!-- Description -->
-              <div class="md:col-span-2">
-                <label for="description" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                  Description
-                </label>
-                <textarea
-                  id="description"
-                  formControlName="description"
-                  rows="3"
-                  class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500 dark:bg-gray-800 dark:text-white"
-                  placeholder="Enter category description"
-                ></textarea>
-              </div>
-
-              <!-- Category Image -->
-              <div class="md:col-span-2">
-                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                  Category Image
-                </label>
-
-                <!-- Image Preview (if available) -->
-                <div *ngIf="imagePreview() || selectedImage()" class="mt-2 mb-4 relative w-48 h-48 border border-gray-300 dark:border-gray-600 rounded-lg overflow-hidden">
-                  <img
-                    [src]="imagePreview() || selectedImage() || ''"
-                    alt="Category Image Preview"
-                    class="w-full h-full object-cover"
+                  <input
+                    type="text"
+                    id="name"
+                    formControlName="name"
+                    (blur)="generateSlug()"
+                    class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500 dark:bg-gray-800 dark:text-white"
+                    placeholder="Enter category name"
                   >
-                  <button
-                    type="button"
-                    (click)="removeImage()"
-                    class="absolute top-2 right-2 p-1 bg-red-500 text-white rounded-full hover:bg-red-600 focus:outline-none"
-                  >
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
-                    </svg>
-                  </button>
-                </div>
-
-                <!-- File Input -->
-                <div *ngIf="!imagePreview() && !selectedImage()" class="mt-2 flex justify-center px-6 pt-5 pb-6 border-2 border-gray-300 dark:border-gray-600 border-dashed rounded-lg">
-                  <div class="space-y-1 text-center">
-                    <svg class="mx-auto h-12 w-12 text-gray-400 dark:text-gray-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
-                    </svg>
-                    <div class="flex text-sm text-gray-600 dark:text-gray-400">
-                      <label for="image-upload" class="relative cursor-pointer bg-white dark:bg-gray-800 rounded-md font-medium text-primary-600 dark:text-primary-400 hover:text-primary-500 focus-within:outline-none">
-                        <span>Upload a file</span>
-                        <input id="image-upload" name="image-upload" type="file" class="sr-only" accept="image/*" (change)="onImageChange($event)">
-                      </label>
-                      <p class="pl-1">or drag and drop</p>
-                    </div>
-                    <p class="text-xs text-gray-500 dark:text-gray-400">
-                      PNG, JPG, GIF up to 2MB
-                    </p>
+                  <div *ngIf="categoryForm.get('name')?.invalid && categoryForm.get('name')?.touched" class="mt-1 text-sm text-red-600 dark:text-red-400">
+                    <span *ngIf="categoryForm.get('name')?.errors?.['required']">Category name is required</span>
+                    <span *ngIf="categoryForm.get('name')?.errors?.['minlength']">Category name must be at least 3 characters</span>
                   </div>
                 </div>
 
-                <!-- Change Image (if existing image) -->
-                <div *ngIf="imagePreview() || selectedImage()" class="mt-2">
-                  <label for="image-change" class="cursor-pointer text-sm font-medium text-primary-600 dark:text-primary-400 hover:text-primary-500">
-                    Change Image
-                    <input id="image-change" name="image-change" type="file" class="sr-only" accept="image/*" (change)="onImageChange($event)">
+                <!-- Slug -->
+                <div>
+                  <label for="slug" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                    Slug <button type="button" (click)="generateSlug()" class="ml-2 text-xs text-primary-600 dark:text-primary-400 hover:underline">Generate</button>
                   </label>
+                  <input
+                    type="text"
+                    id="slug"
+                    readonly
+                    formControlName="slug"
+                    class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500 dark:bg-gray-800 dark:text-white"
+                    placeholder="category-slug"
+                  >
+                  <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">
+                    Used in URLs. Leave blank to auto-generate from name.
+                  </p>
                 </div>
-              </div>
-            </div>
 
-            <!-- Form Actions -->
-            <div class="flex justify-end mt-6 pt-4 border-t border-gray-200 dark:border-dark-border">
-              <a
-                routerLink="/products/categories"
-                class="px-4 py-2 mr-3 border border-gray-300 dark:border-gray-600 rounded-lg shadow-sm text-sm font-medium text-gray-700 dark:text-gray-200 bg-white dark:bg-dark-bg-secondary hover:bg-gray-50 dark:hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500"
-              >
-                Cancel
-              </a>
-              <button
-                type="submit"
-                [disabled]="isSaving() || categoryForm.invalid"
-                class="px-4 py-2 border border-transparent rounded-lg shadow-sm text-sm font-medium text-white bg-primary-600 hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 disabled:opacity-50 disabled:cursor-not-allowed"
-              >
-                <svg *ngIf="isSaving()" class="animate-spin -ml-1 mr-2 h-4 w-4 text-white inline-block" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                  <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-                  <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                </svg>
-                {{ isSaving() ? 'Saving...' : (isEditMode() ? 'Update Category' : 'Create Category') }}
-              </button>
-            </div>
-          </div>
-        </form>
-      </div>
-    </div>
+                <!-- Parent Category -->
+                <div>
+                  <label for="parent" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                    Parent Category
+                  </label>
+                  <select
+                    id="parent"
+                    formControlName="parent"
+                    class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500 dark:bg-gray-800 dark:text-white"
+                  >
+                    <option value="">None (Top Level)</option>
+                    <option *ngFor="let category of parentCategories()" [value]="category.id">{{ category.name }}</option>
+                  </select>
+                  <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">
+                    Choose a parent category to create a hierarchy.
+                  </p>
+                </div>
 
-    <!-- Right Column - Children Categories (only in edit mode) -->
-    <div *ngIf="isEditMode()" class="lg:col-span-1">
-      <div class="bg-white dark:bg-dark-bg-secondary shadow-sm rounded-lg border border-gray-200 dark:border-dark-border overflow-hidden">
-        <div class="px-6 py-4 border-b border-gray-200 dark:border-dark-border">
-          <div class="flex justify-between items-center">
-            <h3 class="text-lg font-medium text-gray-900 dark:text-white">
-              Child Categories
-              <span *ngIf="hasChildren()" class="ml-2 text-sm font-normal text-gray-500 dark:text-gray-400">
-                ({{ getChildrenCount() }})
-              </span>
-            </h3>
-            <div class="flex space-x-2">
-              <button
-                type="button"
-                (click)="refreshChildren()"
-                class="p-1 text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300"
-                title="Refresh"
-              >
-                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
-                </svg>
-              </button>
-              <button
-                type="button"
-                (click)="createChildCategory()"
-                class="inline-flex items-center px-2 py-1 border border-transparent text-xs font-medium rounded text-primary-700 dark:text-primary-300 bg-primary-100 dark:bg-primary-900/30 hover:bg-primary-200 dark:hover:bg-primary-900/40 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500"
-              >
-                <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
-                </svg>
-                Add Child
-              </button>
-            </div>
-          </div>
-        </div>
+                <!-- Display Order -->
+                <div>
+                  <label for="display_order" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                    Display Order
+                  </label>
+                  <input
+                    type="number"
+                    id="display_order"
+                    formControlName="display_order"
+                    class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500 dark:bg-gray-800 dark:text-white"
+                    min="0"
+                  >
+                  <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">
+                    Categories with lower numbers appear first.
+                  </p>
+                </div>
 
-        <div class="p-6">
-          <!-- Empty State -->
-          <div *ngIf="!hasChildren()" class="text-center py-8">
-            <svg xmlns="http://www.w3.org/2000/svg" class="mx-auto h-12 w-12 text-gray-400 dark:text-gray-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
-            </svg>
-            <h4 class="mt-2 text-sm font-medium text-gray-900 dark:text-white">No child categories</h4>
-            <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">
-              This category doesn't have any subcategories yet.
-            </p>
-            <button
-              type="button"
-              (click)="createChildCategory()"
-              class="mt-3 inline-flex items-center px-3 py-1.5 border border-transparent text-sm font-medium rounded-md text-primary-700 dark:text-primary-300 bg-primary-100 dark:bg-primary-900/30 hover:bg-primary-200 dark:hover:bg-primary-900/40 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500"
-            >
-              <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
-              </svg>
-              Create Child Category
-            </button>
-          </div>
-
-          <!-- Children List -->
-          <div *ngIf="hasChildren()" class="space-y-3">
-            <div *ngFor="let child of childrenCategories()" class="border border-gray-200 dark:border-gray-700 rounded-lg">
-              <!-- Child Category Header -->
-              <div class="p-3 hover:bg-gray-50 dark:hover:bg-gray-800 cursor-pointer" (click)="toggleChildExpansion(child.id)">
-                <div class="flex items-center justify-between">
-                  <div class="flex items-center space-x-3">
-                    <!-- Expand/Collapse Icon -->
-                    <svg
-                      xmlns="http://www.w3.org/2000/svg"
-                      class="h-4 w-4 text-gray-500 dark:text-gray-400 transition-transform duration-200"
-                      [ngClass]="{'rotate-90': isChildExpanded(child.id)}"
-                      fill="none"
-                      viewBox="0 0 24 24"
-                      stroke="currentColor"
+                <!-- Status -->
+                <div>
+                  <div class="flex items-center">
+                    <input
+                      type="checkbox"
+                      id="is_active"
+                      formControlName="is_active"
+                      class="h-4 w-4 text-primary-600 focus:ring-primary-500 border-gray-300 dark:border-gray-600 rounded"
                     >
-                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
-                    </svg>
+                    <label for="is_active" class="ml-2 block text-sm text-gray-700 dark:text-gray-300">
+                      Category is active
+                    </label>
+                  </div>
+                  <p class="mt-1 text-xs text-gray-500 dark:text-gray-400 ml-6">
+                    Inactive categories will not be visible on the storefront.
+                  </p>
+                </div>
 
-                    <!-- Category Image -->
-                    <div *ngIf="child.image" class="flex-shrink-0 h-8 w-8">
-                      <img [src]="child.image" [alt]="child.name" class="h-8 w-8 rounded object-cover">
-                    </div>
-                    <div *ngIf="!child.image" class="flex-shrink-0 h-8 w-8 bg-gray-200 dark:bg-gray-700 rounded flex items-center justify-center">
-                      <span class="text-xs font-medium text-gray-600 dark:text-gray-400">{{ child.name.charAt(0) }}</span>
-                    </div>
+                <!-- Description -->
+                <div>
+                  <label for="description" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                    Description
+                  </label>
+                  <textarea
+                    id="description"
+                    formControlName="description"
+                    rows="3"
+                    class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500 dark:bg-gray-800 dark:text-white"
+                    placeholder="Enter category description"
+                  ></textarea>
+                </div>
 
-                    <!-- Category Info -->
-                    <div class="flex-1 min-w-0">
-                      <div class="flex items-center space-x-2">
-                        <h4 class="text-sm font-medium text-gray-900 dark:text-white truncate">{{ child.name }}</h4>
-                        <span
-                          [ngClass]="child.is_active ? 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300' : 'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-300'"
-                          class="px-2 py-0.5 text-xs font-medium rounded-full"
-                        >
-                          {{ child.is_active ? 'Active' : 'Inactive' }}
-                        </span>
+                <!-- Category Image -->
+                <div>
+                  <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                    Category Image
+                  </label>
+
+                  <!-- Image Preview (if available) -->
+                  <div *ngIf="imagePreview() || selectedImage()" class="mt-2 mb-4 relative w-32 h-32 border border-gray-300 dark:border-gray-600 rounded-lg overflow-hidden">
+                    <img
+                      [src]="imagePreview() || selectedImage() || ''"
+                      alt="Category Image Preview"
+                      class="w-full h-full object-cover"
+                    >
+                    <button
+                      type="button"
+                      (click)="removeImage()"
+                      class="absolute top-1 right-1 p-1 bg-red-500 text-white rounded-full hover:bg-red-600 focus:outline-none"
+                    >
+                      <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                      </svg>
+                    </button>
+                  </div>
+
+                  <!-- File Input -->
+                  <div *ngIf="!imagePreview() && !selectedImage()" class="mt-2 flex justify-center px-6 pt-5 pb-6 border-2 border-gray-300 dark:border-gray-600 border-dashed rounded-lg">
+                    <div class="space-y-1 text-center">
+                      <svg class="mx-auto h-8 w-8 text-gray-400 dark:text-gray-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
+                      </svg>
+                      <div class="flex text-sm text-gray-600 dark:text-gray-400">
+                        <label for="image-upload" class="relative cursor-pointer bg-white dark:bg-gray-800 rounded-md font-medium text-primary-600 dark:text-primary-400 hover:text-primary-500 focus-within:outline-none">
+                          <span>Upload a file</span>
+                          <input id="image-upload" name="image-upload" type="file" class="sr-only" accept="image/*" (change)="onImageChange($event)">
+                        </label>
                       </div>
-                      <p *ngIf="child.description" class="text-xs text-gray-500 dark:text-gray-400 truncate mt-1">
-                        {{ child.description }}
+                      <p class="text-xs text-gray-500 dark:text-gray-400">
+                        PNG, JPG, GIF up to 2MB
                       </p>
                     </div>
                   </div>
 
-                  <!-- Action Buttons -->
-                  <div class="flex items-center space-x-1" (click)="$event.stopPropagation()">
-                    <button
-                      type="button"
-                      (click)="navigateToChildEdit(child.id)"
-                      class="p-1 rounded-full hover:bg-gray-200 dark:hover:bg-gray-700 text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white focus:outline-none"
-                      title="Edit"
-                    >
-                      <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
-                      </svg>
-                    </button>
-                    <button
-                      type="button"
-                      (click)="deleteChildCategory(child.id, $event)"
-                      class="p-1 rounded-full hover:bg-red-100 dark:hover:bg-red-900/30 text-red-600 dark:text-red-400 hover:text-red-900 dark:hover:text-red-300 focus:outline-none"
-                      title="Delete"
-                    >
-                      <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                      </svg>
-                    </button>
+                  <!-- Change Image (if existing image) -->
+                  <div *ngIf="imagePreview() || selectedImage()" class="mt-2">
+                    <label for="image-change" class="cursor-pointer text-sm font-medium text-primary-600 dark:text-primary-400 hover:text-primary-500">
+                      Change Image
+                      <input id="image-change" name="image-change" type="file" class="sr-only" accept="image/*" (change)="onImageChange($event)">
+                    </label>
                   </div>
                 </div>
               </div>
 
-              <!-- Expanded Details -->
-              <div *ngIf="isChildExpanded(child.id)" class="px-3 pb-3 border-t border-gray-200 dark:border-gray-700">
-                <div class="bg-gray-50 dark:bg-gray-800 rounded-lg p-3 mt-3">
-                  <dl class="grid grid-cols-2 gap-x-4 gap-y-2 text-xs">
-                    <div>
-                      <dt class="font-medium text-gray-500 dark:text-gray-400">Slug</dt>
-                      <dd class="text-gray-900 dark:text-white">{{ child.slug || 'Not set' }}</dd>
-                    </div>
-                    <div>
-                      <dt class="font-medium text-gray-500 dark:text-gray-400">Display Order</dt>
-                      <dd class="text-gray-900 dark:text-white">{{ child.display_order || 0 }}</dd>
-                    </div>
-                    <div>
-                      <dt class="font-medium text-gray-500 dark:text-gray-400">Products</dt>
-                      <dd class="text-gray-900 dark:text-white">{{ child.products_count || 0 }}</dd>
-                    </div>
-                    <div>
-                      <dt class="font-medium text-gray-500 dark:text-gray-400">Created</dt>
-                      <dd class="text-gray-900 dark:text-white">{{ (child.created_at | date:'MMM d, y') || 'Unknown' }}</dd>
-                    </div>
-                  </dl>
+              <!-- Form Actions -->
+              <div class="flex justify-end mt-6 pt-4 border-t border-gray-200 dark:border-dark-border">
+                <a
+                  routerLink="/products/categories"
+                  class="px-4 py-2 mr-3 border border-gray-300 dark:border-gray-600 rounded-lg shadow-sm text-sm font-medium text-gray-700 dark:text-gray-200 bg-white dark:bg-dark-bg-secondary hover:bg-gray-50 dark:hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500"
+                >
+                  Cancel
+                </a>
+                <button
+                  type="submit"
+                  [disabled]="isSaving() || categoryForm.invalid"
+                  class="px-4 py-2 border border-transparent rounded-lg shadow-sm text-sm font-medium text-white bg-primary-600 hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  <svg *ngIf="isSaving()" class="animate-spin -ml-1 mr-2 h-4 w-4 text-white inline-block" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                    <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                  </svg>
+                  {{ isSaving() ? 'Saving...' : (isEditMode() ? 'Update Category' : 'Create Category') }}
+                </button>
+              </div>
+            </div>
+          </form>
+        </div>
+      </div>
 
-                  <div *ngIf="child.description" class="mt-3">
-                    <dt class="text-xs font-medium text-gray-500 dark:text-gray-400 mb-1">Description</dt>
-                    <dd class="text-xs text-gray-900 dark:text-white">{{ child.description }}</dd>
+      <!-- Right Column - Children Categories (only in edit mode) -->
+      <div *ngIf="isEditMode()" class="lg:col-span-2">
+        <div class="bg-white dark:bg-dark-bg-secondary shadow-sm rounded-lg border border-gray-200 dark:border-dark-border overflow-hidden h-fit">
+          <div class="px-6 py-4 border-b border-gray-200 dark:border-dark-border">
+            <div class="flex justify-between items-center">
+              <h3 class="text-lg font-medium text-gray-900 dark:text-white">
+                Child Categories
+                <span *ngIf="hasChildren()" class="ml-2 text-sm font-normal text-gray-500 dark:text-gray-400">
+                  ({{ getChildrenCount() }})
+                </span>
+              </h3>
+              <div class="flex space-x-2">
+                <button
+                  type="button"
+                  (click)="refreshChildren()"
+                  class="p-1 text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300"
+                  title="Refresh"
+                >
+                  <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                  </svg>
+                </button>
+                <button
+                  type="button"
+                  (click)="createChildCategory()"
+                  class="inline-flex items-center px-3 py-1.5 border border-transparent text-xs font-medium rounded text-primary-700 dark:text-primary-300 bg-primary-100 dark:bg-primary-900/30 hover:bg-primary-200 dark:hover:bg-primary-900/40 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500"
+                >
+                  <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+                  </svg>
+                  Add Child
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <div class="p-6 max-h-[calc(100vh-300px)] overflow-y-auto">
+            <!-- Empty State -->
+            <div *ngIf="!hasChildren()" class="text-center py-12">
+              <svg xmlns="http://www.w3.org/2000/svg" class="mx-auto h-16 w-16 text-gray-400 dark:text-gray-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
+              </svg>
+              <h4 class="mt-4 text-lg font-medium text-gray-900 dark:text-white">No child categories</h4>
+              <p class="mt-2 text-sm text-gray-500 dark:text-gray-400">
+                This category doesn't have any subcategories yet.
+              </p>
+              <button
+                type="button"
+                (click)="createChildCategory()"
+                class="mt-6 inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-primary-700 dark:text-primary-300 bg-primary-100 dark:bg-primary-900/30 hover:bg-primary-200 dark:hover:bg-primary-900/40 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500"
+              >
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+                </svg>
+                Create Child Category
+              </button>
+            </div>
+
+            <!-- Children List -->
+            <div *ngIf="hasChildren()" class="space-y-4">
+              <div *ngFor="let child of childrenCategories()" class="border border-gray-200 dark:border-gray-700 rounded-lg">
+                <!-- Child Category Header -->
+                <div class="p-4 hover:bg-gray-50 dark:hover:bg-gray-800 cursor-pointer" (click)="toggleChildExpansion(child.id)">
+                  <div class="flex items-center justify-between">
+                    <div class="flex items-center space-x-4">
+                      <!-- Expand/Collapse Icon -->
+                      <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        class="h-5 w-5 text-gray-500 dark:text-gray-400 transition-transform duration-200"
+                        [ngClass]="{'rotate-90': isChildExpanded(child.id)}"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                        stroke="currentColor"
+                      >
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+                      </svg>
+
+                      <!-- Category Image -->
+                      <div *ngIf="child.image" class="flex-shrink-0 h-12 w-12">
+                        <img [src]="child.image" [alt]="child.name" class="h-12 w-12 rounded-lg object-cover">
+                      </div>
+                      <div *ngIf="!child.image" class="flex-shrink-0 h-12 w-12 bg-gray-200 dark:bg-gray-700 rounded-lg flex items-center justify-center">
+                        <span class="text-lg font-medium text-gray-600 dark:text-gray-400">{{ child.name.charAt(0) }}</span>
+                      </div>
+
+                      <!-- Category Info -->
+                      <div class="flex-1 min-w-0">
+                        <div class="flex items-center space-x-3">
+                          <h4 class="text-base font-medium text-gray-900 dark:text-white truncate">{{ child.name }}</h4>
+                          <span
+                            [ngClass]="child.is_active ? 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300' : 'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-300'"
+                            class="px-2.5 py-0.5 text-xs font-medium rounded-full"
+                          >
+                            {{ child.is_active ? 'Active' : 'Inactive' }}
+                          </span>
+                        </div>
+                        <p *ngIf="child.description" class="text-sm text-gray-500 dark:text-gray-400 truncate mt-1">
+                          {{ child.description }}
+                        </p>
+                        <div class="flex items-center space-x-4 mt-2 text-xs text-gray-500 dark:text-gray-400">
+                          <span>{{ child.products_count || 0 }} products</span>
+                          <span>Order: {{ child.display_order || 0 }}</span>
+                        </div>
+                      </div>
+                    </div>
+
+                    <!-- Action Buttons -->
+                    <div class="flex items-center space-x-2" (click)="$event.stopPropagation()">
+                      <button
+                        type="button"
+                        (click)="navigateToChildEdit(child.id)"
+                        class="p-2 rounded-full hover:bg-gray-200 dark:hover:bg-gray-700 text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white focus:outline-none"
+                        title="Edit"
+                      >
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
+                        </svg>
+                      </button>
+                      <button
+                        type="button"
+                        (click)="deleteChildCategory(child.id, $event)"
+                        class="p-2 rounded-full hover:bg-red-100 dark:hover:bg-red-900/30 text-red-600 dark:text-red-400 hover:text-red-900 dark:hover:text-red-300 focus:outline-none"
+                        title="Delete"
+                      >
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                        </svg>
+                      </button>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Expanded Details -->
+                <div *ngIf="isChildExpanded(child.id)" class="px-4 pb-4 border-t border-gray-200 dark:border-gray-700">
+                  <div class="bg-gray-50 dark:bg-gray-800 rounded-lg p-4 mt-4">
+                    <dl class="grid grid-cols-2 gap-x-6 gap-y-3 text-sm">
+                      <div>
+                        <dt class="font-medium text-gray-500 dark:text-gray-400">Slug</dt>
+                        <dd class="text-gray-900 dark:text-white">{{ child.slug || 'Not set' }}</dd>
+                      </div>
+                      <div>
+                        <dt class="font-medium text-gray-500 dark:text-gray-400">Display Order</dt>
+                        <dd class="text-gray-900 dark:text-white">{{ child.display_order || 0 }}</dd>
+                      </div>
+                      <div>
+                        <dt class="font-medium text-gray-500 dark:text-gray-400">Products Count</dt>
+                        <dd class="text-gray-900 dark:text-white">{{ child.products_count || 0 }}</dd>
+                      </div>
+                      <div>
+                        <dt class="font-medium text-gray-500 dark:text-gray-400">Created</dt>
+                        <dd class="text-gray-900 dark:text-white">{{ (child.created_at | date:'MMM d, y') || 'Unknown' }}</dd>
+                      </div>
+                    </dl>
+
+                    <div *ngIf="child.description" class="mt-4">
+                      <dt class="text-sm font-medium text-gray-500 dark:text-gray-400 mb-2">Description</dt>
+                      <dd class="text-sm text-gray-900 dark:text-white">{{ child.description }}</dd>
+                    </div>
                   </div>
                 </div>
               </div>
