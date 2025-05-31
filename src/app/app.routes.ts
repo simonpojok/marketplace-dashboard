@@ -1,6 +1,7 @@
 import {Routes} from '@angular/router';
 import {authGuard} from './core/auth/guards/auth.guard';
 import {nonAuthGuard} from './core/auth/guards/non-auth.guard';
+import {ADMIN_ROUTES} from './features/admin-users/admin-users-routing';
 
 export const routes: Routes = [
   {
@@ -55,6 +56,15 @@ export const routes: Routes = [
           .then(m => m.PROMOTIONS_ROUTES),
         title: 'Promotions'
       },
+      {
+        path: 'admin-users',
+        loadChildren: () => import('./features/admin-users/admin-users-routing').then(m => m.ADMIN_ROUTES),
+        data: {
+          title: 'Admin Users Management',
+          requiresStaff: true,
+          breadcrumb: 'Admin Users'
+        }
+      }
     ]
   },
   {

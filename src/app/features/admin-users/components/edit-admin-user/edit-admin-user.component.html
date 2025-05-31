@@ -1,0 +1,334 @@
+<div class="max-w-4xl mx-auto space-y-6">
+  <!-- Loading State -->
+  <div *ngIf="isLoading()" class="flex justify-center items-center h-64">
+    <div class="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-primary-500"></div>
+  </div>
+
+  <!-- Edit Form -->
+  <div *ngIf="!isLoading() && user()" class="space-y-6">
+    <!-- Page Header -->
+    <div class="flex items-center justify-between">
+      <div class="flex items-center space-x-4">
+        <button [routerLink]="['/admin-users', user()!.id]"
+                class="p-2 text-gray-400 hover:text-gray-500 dark:text-gray-500 dark:hover:text-gray-400"
+        >
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"/>
+          </svg>
+        </button>
+        <div>
+          <h1 class="text-2xl font-bold text-gray-900 dark:text-white">Edit Admin User</h1>
+          <p class="mt-1 text-sm text-gray-600 dark:text-gray-300">
+            Update {{ user()!.name || user()!.phone_number }}'s information and permissions
+          </p>
+        </div>
+        <span [ngClass]="getStatusBadgeClass(user()!)" class="px-3 py-1 text-sm font-medium rounded-full">
+          {{ getStatusText(user()!) }}
+        </span>
+      </div>
+      <button
+        (click)="onCancel()"
+        class="flex items-center px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg text-sm font-medium text-gray-700 dark:text-gray-200 bg-white dark:bg-dark-bg-secondary hover:bg-gray-50 dark:hover:bg-gray-700"
+      >
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-2" fill="none" viewBox="0 0 24 24"
+             stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+        </svg>
+        Cancel
+      </button>
+    </div>
+
+    <form [formGroup]="editUserForm" (ngSubmit)="onSubmit()" class="space-y-6">
+      <!-- Current User Info -->
+      <div class="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-700 rounded-xl p-4">
+        <div class="flex">
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-blue-400 mr-2 mt-0.5" fill="none"
+               viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                  d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+          </svg>
+          <div>
+            <h4 class="text-sm font-medium text-blue-800 dark:text-blue-200">Editing User</h4>
+            <div class="text-sm text-blue-700 dark:text-blue-300 mt-1 space-y-1">
+              <p><strong>Phone:</strong> {{ user()!.phone_number }}</p>
+              <p><strong>User ID:</strong> {{ user()!.id }}</p>
+              <p><strong>Created:</strong> {{ getDateJoined() }}</p>
+<!--              <p *ngIf="user()!.last_login"><strong>Last-->
+<!--                Login:</strong> {{ getDateLastLogin() }}</p>-->
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Basic Information -->
+      <div
+        class="bg-white dark:bg-dark-bg-secondary shadow-sm rounded-xl border border-gray-200 dark:border-dark-border p-6">
+        <h3 class="text-lg font-medium text-gray-900 dark:text-white mb-4">Basic Information</h3>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <!-- Full Name -->
+          <div>
+            <label for="name" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+              Full Name *
+            </label>
+            <input
+              type="text"
+              id="name"
+              formControlName="name"
+              placeholder="Enter full name"
+              class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent bg-white dark:bg-dark-bg-secondary text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400"
+            />
+            <div *ngFor="let error of getFormErrors('name')" class="mt-1 text-sm text-red-600 dark:text-red-400">
+              {{ error }}
+            </div>
+          </div>
+
+          <!-- Email -->
+          <div>
+            <label for="email" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+              Email Address *
+            </label>
+            <input
+              type="email"
+              id="email"
+              formControlName="email"
+              placeholder="Enter email address"
+              class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent bg-white dark:bg-dark-bg-secondary text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400"
+            />
+            <div *ngFor="let error of getFormErrors('email')" class="mt-1 text-sm text-red-600 dark:text-red-400">
+              {{ error }}
+            </div>
+          </div>
+
+          <!-- Phone Number (Read-only) -->
+          <div>
+            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+              Phone Number
+            </label>
+            <input
+              type="text"
+              [value]="user()!.phone_number"
+              readonly
+              class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-gray-50 dark:bg-gray-800 text-gray-500 dark:text-gray-400 cursor-not-allowed"
+            />
+            <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">
+              Phone number cannot be changed
+            </p>
+          </div>
+
+          <!-- Address -->
+          <div>
+            <label for="address" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+              Address
+            </label>
+            <textarea
+              id="address"
+              formControlName="address"
+              rows="3"
+              placeholder="Enter address (optional)"
+              class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent bg-white dark:bg-dark-bg-secondary text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400"
+            ></textarea>
+          </div>
+        </div>
+      </div>
+
+      <!-- Role and Permissions -->
+      <div
+        class="bg-white dark:bg-dark-bg-secondary shadow-sm rounded-xl border border-gray-200 dark:border-dark-border p-6">
+        <h3 class="text-lg font-medium text-gray-900 dark:text-white mb-4">Role and Permissions</h3>
+
+        <!-- Status and Role Selection -->
+        <div class="space-y-4 mb-6">
+          <div class="flex items-center">
+            <input
+              type="checkbox"
+              id="is_active"
+              formControlName="is_active"
+              class="h-4 w-4 text-primary-600 focus:ring-primary-500 border-gray-300 rounded"
+            />
+            <label for="is_active" class="ml-2 block text-sm text-gray-700 dark:text-gray-300">
+              Active (User can log in and access the system)
+            </label>
+          </div>
+
+          <div class="flex items-center">
+            <input
+              type="checkbox"
+              id="is_staff"
+              formControlName="is_staff"
+              class="h-4 w-4 text-primary-600 focus:ring-primary-500 border-gray-300 rounded"
+            />
+            <label for="is_staff" class="ml-2 block text-sm text-gray-700 dark:text-gray-300">
+              Staff User (Can access admin panel)
+            </label>
+          </div>
+
+          <div class="flex items-center">
+            <input
+              type="checkbox"
+              id="is_superuser"
+              formControlName="is_superuser"
+              (change)="onSuperuserChange()"
+              class="h-4 w-4 text-primary-600 focus:ring-primary-500 border-gray-300 rounded"
+            />
+            <label for="is_superuser" class="ml-2 block text-sm text-gray-700 dark:text-gray-300">
+              Super User (Full system access)
+            </label>
+          </div>
+        </div>
+
+        <!-- Permission Selection -->
+        <div *ngIf="editUserForm.get('is_staff')?.value && !editUserForm.get('is_superuser')?.value" class="space-y-4">
+          <div class="flex items-center justify-between">
+            <h4 class="text-md font-medium text-gray-900 dark:text-white">Specific Permissions</h4>
+            <span class="text-sm text-gray-500 dark:text-gray-400">
+              {{ selectedPermissions().size }} permission(s) selected
+            </span>
+          </div>
+
+          <div class="space-y-4 max-h-96 overflow-y-auto">
+            <div *ngFor="let groupName of getPermissionGroupKeys()"
+                 class="border border-gray-200 dark:border-gray-600 rounded-lg p-4">
+              <div class="flex items-center justify-between mb-3">
+                <h5 class="text-sm font-medium text-gray-900 dark:text-white">
+                  {{ formatGroupName(groupName) }}
+                </h5>
+                <button
+                  type="button"
+                  (click)="toggleAllPermissionsInGroup(permissions()[groupName])"
+                  class="text-xs text-primary-600 dark:text-primary-400 hover:text-primary-500"
+                >
+                  {{ isGroupFullySelected(permissions()[groupName]) ? 'Deselect All' : 'Select All' }}
+                </button>
+              </div>
+
+              <div class="space-y-2">
+                <div *ngFor="let permission of permissions()[groupName]" class="flex items-center">
+                  <input
+                    type="checkbox"
+                    [id]="'perm-' + permission.codename"
+                    [checked]="isPermissionSelected(permission.codename)"
+                    (change)="togglePermission(permission.codename)"
+                    class="h-4 w-4 text-primary-600 focus:ring-primary-500 border-gray-300 rounded"
+                  />
+                  <label [for]="'perm-' + permission.codename"
+                         class="ml-2 block text-sm text-gray-700 dark:text-gray-300">
+                    {{ permission.name }}
+                  </label>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Superuser Note -->
+        <div *ngIf="editUserForm.get('is_superuser')?.value"
+             class="bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-700 rounded-lg p-4">
+          <div class="flex">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-yellow-400 mr-2 mt-0.5" fill="none"
+                 viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                    d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.732 16c-.77.833.192 2.5 1.732 2.5z"/>
+            </svg>
+            <div>
+              <h4 class="text-sm font-medium text-yellow-800 dark:text-yellow-200">Super User Selected</h4>
+              <p class="text-sm text-yellow-700 dark:text-yellow-300 mt-1">
+                Super users have full access to all system features and don't need individual permissions.
+              </p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Inactive User Warning -->
+        <div *ngIf="!editUserForm.get('is_active')?.value"
+             class="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-700 rounded-lg p-4">
+          <div class="flex">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-red-400 mr-2 mt-0.5" fill="none"
+                 viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                    d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+            </svg>
+            <div>
+              <h4 class="text-sm font-medium text-red-800 dark:text-red-200">User Inactive</h4>
+              <p class="text-sm text-red-700 dark:text-red-300 mt-1">
+                This user will not be able to log in or access the system while inactive.
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Advanced Options -->
+      <div
+        class="bg-white dark:bg-dark-bg-secondary shadow-sm rounded-xl border border-gray-200 dark:border-dark-border p-6">
+        <button
+          type="button"
+          (click)="showAdvancedOptions.set(!showAdvancedOptions())"
+          class="flex items-center justify-between w-full text-left"
+        >
+          <h3 class="text-lg font-medium text-gray-900 dark:text-white">Advanced Options</h3>
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            class="h-5 w-5 text-gray-400 transition-transform"
+            [class.rotate-180]="showAdvancedOptions()"
+            fill="none"
+            viewBox="0 0 24 24"
+            stroke="currentColor"
+          >
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
+          </svg>
+        </button>
+
+        <div *ngIf="showAdvancedOptions()" class="mt-4 space-y-4">
+          <div class="flex items-center">
+            <input
+              type="checkbox"
+              id="send_notification"
+              formControlName="send_notification"
+              class="h-4 w-4 text-primary-600 focus:ring-primary-500 border-gray-300 rounded"
+            />
+            <label for="send_notification" class="ml-2 block text-sm text-gray-700 dark:text-gray-300">
+              Send notification email about account changes
+            </label>
+          </div>
+
+          <div class="flex items-center">
+            <input
+              type="checkbox"
+              id="require_password_change"
+              formControlName="require_password_change"
+              class="h-4 w-4 text-primary-600 focus:ring-primary-500 border-gray-300 rounded"
+            />
+            <label for="require_password_change" class="ml-2 block text-sm text-gray-700 dark:text-gray-300">
+              Require password change on next login
+            </label>
+          </div>
+        </div>
+      </div>
+
+      <!-- Form Actions -->
+      <div class="flex items-center justify-end space-x-4 pt-6">
+        <button
+          type="button"
+          (click)="onCancel()"
+          class="px-6 py-2 border border-gray-300 dark:border-gray-600 rounded-lg text-sm font-medium text-gray-700 dark:text-gray-200 bg-white dark:bg-dark-bg-secondary hover:bg-gray-50 dark:hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500"
+        >
+          Cancel
+        </button>
+        <button
+          type="submit"
+          [disabled]="isSaving() || editUserForm.invalid"
+          class="px-6 py-2 border border-transparent rounded-lg text-sm font-medium text-white bg-primary-600 hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 disabled:opacity-50 disabled:cursor-not-allowed flex items-center"
+        >
+          <svg *ngIf="isSaving()" class="animate-spin -ml-1 mr-2 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg"
+               fill="none" viewBox="0 0 24 24">
+            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+            <path class="opacity-75" fill="currentColor"
+                  d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+          </svg>
+          {{ isSaving() ? 'Saving...' : 'Save Changes' }}
+        </button>
+      </div>
+    </form>
+  </div>
+</div>
