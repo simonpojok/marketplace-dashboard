@@ -53,7 +53,7 @@ export class ProductCardComponent {
       const primaryImage = product.images.find(img => img.is_primary);
       return primaryImage ? primaryImage.image : product.images[0].image;
     }
-    return 'assets/images/placeholder-product.jpg';
+    return 'assets/images/placeholder-product.png';
   }
 
   protected deleteProduct(event: Event): void {
