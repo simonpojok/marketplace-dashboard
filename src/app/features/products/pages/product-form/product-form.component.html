@@ -342,7 +342,7 @@
                 <!-- Upload Area -->
                 <div
                   *ngIf="!image.preview"
-                  class="w-full h-48 border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-lg flex items-center justify-center hover:border-primary-500 dark:hover:border-primary-500 transition-colors cursor-pointer"
+                  class="w-full h-48 border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-lg flex items-center justify-center hover:border-primary-500 dark:hover:border-primary-500 transition-colors cursor-pointer drag-drop-area"
                   [class.drag-over]="dragOver()"
                   (dragover)="onDragOver($event)"
                   (dragleave)="onDragLeave($event)"
@@ -439,11 +439,545 @@
 
       <!-- Product Variations -->
       <div *ngIf="hasVariations()">
-        <app-variation-manager
-          [variations]="variations()"
-          [basePrice]="productForm.get('price')?.value || 0"
-          (variationsChanged)="onVariationsChanged($event)"
-        />
+        <!-- Variation Manager -->
+        <div
+          class="bg-white dark:bg-dark-bg-secondary shadow-sm rounded-lg border border-gray-200 dark:border-dark-border overflow-hidden">
+          <div class="px-6 py-4 border-b border-gray-200 dark:border-dark-border">
+            <div class="flex justify-between items-center">
+              <h2 class="text-lg font-medium text-gray-900 dark:text-white">Product Variations</h2>
+              <div class="flex items-center space-x-2">
+                <span class="text-sm text-gray-500 dark:text-gray-400">
+                  {{ variations().length }} variation{{ variations().length !== 1 ? 's' : '' }}
+                </span>
+                <button
+                  type="button"
+                  (click)="toggleVariationManager()"
+                  class="p-1 rounded-full hover:bg-gray-200 dark:hover:bg-gray-700 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300"
+                >
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    class="h-5 w-5 transition-transform duration-200"
+                    [class.rotate-180]="!isVariationManagerExpanded()"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke="currentColor"
+                  >
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
+                  </svg>
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <div *ngIf="isVariationManagerExpanded()" class="p-6 space-y-6">
+            <!-- Step 1: Attribute Selection -->
+            <div class="space-y-4">
+              <div class="flex items-center space-x-2">
+                <div
+                  class="flex-shrink-0 w-6 h-6 bg-primary-600 text-white rounded-full flex items-center justify-center text-xs font-medium">
+                  1
+                </div>
+                <h3 class="text-sm font-medium text-gray-900 dark:text-white">
+                  Select Product Attributes
+                </h3>
+              </div>
+
+              <!-- Attribute Selector -->
+              <div class="space-y-4">
+                <!-- Header -->
+                <div class="flex items-center justify-between">
+                  <h4 class="text-sm font-medium text-gray-900 dark:text-white">
+                    Product Attributes
+                  </h4>
+                  <div class="text-xs text-gray-500 dark:text-gray-400">
+                    {{ availableAttributes().length }} selected
+                  </div>
+                </div>
+
+                <!-- Attribute Categories -->
+                <div class="space-y-3">
+                  <div *ngFor="let category of attributeCategories"
+                       class="border border-gray-200 dark:border-gray-700 rounded-lg">
+                    <!-- Category Header -->
+                    <button
+                      type="button"
+                      (click)="toggleAttributeCategory(category.name)"
+                      class="w-full px-4 py-3 text-left flex items-center justify-between hover:bg-gray-50 dark:hover:bg-gray-800 rounded-lg transition-colors"
+                    >
+                      <span class="text-sm font-medium text-gray-900 dark:text-white">
+                        {{ category.label }}
+                      </span>
+                      <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        class="h-4 w-4 text-gray-500 transition-transform duration-200"
+                        [class.rotate-180]="expandedCategories()[category.name]"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                        stroke="currentColor"
+                      >
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
+                      </svg>
+                    </button>
+
+                    <!-- Category Attributes -->
+                    <div
+                      *ngIf="expandedCategories()[category.name]"
+                      class="px-4 pb-3 grid grid-cols-2 gap-2 border-t border-gray-100 dark:border-gray-700 pt-3"
+                    >
+                      <label
+                        *ngFor="let attrKey of category.attributes"
+                        class="flex items-center space-x-2 p-2 rounded-md hover:bg-gray-50 dark:hover:bg-gray-800 cursor-pointer"
+                      >
+                        <input
+                          type="checkbox"
+                          [checked]="availableAttributes().includes(attrKey)"
+                          (change)="toggleAttribute(attrKey, $event)"
+                          class="h-4 w-4 text-primary-600 focus:ring-primary-500 border-gray-300 dark:border-gray-600 rounded"
+                        >
+                        <span class="text-sm text-gray-700 dark:text-gray-300">
+                          {{ getAttributeLabel(attrKey) }}
+                        </span>
+                      </label>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Selected Attributes Summary -->
+                <div *ngIf="availableAttributes().length > 0" class="mt-4 p-3 bg-primary-50 dark:bg-primary-900/20 rounded-lg">
+                  <div class="text-sm font-medium text-primary-900 dark:text-primary-100 mb-2">
+                    Selected Attributes:
+                  </div>
+                  <div class="flex flex-wrap gap-1">
+                    <span
+                      *ngFor="let attr of availableAttributes()"
+                      class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-primary-100 dark:bg-primary-800 text-primary-800 dark:text-primary-200"
+                    >
+                      {{ getAttributeLabel(attr) }}
+                      <button
+                        type="button"
+                        (click)="removeAttribute(attr)"
+                        class="ml-1 p-0.5 rounded-full hover:bg-primary-200 dark:hover:bg-primary-700"
+                      >
+                        <svg class="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                        </svg>
+                      </button>
+                    </span>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Step 2: Add Variations -->
+            <div *ngIf="availableAttributes().length > 0" class="space-y-4">
+              <div class="flex items-center space-x-2">
+                <div
+                  class="flex-shrink-0 w-6 h-6 bg-primary-600 text-white rounded-full flex items-center justify-center text-xs font-medium">
+                  2
+                </div>
+                <h3 class="text-sm font-medium text-gray-900 dark:text-white">
+                  Add Variations
+                </h3>
+              </div>
+
+              <!-- Variation Form -->
+              <div
+                class="bg-white dark:bg-dark-bg-secondary border border-gray-200 dark:border-gray-700 rounded-lg p-4 space-y-4 variation-form">
+                <div class="flex items-center justify-between">
+                  <h4 class="text-sm font-medium text-gray-900 dark:text-white">
+                    {{ isVariationEdit() ? 'Edit Variation' : 'Add New Variation' }}
+                  </h4>
+                  <button
+                    *ngIf="isVariationEdit()"
+                    type="button"
+                    (click)="cancelVariationEdit()"
+                    class="text-xs text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200"
+                  >
+                    Cancel
+                  </button>
+                </div>
+
+                <!-- Attributes Section -->
+                <div class="space-y-3">
+                  <div class="text-xs font-medium text-gray-700 dark:text-gray-300 uppercase tracking-wide">
+                    Attributes
+                  </div>
+
+                  <div *ngIf="availableAttributes().length === 0" class="text-sm text-gray-500 dark:text-gray-400 italic">
+                    No attributes selected. Please select attributes first.
+                  </div>
+
+                  <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    <div *ngFor="let attrKey of availableAttributes()" class="space-y-1">
+                      <label class="block text-xs font-medium text-gray-700 dark:text-gray-300">
+                        {{ getAttributeLabel(attrKey) }}
+                      </label>
+
+                      <!-- Text Input -->
+                      <input
+                        *ngIf="getVariationAttributeType(attrKey) === 'text'"
+                        type="text"
+                        [value]="variationFormData().attributes?.[attrKey] || ''"
+                        (input)="updateVariationAttribute(attrKey, $event)"
+                        class="w-full px-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500 dark:bg-gray-800 dark:text-white"
+                        [placeholder]="'Enter ' + getAttributeLabel(attrKey).toLowerCase()"
+                      >
+
+                      <!-- Select Input -->
+                      <div *ngIf="getVariationAttributeType(attrKey) === 'select'">
+                        <select
+                          [value]="getVariationSelectValue(attrKey)"
+                          (change)="updateVariationAttribute(attrKey, $event)"
+                          class="w-full px-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500 dark:bg-gray-800 dark:text-white"
+                        >
+                          <option value="">Select {{ getAttributeLabel(attrKey) }}</option>
+                          <option *ngFor="let option of getVariationAttributeOptions(attrKey)" [value]="option">
+                            {{ option }}
+                          </option>
+                        </select>
+
+                        <!-- Custom Input Field -->
+                        <div *ngIf="isCustomVariationSelected(attrKey)" class="mt-2">
+                          <input
+                            type="text"
+                            [value]="getCustomVariationValue(attrKey)"
+                            (input)="updateCustomVariationAttribute(attrKey, $event)"
+                            class="w-full px-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500 dark:bg-gray-800 dark:text-white"
+                            [placeholder]="'Enter custom ' + getAttributeLabel(attrKey).toLowerCase()"
+                          >
+                        </div>
+                      </div>
+
+                      <!-- Color + Text Input -->
+                      <div *ngIf="getVariationAttributeType(attrKey) === 'color-text'" class="flex space-x-2">
+                        <input
+                          type="color"
+                          [value]="getVariationColorValue(variationFormData().attributes?.[attrKey] || '')"
+                          (input)="updateColorVariationAttribute(attrKey, $event)"
+                          class="w-12 h-8 border border-gray-300 dark:border-gray-600 rounded cursor-pointer"
+                        >
+                        <input
+                          type="text"
+                          [value]="variationFormData().attributes?.[attrKey] || ''"
+                          (input)="updateVariationAttribute(attrKey, $event)"
+                          class="flex-1 px-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500 dark:bg-gray-800 dark:text-white"
+                          placeholder="Color name"
+                        >
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Pricing & Stock Section -->
+                <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 pt-3 border-t border-gray-200 dark:border-gray-700">
+                  <!-- SKU -->
+                  <div class="space-y-1">
+                    <label class="block text-xs font-medium text-gray-700 dark:text-gray-300">
+                      SKU
+                    </label>
+                    <input
+                      type="text"
+                      [value]="variationFormData().sku || ''"
+                      (input)="updateVariationField('sku', $event)"
+                      class="w-full px-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500 dark:bg-gray-800 dark:text-white"
+                      placeholder="Auto-generated"
+                    >
+                  </div>
+
+                  <!-- Price Adjustment -->
+                  <div class="space-y-1">
+                    <label class="block text-xs font-medium text-gray-700 dark:text-gray-300">
+                      Price Adjustment
+                    </label>
+                    <div class="relative">
+                      <span class="absolute left-3 top-2 text-xs text-gray-500 dark:text-gray-400">UGX</span>
+                      <input
+                        type="number"
+                        step="0.01"
+                        [value]="variationFormData().price_adjustment || 0"
+                        (input)="updateVariationField('price_adjustment', $event)"
+                        class="w-full pl-12 pr-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500 dark:bg-gray-800 dark:text-white"
+                        placeholder="0.00"
+                      >
+                    </div>
+                  </div>
+
+                  <!-- Stock Quantity -->
+                  <div class="space-y-1">
+                    <label class="block text-xs font-medium text-gray-700 dark:text-gray-300">
+                      Stock Quantity *
+                    </label>
+                    <input
+                      type="number"
+                      min="0"
+                      [value]="variationFormData().stock_quantity || 0"
+                      (input)="updateVariationField('stock_quantity', $event)"
+                      class="w-full px-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500 dark:bg-gray-800 dark:text-white"
+                      placeholder="0"
+                      required
+                    >
+                  </div>
+                </div>
+
+                <!-- Image URL -->
+                <div class="space-y-1">
+                  <label class="block text-xs font-medium text-gray-700 dark:text-gray-300">
+                    Variation Image URL (Optional)
+                  </label>
+                  <input
+                    type="url"
+                    [value]="variationFormData().image_url || ''"
+                    (input)="updateVariationField('image_url', $event)"
+                    class="w-full px-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500 dark:bg-gray-800 dark:text-white"
+                    placeholder="https://example.com/variation-image.jpg"
+                  >
+                </div>
+
+                <!-- Active Status -->
+                <div class="flex items-center space-x-2">
+                  <input
+                    type="checkbox"
+                    id="variation-active"
+                    [checked]="variationFormData().is_active !== false"
+                    (change)="updateVariationField('is_active', $event)"
+                    class="h-4 w-4 text-primary-600 focus:ring-primary-500 border-gray-300 dark:border-gray-600 rounded"
+                  >
+                  <label for="variation-active" class="text-sm text-gray-700 dark:text-gray-300">
+                    Active
+                  </label>
+                </div>
+
+                <!-- Action Buttons -->
+                <div class="flex justify-end space-x-2 pt-3 border-t border-gray-200 dark:border-gray-700">
+                  <button
+                    type="button"
+                    (click)="resetVariationForm()"
+                    class="px-3 py-1.5 text-xs font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-md hover:bg-gray-50 dark:hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500"
+                  >
+                    Reset
+                  </button>
+                  <button
+                    type="button"
+                    (click)="saveVariation()"
+                    [disabled]="!isVariationFormValid()"
+                    class="px-3 py-1.5 text-xs font-medium text-white bg-primary-600 hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 disabled:opacity-50 disabled:cursor-not-allowed rounded-md"
+                  >
+                    {{ isVariationEdit() ? 'Update' : 'Add' }} Variation
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            <!-- Step 3: Manage Variations -->
+            <div *ngIf="variations().length > 0" class="space-y-4">
+              <div class="flex items-center space-x-2">
+                <div
+                  class="flex-shrink-0 w-6 h-6 bg-primary-600 text-white rounded-full flex items-center justify-center text-xs font-medium">
+                  3
+                </div>
+                <h3 class="text-sm font-medium text-gray-900 dark:text-white">
+                  Manage Variations
+                </h3>
+              </div>
+
+              <!-- Variation List -->
+              <div class="space-y-4">
+                <!-- Header -->
+                <div class="flex items-center justify-between">
+                  <h4 class="text-sm font-medium text-gray-900 dark:text-white">
+                    Product Variations ({{ variations().length }})
+                  </h4>
+                  <div class="text-xs text-gray-500 dark:text-gray-400">
+                    Click on a variation to edit
+                  </div>
+                </div>
+
+                <!-- Empty State -->
+                <div *ngIf="variations().length === 0"
+                     class="text-center py-12 border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-lg">
+                  <svg xmlns="http://www.w3.org/2000/svg" class="mx-auto h-12 w-12 text-gray-400 dark:text-gray-500" fill="none"
+                       viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                          d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+                  </svg>
+                  <h3 class="mt-2 text-sm font-medium text-gray-900 dark:text-white">No variations</h3>
+                  <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">
+                    Add variations to offer different options for this product.
+                  </p>
+                </div>
+
+                <!-- Variations Grid -->
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                  <div
+                    *ngFor="let variation of variations(); let i = index"
+                    class="variation-tile cursor-pointer"
+                    [class.selected]="selectedVariationIndex() === i"
+                    (click)="selectVariation(i)"
+                  >
+                    <!-- Variation Header -->
+                    <div class="flex items-start justify-between mb-3">
+                      <div class="flex-1 min-w-0">
+                        <h5 class="text-sm font-medium text-gray-900 dark:text-white truncate">
+                          {{ getVariationDisplayName(variation) }}
+                        </h5>
+                        <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                          SKU: {{ variation.sku || 'Auto-generated' }}
+                        </p>
+                      </div>
+
+                      <!-- Actions -->
+                      <div class="flex items-center space-x-1 ml-2">
+                        <button
+                          type="button"
+                          (click)="editVariation(i, $event)"
+                          class="p-1 rounded-full hover:bg-gray-200 dark:hover:bg-gray-700 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300"
+                          title="Edit"
+                        >
+                          <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24"
+                               stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                  d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"/>
+                          </svg>
+                        </button>
+                        <button
+                          type="button"
+                          (click)="deleteVariation(i, $event)"
+                          class="p-1 rounded-full hover:bg-red-100 dark:hover:bg-red-900/30 text-red-400 hover:text-red-600 dark:hover:text-red-300"
+                          title="Delete"
+                        >
+                          <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24"
+                               stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                  d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
+                          </svg>
+                        </button>
+                      </div>
+                    </div>
+
+                    <!-- Attributes -->
+                    <div class="space-y-2 mb-3">
+                      <div class="flex flex-wrap gap-1">
+                        <span
+                          *ngFor="let attr of getVariationAttributeList(variation.attributes)"
+                          class="attribute-chip"
+                        >
+                          {{ attr.label }}: {{ attr.value }}
+                        </span>
+                      </div>
+                    </div>
+
+                    <!-- Pricing Info -->
+                    <div class="flex items-center justify-between mb-3 p-2 bg-gray-50 dark:bg-gray-800 rounded-md">
+                      <div class="text-xs">
+                        <div class="font-medium text-gray-900 dark:text-white">
+                          {{ formatCurrency(calculateVariationFinalPrice(variation)) }}
+                        </div>
+                        <div *ngIf="variation.price_adjustment !== 0" class="text-gray-500 dark:text-gray-400">
+                          {{ variation.price_adjustment > 0 ? '+' : '' }}{{ formatCurrency(variation.price_adjustment) }}
+                        </div>
+                      </div>
+                      <div class="text-right text-xs">
+                        <div
+                          class="stock-indicator"
+                          [ngClass]="getVariationStockStatusClass(variation.stock_quantity)"
+                        >
+                          {{ getVariationStockStatusText(variation.stock_quantity) }}
+                        </div>
+                      </div>
+                    </div>
+
+                    <!-- Status & Image -->
+                    <div class="flex items-center justify-between">
+                      <div class="flex items-center space-x-2">
+                        <span
+                          class="w-2 h-2 rounded-full"
+                          [class.bg-green-500]="variation.is_active"
+                          [class.bg-gray-400]="!variation.is_active"
+                        ></span>
+                        <span class="text-xs text-gray-500 dark:text-gray-400">
+                          {{ variation.is_active ? 'Active' : 'Inactive' }}
+                        </span>
+                      </div>
+
+                      <div *ngIf="variation.image_url" class="w-8 h-8 rounded overflow-hidden">
+                        <img
+                          [src]="variation.image_url"
+                          [alt]="getVariationDisplayName(variation)"
+                          class="w-full h-full object-cover"
+                          (error)="onVariationImageError($event)"
+                        >
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Bulk Actions -->
+                <div *ngIf="variations().length > 0"
+                     class="flex items-center justify-between pt-4 border-t border-gray-200 dark:border-gray-700">
+                  <div class="flex items-center space-x-2">
+                    <button
+                      type="button"
+                      (click)="toggleAllVariationsActive()"
+                      class="text-xs font-medium text-primary-600 dark:text-primary-400 hover:text-primary-500"
+                    >
+                      {{ allVariationsActive() ? 'Deactivate All' : 'Activate All' }}
+                    </button>
+                    <span class="text-gray-300 dark:text-gray-600">|</span>
+                    <button
+                      type="button"
+                      (click)="clearAllVariations()"
+                      class="text-xs font-medium text-red-600 dark:text-red-400 hover:text-red-500"
+                    >
+                      Clear All
+                    </button>
+                  </div>
+
+                  <div class="text-xs text-gray-500 dark:text-gray-400">
+                    Total Stock: {{ getTotalVariationsStock() }} items
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Summary -->
+            <div *ngIf="variations().length > 0" class="bg-gray-50 dark:bg-gray-800 rounded-lg p-4">
+              <div class="grid grid-cols-2 md:grid-cols-4 gap-4 text-center">
+                <div>
+                  <div class="text-lg font-semibold text-gray-900 dark:text-white">
+                    {{ variations().length }}
+                  </div>
+                  <div class="text-xs text-gray-500 dark:text-gray-400">
+                    Total Variations
+                  </div>
+                </div>
+                <div>
+                  <div class="text-lg font-semibold text-gray-900 dark:text-white">
+                    {{ getActiveVariationsCount() }}
+                  </div>
+                  <div class="text-xs text-gray-500 dark:text-gray-400">
+                    Active
+                  </div>
+                </div>
+                <div>
+                  <div class="text-lg font-semibold text-gray-900 dark:text-white">
+                    {{ getTotalVariationsStock() }}
+                  </div>
+                  <div class="text-xs text-gray-500 dark:text-gray-400">
+                    Total Stock
+                  </div>
+                </div>
+                <div>
+                  <div class="text-lg font-semibold text-gray-900 dark:text-white">
+                    {{ formatCurrency(getAverageVariationPrice()) }}
+                  </div>
+                  <div class="text-xs text-gray-500 dark:text-gray-400">
+                    Avg. Price
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
       </div>
 
       <!-- Form Actions -->

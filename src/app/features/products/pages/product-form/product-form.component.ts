@@ -1,13 +1,12 @@
-import {Component, OnInit, inject, signal} from '@angular/core';
+import {Component, OnInit, inject, signal, computed} from '@angular/core';
 import {CommonModule} from '@angular/common';
 import {RouterModule, ActivatedRoute, Router} from '@angular/router';
-import {FormBuilder, FormGroup, ReactiveFormsModule, Validators} from '@angular/forms';
+import {FormBuilder, FormGroup, ReactiveFormsModule, Validators, FormsModule} from '@angular/forms';
 import {ProductsService} from '../../services/products.service';
 import {Product, Category, Brand} from '../../models/product.model';
 import {ToastService} from '../../../../core/services/toast.service';
 import {ProductImage} from '../models/product-image.models';
-import {ProductVariation} from '../../models/product-variation.model';
-import {VariationManagerComponent} from '../../components';
+import {ProductVariation, VARIATION_ATTRIBUTES, VariationAttribute} from '../../models/product-variation.model';
 
 @Component({
   selector: 'app-product-form',
@@ -16,29 +15,10 @@ import {VariationManagerComponent} from '../../components';
     CommonModule,
     RouterModule,
     ReactiveFormsModule,
-    VariationManagerComponent
+    FormsModule
   ],
   templateUrl: './product-form.component.html',
-  styles: [`
-    .drag-over {
-      border-color: #3b82f6 !important;
-      background-color: rgba(59, 130, 246, 0.05) !important;
-    }
-
-    .image-preview {
-      transition: all 0.2s ease-in-out;
-    }
-
-    .image-preview:hover {
-      transform: scale(1.02);
-    }
-
-    @media (max-width: 640px) {
-      .grid-responsive {
-        grid-template-columns: 1fr !important;
-      }
-    }
-  `]
+  styleUrls: ['./product-form.component.scss']
 })
 export class ProductFormComponent implements OnInit {
   private route = inject(ActivatedRoute);
@@ -63,6 +43,70 @@ export class ProductFormComponent implements OnInit {
   protected variations = signal<ProductVariation[]>([]);
   protected removedImageIds = signal<string[]>([]);
 
+  // Variation management state
+  protected isVariationManagerExpanded = signal(true);
+  protected availableAttributes = signal<string[]>([]);
+  protected selectedVariationIndex = signal<number | null>(null);
+  protected editingVariation = signal<ProductVariation | null>(null);
+
+  // Attribute selector state
+  protected expandedCategories = signal<{ [key: string]: boolean }>({
+    'apparel': true,
+    'electronics': false,
+    'home': false,
+    'kitchen': false,
+    'beauty': false,
+    'universal': false
+  });
+
+  // Variation form state
+  protected variationFormData = signal<Partial<ProductVariation>>({
+    sku: '',
+    attributes: {},
+    price_adjustment: 0,
+    stock_quantity: 0,
+    image_url: '',
+    is_active: true
+  });
+  protected customSelections = signal<{ [key: string]: boolean }>({});
+
+  // Computed values
+  protected isVariationEdit = computed(() => !!this.editingVariation());
+
+  // Attribute categories for better organization
+  protected attributeCategories = [
+    {
+      name: 'apparel',
+      label: 'Apparel & Footwear',
+      attributes: ['size', 'color', 'material', 'fit', 'pattern']
+    },
+    {
+      name: 'electronics',
+      label: 'Electronics',
+      attributes: ['storage', 'ram', 'screen_size', 'processor', 'operating_system', 'connectivity']
+    },
+    {
+      name: 'home',
+      label: 'Home & Furniture',
+      attributes: ['dimensions', 'finish', 'style']
+    },
+    {
+      name: 'kitchen',
+      label: 'Kitchen & Appliances',
+      attributes: ['capacity', 'power', 'voltage']
+    },
+    {
+      name: 'beauty',
+      label: 'Beauty & Personal Care',
+      attributes: ['fragrance', 'skin_type']
+    },
+    {
+      name: 'universal',
+      label: 'Universal',
+      attributes: ['warranty', 'brand_model', 'certification', 'custom']
+    }
+  ];
+
   ngOnInit(): void {
     this.initForm();
     this.loadFormDependencies();
@@ -81,8 +125,13 @@ export class ProductFormComponent implements OnInit {
       this.hasVariations.set(hasVariations);
       if (!hasVariations) {
         this.variations.set([]);
+        this.availableAttributes.set([]);
+        this.resetVariationForm();
       }
     });
+
+    // Initialize variation form
+    this.resetVariationForm();
   }
 
   private initForm(): void {
@@ -168,23 +217,483 @@ export class ProductFormComponent implements OnInit {
       this.images.set(productImages);
     }
 
-    // Load variations (backend will provide in the new format)
+    // Load variations and initialize attributes
     if (product.variations && product.variations.length > 0) {
       this.variations.set(product.variations);
+      this.initializeAttributesFromVariations();
     }
   }
 
-  // Variation Management
-  protected onVariationsChanged(variations: ProductVariation[]): void {
-    this.variations.set(variations);
+  // ==========================================
+  // VARIATION MANAGER METHODS
+  // ==========================================
+
+  protected toggleVariationManager(): void {
+    this.isVariationManagerExpanded.update(expanded => !expanded);
   }
 
-  // Helper method to calculate final price for variations
-  protected calculateVariationPrice(basePrice: number, priceAdjustment: number): number {
-    return basePrice + (priceAdjustment || 0);
+  protected getActiveVariationsCount(): number {
+    return this.variations().filter(v => v.is_active).length;
   }
 
-  // Image handling
+  protected getTotalVariationsStock(): number {
+    return this.variations().reduce((total, variation) =>
+      total + (variation.stock_quantity || 0), 0);
+  }
+
+  protected getAverageVariationPrice(): number {
+    const variations = this.variations();
+    if (variations.length === 0) return this.productForm.get('price')?.value || 0;
+
+    const totalPrice = variations.reduce((total, variation) =>
+      total + (this.productForm.get('price')?.value || 0) + (variation.price_adjustment || 0), 0);
+
+    return totalPrice / variations.length;
+  }
+
+  protected formatCurrency(amount: number): string {
+    return new Intl.NumberFormat('en-UG', {
+      style: 'currency',
+      currency: 'UGX',
+      maximumFractionDigits: 0
+    }).format(amount);
+  }
+
+  // ==========================================
+  // ATTRIBUTE SELECTOR METHODS
+  // ==========================================
+
+  protected toggleAttributeCategory(categoryName: string): void {
+    this.expandedCategories.update(expanded => ({
+      ...expanded,
+      [categoryName]: !expanded[categoryName]
+    }));
+  }
+
+  protected toggleAttribute(attributeKey: string, event: Event): void {
+    const isChecked = (event.target as HTMLInputElement).checked;
+
+    if (isChecked) {
+      this.onAttributeSelected(attributeKey);
+    } else {
+      this.onAttributeRemoved(attributeKey);
+    }
+  }
+
+  protected onAttributeSelected(attributeKey: string): void {
+    this.availableAttributes.update(attrs => {
+      if (!attrs.includes(attributeKey)) {
+        return [...attrs, attributeKey];
+      }
+      return attrs;
+    });
+  }
+
+  protected onAttributeRemoved(attributeKey: string): void {
+    this.availableAttributes.update(attrs =>
+      attrs.filter(attr => attr !== attributeKey)
+    );
+
+    // Remove attribute from all existing variations
+    const updatedVariations = this.variations().map(variation => {
+      const newAttributes = {...variation.attributes};
+      delete newAttributes[attributeKey];
+      return {...variation, attributes: newAttributes};
+    });
+
+    this.variations.set(updatedVariations);
+  }
+
+  protected removeAttribute(attributeKey: string): void {
+    this.onAttributeRemoved(attributeKey);
+  }
+
+  protected getAttributeLabel(key: string): string {
+    return VARIATION_ATTRIBUTES[key]?.label || key;
+  }
+
+  private initializeAttributesFromVariations(): void {
+    const existingAttributes = new Set<string>();
+
+    this.variations().forEach(variation => {
+      Object.keys(variation.attributes || {}).forEach(attr => {
+        existingAttributes.add(attr);
+      });
+    });
+
+    this.availableAttributes.set(Array.from(existingAttributes));
+  }
+
+  // ==========================================
+  // VARIATION FORM METHODS
+  // ==========================================
+
+  protected updateVariationAttribute(attributeKey: string, event: Event): void {
+    const value = (event.target as HTMLInputElement | HTMLSelectElement).value;
+
+    // Track if "Custom" was selected
+    if (value === 'Custom') {
+      this.customSelections.update(selections => ({
+        ...selections,
+        [attributeKey]: true
+      }));
+
+      // Set the value to "Custom" initially
+      this.variationFormData.update(data => ({
+        ...data,
+        attributes: {
+          ...data.attributes,
+          [attributeKey]: 'Custom'
+        }
+      }));
+    } else {
+      // Clear custom selection if a different option is chosen
+      this.customSelections.update(selections => ({
+        ...selections,
+        [attributeKey]: false
+      }));
+
+      this.variationFormData.update(data => ({
+        ...data,
+        attributes: {
+          ...data.attributes,
+          [attributeKey]: value
+        }
+      }));
+    }
+  }
+
+  protected updateCustomVariationAttribute(attributeKey: string, event: Event): void {
+    const customValue = (event.target as HTMLInputElement).value;
+
+    // Keep the custom selection active and store the custom value
+    this.variationFormData.update(data => ({
+      ...data,
+      attributes: {
+        ...data.attributes,
+        [attributeKey]: customValue.trim() ? `Custom: ${customValue.trim()}` : 'Custom'
+      }
+    }));
+  }
+
+  protected updateColorVariationAttribute(attributeKey: string, event: Event): void {
+    const colorValue = (event.target as HTMLInputElement).value;
+    const currentValue = this.variationFormData().attributes?.[attributeKey] || '';
+
+    // If there's already text, preserve it, otherwise use color name
+    const colorName = this.getColorName(colorValue);
+    this.variationFormData.update(data => ({
+      ...data,
+      attributes: {
+        ...data.attributes,
+        [attributeKey]: currentValue || colorName
+      }
+    }));
+  }
+
+  protected updateVariationField(field: string, event: Event): void {
+    const target = event.target as HTMLInputElement;
+    let value: any = target.value;
+
+    // Convert to appropriate type
+    if (field === 'price_adjustment' || field === 'stock_quantity') {
+      value = parseFloat(value) || 0;
+    } else if (field === 'is_active') {
+      value = target.checked;
+    }
+
+    this.variationFormData.update(data => ({
+      ...data,
+      [field]: value
+    }));
+  }
+
+  protected saveVariation(): void {
+    if (!this.isVariationFormValid()) return;
+
+    const data = this.variationFormData();
+
+    // Generate SKU if not provided
+    if (!data.sku?.trim()) {
+      data.sku = this.generateVariationSKU();
+    }
+
+    const variation: ProductVariation = {
+      id: this.editingVariation()?.id,
+      sku: data.sku || '',
+      attributes: data.attributes || {},
+      price_adjustment: data.price_adjustment || 0,
+      stock_quantity: data.stock_quantity || 0,
+      image_url: data.image_url || '',
+      is_active: data.is_active !== false
+    };
+
+    if (variation.id) {
+      // Update existing variation
+      const updatedVariations = this.variations().map(v =>
+        v.id === variation.id ? variation : v
+      );
+      this.variations.set(updatedVariations);
+    } else {
+      // Add new variation
+      const newVariation = {
+        ...variation,
+        id: this.generateVariationId()
+      };
+      this.variations.set([...this.variations(), newVariation]);
+    }
+
+    // Clear editing state
+    this.editingVariation.set(null);
+    this.selectedVariationIndex.set(null);
+
+    if (!this.isVariationEdit()) {
+      this.resetVariationForm();
+    }
+  }
+
+  protected resetVariationForm(): void {
+    const defaultAttributes: { [key: string]: string } = {};
+
+    // Initialize attributes with empty values
+    this.availableAttributes().forEach(attr => {
+      defaultAttributes[attr] = '';
+    });
+
+    this.variationFormData.set({
+      sku: '',
+      attributes: defaultAttributes,
+      price_adjustment: 0,
+      stock_quantity: 0,
+      image_url: '',
+      is_active: true
+    });
+
+    // Reset custom selections
+    this.customSelections.set({});
+  }
+
+  protected cancelVariationEdit(): void {
+    this.editingVariation.set(null);
+    this.selectedVariationIndex.set(null);
+    this.resetVariationForm();
+  }
+
+  protected isVariationFormValid(): boolean {
+    const data = this.variationFormData();
+
+    // Check if at least one attribute has a value
+    const hasAttributes = Object.values(data.attributes || {}).some(value => value.trim() !== '');
+
+    // Check required fields
+    const hasRequiredFields = (data.stock_quantity || 0) >= 0;
+
+    return hasAttributes && hasRequiredFields;
+  }
+
+  protected getVariationAttributeType(key: string): string {
+    return VARIATION_ATTRIBUTES[key]?.type || 'text';
+  }
+
+  protected getVariationAttributeOptions(key: string): string[] {
+    return VARIATION_ATTRIBUTES[key]?.options || [];
+  }
+
+  protected isCustomVariationSelected(attributeKey: string): boolean {
+    return this.customSelections()[attributeKey] || false;
+  }
+
+  protected getCustomVariationValue(attributeKey: string): string {
+    const currentValue = this.variationFormData().attributes?.[attributeKey];
+    if (currentValue && currentValue.startsWith('Custom:')) {
+      return currentValue.replace('Custom:', '').trim();
+    }
+    return '';
+  }
+
+  protected getVariationSelectValue(attributeKey: string): string {
+    const currentValue = this.variationFormData().attributes?.[attributeKey];
+
+    // If custom is selected, always return "Custom" for the select
+    if (this.customSelections()[attributeKey] || (currentValue && currentValue.startsWith('Custom'))) {
+      return 'Custom';
+    }
+
+    return currentValue || '';
+  }
+
+  protected getVariationColorValue(colorName: string): string {
+    // Simple color name to hex mapping
+    const colorMap: { [key: string]: string } = {
+      'red': '#ff0000',
+      'blue': '#0000ff',
+      'green': '#008000',
+      'black': '#000000',
+      'white': '#ffffff',
+      'yellow': '#ffff00',
+      'pink': '#ffc0cb',
+      'purple': '#800080',
+      'orange': '#ffa500',
+      'gray': '#808080'
+    };
+
+    return colorMap[colorName.toLowerCase()] || '#000000';
+  }
+
+  private getColorName(hexColor: string): string {
+    // Simple hex to color name mapping
+    const colorMap: { [key: string]: string } = {
+      '#ff0000': 'Red',
+      '#0000ff': 'Blue',
+      '#008000': 'Green',
+      '#000000': 'Black',
+      '#ffffff': 'White',
+      '#ffff00': 'Yellow',
+      '#ffc0cb': 'Pink',
+      '#800080': 'Purple',
+      '#ffa500': 'Orange',
+      '#808080': 'Gray'
+    };
+
+    return colorMap[hexColor.toLowerCase()] || 'Custom';
+  }
+
+  private generateVariationSKU(): string {
+    const attributes = this.variationFormData().attributes || {};
+    const attrValues = Object.values(attributes)
+      .filter(value => value.trim() !== '')
+      .map(value => value.substring(0, 2).toUpperCase())
+      .join('-');
+
+    const timestamp = Date.now().toString().slice(-4);
+    return `VAR-${attrValues || 'DEFAULT'}-${timestamp}`;
+  }
+
+  private generateVariationId(): string {
+    return `var_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+  }
+
+  // ==========================================
+  // VARIATION LIST METHODS
+  // ==========================================
+
+  protected selectVariation(index: number): void {
+    this.selectedVariationIndex.set(
+      this.selectedVariationIndex() === index ? null : index
+    );
+  }
+
+  protected editVariation(index: number, event?: Event): void {
+    if (event) {
+      event.stopPropagation();
+    }
+    const variation = this.variations()[index];
+    if (variation) {
+      this.editingVariation.set({...variation});
+      this.selectedVariationIndex.set(index);
+
+      // Populate variation form with editing data
+      this.variationFormData.set({...variation});
+
+      // Set up custom selections for editing
+      const customSelections: { [key: string]: boolean } = {};
+      Object.entries(variation.attributes || {}).forEach(([key, value]) => {
+        if (value === 'Custom' || (value && value.startsWith('Custom:'))) {
+          customSelections[key] = true;
+        }
+      });
+      this.customSelections.set(customSelections);
+    }
+  }
+
+  protected deleteVariation(index: number, event?: Event): void {
+    if (event) {
+      event.stopPropagation();
+    }
+    if (confirm('Are you sure you want to delete this variation?')) {
+      const updatedVariations = this.variations().filter((_, i) => i !== index);
+      this.variations.set(updatedVariations);
+
+      // Clear selection if deleted variation was selected
+      if (this.selectedVariationIndex() === index) {
+        this.selectedVariationIndex.set(null);
+        this.editingVariation.set(null);
+      }
+    }
+  }
+
+  protected toggleAllVariationsActive(): void {
+    const makeActive = !this.allVariationsActive();
+    const updatedVariations = this.variations().map(variation => ({
+      ...variation,
+      is_active: makeActive
+    }));
+    this.variations.set(updatedVariations);
+  }
+
+  protected clearAllVariations(): void {
+    if (confirm('Are you sure you want to remove all variations?')) {
+      this.variations.set([]);
+      this.selectedVariationIndex.set(null);
+      this.editingVariation.set(null);
+      this.availableAttributes.set([]);
+    }
+  }
+
+  protected allVariationsActive(): boolean {
+    return this.variations().length > 0 && this.variations().every(v => v.is_active);
+  }
+
+  protected getVariationDisplayName(variation: ProductVariation): string {
+    const attributeStrings = Object.entries(variation.attributes)
+      .filter(([_, value]) => value.trim() !== '')
+      .map(([key, value]) => `${this.getAttributeLabel(key)}: ${this.formatAttributeValue(value)}`);
+
+    return attributeStrings.length > 0 ? attributeStrings.join(', ') : 'No attributes';
+  }
+
+  protected getVariationAttributeList(attributes: { [key: string]: string }): Array<{ label: string, value: string }> {
+    return Object.entries(attributes)
+      .filter(([_, value]) => value.trim() !== '')
+      .map(([key, value]) => ({
+        label: this.getAttributeLabel(key),
+        value: this.formatAttributeValue(value)
+      }));
+  }
+
+  protected formatAttributeValue(value: string): string {
+    // If it's a custom value, show it more cleanly
+    if (value.startsWith('Custom:')) {
+      const customValue = value.replace('Custom:', '').trim();
+      return customValue || 'Custom';
+    }
+    return value;
+  }
+
+  protected calculateVariationFinalPrice(variation: ProductVariation): number {
+    return (this.productForm.get('price')?.value || 0) + (variation.price_adjustment || 0);
+  }
+
+  protected getVariationStockStatusClass(stockQuantity: number): string {
+    if (stockQuantity === 0) return 'out-of-stock';
+    if (stockQuantity < 10) return 'low-stock';
+    return 'in-stock';
+  }
+
+  protected getVariationStockStatusText(stockQuantity: number): string {
+    if (stockQuantity === 0) return 'Out of Stock';
+    if (stockQuantity < 10) return `Low (${stockQuantity})`;
+    return `${stockQuantity}`;
+  }
+
+  protected onVariationImageError(event: Event): void {
+    (event.target as HTMLImageElement).style.display = 'none';
+  }
+
+  // ==========================================
+  // IMAGE HANDLING METHODS
+  // ==========================================
+
   protected addImage(): void {
     const newImage: ProductImage = {
       alt_text: '',
@@ -253,7 +762,16 @@ export class ProductFormComponent implements OnInit {
     );
   }
 
-  protected updateImageAltText(index: number, altText: string): void {
+  protected onImageTextChange(event: Event, index: number, field: string): void {
+    const target = event.target as HTMLInputElement;
+    if (field === 'url') {
+      this.updateImageUrl(index, target.value);
+    } else if (field === 'alt_text') {
+      this.updateImageAltText(index, target.value);
+    }
+  }
+
+  private updateImageAltText(index: number, altText: string): void {
     this.images.update(images => {
       const newImages = [...images];
       newImages[index] = {...newImages[index], alt_text: altText};
@@ -261,7 +779,7 @@ export class ProductFormComponent implements OnInit {
     });
   }
 
-  protected updateImageUrl(index: number, url: string): void {
+  private updateImageUrl(index: number, url: string): void {
     this.images.update(images => {
       const newImages = [...images];
       newImages[index] = {...newImages[index], url: url, preview: url};
@@ -269,7 +787,20 @@ export class ProductFormComponent implements OnInit {
     });
   }
 
-  // Form submission
+  protected onDragOver(event: DragEvent): void {
+    event.preventDefault();
+    this.dragOver.set(true);
+  }
+
+  protected onDragLeave(event: DragEvent): void {
+    event.preventDefault();
+    this.dragOver.set(false);
+  }
+
+  // ==========================================
+  // FORM SUBMISSION AND UTILITY METHODS
+  // ==========================================
+
   protected handleCreateProduct(): void {
     if (this.productForm.invalid) {
       this.markFormGroupTouched(this.productForm);
@@ -354,7 +885,6 @@ export class ProductFormComponent implements OnInit {
     });
   }
 
-  // Utility methods
   protected generateSlug(): void {
     const nameControl = this.productForm.get('name');
     const slugControl = this.productForm.get('slug');
@@ -377,25 +907,5 @@ export class ProductFormComponent implements OnInit {
       return Math.round(((price - discountPrice) / price) * 100);
     }
     return 0;
-  }
-
-  protected onDragOver(event: DragEvent): void {
-    event.preventDefault();
-    this.dragOver.set(true);
-  }
-
-  protected onDragLeave(event: DragEvent): void {
-    event.preventDefault();
-    this.dragOver.set(false);
-  }
-
-  // Image handling event handlers
-  protected onImageTextChange(event: Event, index: number, field: string): void {
-    const target = event.target as HTMLInputElement;
-    if (field === 'url') {
-      this.updateImageUrl(index, target.value);
-    } else if (field === 'alt_text') {
-      this.updateImageAltText(index, target.value);
-    }
   }
 }

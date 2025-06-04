@@ -1,0 +1,404 @@
+/* ==========================================
+   DRAG & DROP STYLES
+   ========================================== */
+.drag-over {
+  border-color: #3b82f6 !important;
+  background-color: rgba(59, 130, 246, 0.05) !important;
+}
+
+.drag-drop-area {
+  transition: all 0.2s ease-in-out;
+}
+
+.drag-drop-area:hover {
+  border-color: #3b82f6;
+  background-color: rgba(59, 130, 246, 0.02);
+}
+
+/* ==========================================
+   IMAGE PREVIEW STYLES
+   ========================================== */
+.image-preview {
+  transition: all 0.2s ease-in-out;
+}
+
+.image-preview:hover {
+  transform: scale(1.02);
+}
+
+/* ==========================================
+   VARIATION MANAGER STYLES
+   ========================================== */
+.variation-form {
+  background: rgba(249, 250, 251, 0.5);
+}
+
+@media (prefers-color-scheme: dark) {
+  .variation-form {
+    background: rgba(17, 24, 39, 0.5);
+  }
+}
+
+/* ==========================================
+   VARIATION TILE STYLES
+   ========================================== */
+.variation-tile {
+  @apply border-2 border-gray-200 dark:border-gray-700 rounded-lg p-4 hover:border-primary-300 dark:hover:border-primary-600 transition-all duration-200;
+  min-height: 200px;
+  display: flex;
+  flex-direction: column;
+}
+
+.variation-tile.selected {
+  @apply border-primary-500 bg-primary-50 dark:bg-primary-900/20;
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+}
+
+.variation-tile:hover {
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+}
+
+/* ==========================================
+   ATTRIBUTE CHIP STYLES
+   ========================================== */
+.attribute-chip {
+  @apply inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-gray-100 dark:bg-gray-700 text-gray-800 dark:text-gray-200;
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* ==========================================
+   STOCK INDICATOR STYLES
+   ========================================== */
+.stock-indicator {
+  @apply px-2 py-1 text-xs font-medium rounded-full;
+}
+
+.stock-indicator.in-stock {
+  @apply bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300;
+}
+
+.stock-indicator.low-stock {
+  @apply bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-300;
+}
+
+.stock-indicator.out-of-stock {
+  @apply bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-300;
+}
+
+/* ==========================================
+   FORM SECTION ANIMATIONS
+   ========================================== */
+.space-y-6 > * {
+  animation: fadeInUp 0.3s ease-out;
+}
+
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* ==========================================
+   ATTRIBUTE CATEGORY STYLES
+   ========================================== */
+.attribute-category-header {
+  transition: all 0.2s ease-in-out;
+}
+
+.attribute-category-header:hover {
+  background-color: rgba(249, 250, 251, 0.8);
+}
+
+@media (prefers-color-scheme: dark) {
+  .attribute-category-header:hover {
+    background-color: rgba(31, 41, 55, 0.8);
+  }
+}
+
+/* ==========================================
+   VARIATION FORM GRID RESPONSIVE
+   ========================================== */
+@media (max-width: 640px) {
+  .grid-responsive {
+    grid-template-columns: 1fr !important;
+  }
+
+  .variation-tile {
+    min-height: auto;
+  }
+
+  .attribute-chip {
+    font-size: 10px;
+    padding: 2px 6px;
+  }
+}
+
+/* ==========================================
+   STEP INDICATOR STYLES
+   ========================================== */
+.step-indicator {
+  position: relative;
+}
+
+.step-indicator::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  right: -12px;
+  width: 24px;
+  height: 2px;
+  background-color: #e5e7eb;
+  transform: translateY(-50%);
+}
+
+.step-indicator.completed::after {
+  background-color: #10b981;
+}
+
+@media (prefers-color-scheme: dark) {
+  .step-indicator::after {
+    background-color: #374151;
+  }
+
+  .step-indicator.completed::after {
+    background-color: #059669;
+  }
+}
+
+/* ==========================================
+   COLOR INPUT STYLES
+   ========================================== */
+input[type="color"] {
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  appearance: none;
+  background-color: transparent;
+  border: none;
+  cursor: pointer;
+}
+
+input[type="color"]::-webkit-color-swatch-wrapper {
+  padding: 0;
+  border: 1px solid #d1d5db;
+  border-radius: 4px;
+}
+
+input[type="color"]::-webkit-color-swatch {
+  border: none;
+  border-radius: 3px;
+}
+
+input[type="color"]::-moz-color-swatch {
+  border: 1px solid #d1d5db;
+  border-radius: 4px;
+}
+
+@media (prefers-color-scheme: dark) {
+  input[type="color"]::-webkit-color-swatch-wrapper {
+    border-color: #4b5563;
+  }
+
+  input[type="color"]::-moz-color-swatch {
+    border-color: #4b5563;
+  }
+}
+
+/* ==========================================
+   LOADING STATES
+   ========================================== */
+.loading-overlay {
+  position: relative;
+}
+
+.loading-overlay::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(255, 255, 255, 0.8);
+  backdrop-filter: blur(2px);
+  z-index: 10;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+@media (prefers-color-scheme: dark) {
+  .loading-overlay::before {
+    background-color: rgba(17, 24, 39, 0.8);
+  }
+}
+
+/* ==========================================
+   FORM VALIDATION STYLES
+   ========================================== */
+.form-field-error {
+  animation: shake 0.3s ease-in-out;
+}
+
+@keyframes shake {
+  0%, 20%, 40%, 60%, 80%, 100% {
+    transform: translateX(0);
+  }
+  10%, 30%, 50%, 70%, 90% {
+    transform: translateX(-5px);
+  }
+}
+
+.error-border {
+  border-color: #ef4444 !important;
+  box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.1);
+}
+
+/* ==========================================
+   CUSTOM SCROLLBAR
+   ========================================== */
+.custom-scrollbar {
+  scrollbar-width: thin;
+  scrollbar-color: #d1d5db #f9fafb;
+}
+
+.custom-scrollbar::-webkit-scrollbar {
+  width: 6px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-track {
+  background: #f9fafb;
+  border-radius: 3px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  background: #d1d5db;
+  border-radius: 3px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: #9ca3af;
+}
+
+@media (prefers-color-scheme: dark) {
+  .custom-scrollbar {
+    scrollbar-color: #4b5563 #1f2937;
+  }
+
+  .custom-scrollbar::-webkit-scrollbar-track {
+    background: #1f2937;
+  }
+
+  .custom-scrollbar::-webkit-scrollbar-thumb {
+    background: #4b5563;
+  }
+
+  .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+    background: #6b7280;
+  }
+}
+
+/* ==========================================
+   TRANSITION IMPROVEMENTS
+   ========================================== */
+.transition-colors {
+  transition-property: color, background-color, border-color;
+  transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+  transition-duration: 150ms;
+}
+
+.transition-all {
+  transition-property: all;
+  transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+  transition-duration: 150ms;
+}
+
+/* ==========================================
+   FOCUS STYLES
+   ========================================== */
+.focus-ring {
+  outline: 2px solid transparent;
+  outline-offset: 2px;
+}
+
+.focus-ring:focus {
+  outline: 2px solid #3b82f6;
+  outline-offset: 2px;
+}
+
+/* ==========================================
+   BUTTON ENHANCEMENTS
+   ========================================== */
+.btn-primary {
+  position: relative;
+  overflow: hidden;
+}
+
+.btn-primary::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+  transition: left 0.5s;
+}
+
+.btn-primary:hover::before {
+  left: 100%;
+}
+
+/* ==========================================
+   UTILITY CLASSES
+   ========================================== */
+.text-truncate {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.line-clamp-2 {
+  overflow: hidden;
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+}
+
+.line-clamp-3 {
+  overflow: hidden;
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 3;
+}
+
+/* ==========================================
+   DARK MODE ENHANCEMENTS
+   ========================================== */
+@media (prefers-color-scheme: dark) {
+  .bg-white {
+    background-color: #1f2937;
+  }
+
+  .border-gray-200 {
+    border-color: #374151;
+  }
+
+  .text-gray-900 {
+    color: #f9fafb;
+  }
+
+  .text-gray-600 {
+    color: #d1d5db;
+  }
+
+  .text-gray-500 {
+    color: #9ca3af;
+  }
+}
