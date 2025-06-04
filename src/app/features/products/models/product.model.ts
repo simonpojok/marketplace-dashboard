@@ -1,3 +1,5 @@
+import {ProductVariation} from './product-variation.model';
+
 export interface Product {
   id: string;
   name: string;
@@ -57,25 +59,6 @@ export interface ProductImage {
   display_order: number;
 }
 
-export interface ProductVariation {
-  id: string;
-  sku: string;
-  type?: string; // 'size', 'color', 'screen', 'memory', 'storage', 'processor', 'custom'
-  size?: string;
-  size_display?: string;
-  color?: string;
-  color_code?: string;
-  screen_size?: string;
-  memory?: string;
-  storage?: string;
-  processor?: string;
-  custom_attribute?: string;
-  price_adjustment: number;
-  stock_quantity: number;
-  image?: string;
-  is_active: boolean;
-  final_price: number;
-}
 
 export interface ProductListResponse {
   count: number;

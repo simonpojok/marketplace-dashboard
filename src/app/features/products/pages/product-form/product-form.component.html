@@ -20,7 +20,8 @@
           routerLink="/products"
           class="flex items-center justify-center px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg shadow-sm text-sm font-medium text-gray-700 dark:text-gray-200 bg-white dark:bg-dark-bg-secondary hover:bg-gray-50 dark:hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500"
         >
-          <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-2" fill="none" viewBox="0 0 24 24"
+               stroke="currentColor">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"/>
           </svg>
           Cancel
@@ -32,7 +33,8 @@
     <form [formGroup]="productForm" (ngSubmit)="handleCreateProduct()" class="space-y-8">
 
       <!-- Basic Information -->
-      <div class="bg-white dark:bg-dark-bg-secondary shadow-sm rounded-lg border border-gray-200 dark:border-dark-border overflow-hidden">
+      <div
+        class="bg-white dark:bg-dark-bg-secondary shadow-sm rounded-lg border border-gray-200 dark:border-dark-border overflow-hidden">
         <div class="px-6 py-4 border-b border-gray-200 dark:border-dark-border">
           <h2 class="text-lg font-medium text-gray-900 dark:text-white">Basic Information</h2>
         </div>
@@ -145,7 +147,8 @@
       </div>
 
       <!-- Pricing & Inventory -->
-      <div class="bg-white dark:bg-dark-bg-secondary shadow-sm rounded-lg border border-gray-200 dark:border-dark-border overflow-hidden">
+      <div
+        class="bg-white dark:bg-dark-bg-secondary shadow-sm rounded-lg border border-gray-200 dark:border-dark-border overflow-hidden">
         <div class="px-6 py-4 border-b border-gray-200 dark:border-dark-border">
           <h2 class="text-lg font-medium text-gray-900 dark:text-white">Pricing & Inventory</h2>
         </div>
@@ -235,8 +238,10 @@
                       >
                     </div>
                     <div class="ml-3 text-sm">
-                      <label for="has_variations" class="font-medium text-gray-700 dark:text-gray-300">Has Variations</label>
-                      <p class="text-gray-500 dark:text-gray-400">Product has multiple variations (sizes, colors, memory, etc.)</p>
+                      <label for="has_variations" class="font-medium text-gray-700 dark:text-gray-300">Has
+                        Variations</label>
+                      <p class="text-gray-500 dark:text-gray-400">Product has multiple variations (sizes, colors,
+                        etc.)</p>
                     </div>
                   </div>
 
@@ -279,7 +284,8 @@
       </div>
 
       <!-- Product Images -->
-      <div class="bg-white dark:bg-dark-bg-secondary shadow-sm rounded-lg border border-gray-200 dark:border-dark-border overflow-hidden">
+      <div
+        class="bg-white dark:bg-dark-bg-secondary shadow-sm rounded-lg border border-gray-200 dark:border-dark-border overflow-hidden">
         <div class="px-6 py-4 border-b border-gray-200 dark:border-dark-border">
           <div class="flex justify-between items-center">
             <h2 class="text-lg font-medium text-gray-900 dark:text-white">Product Images</h2>
@@ -288,7 +294,8 @@
               (click)="addImage()"
               class="inline-flex items-center px-3 py-1.5 border border-transparent text-sm font-medium rounded-md text-primary-700 dark:text-primary-300 bg-primary-100 dark:bg-primary-900/30 hover:bg-primary-200 dark:hover:bg-primary-900/40 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500"
             >
-              <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24"
+                   stroke="currentColor">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
               </svg>
               Add Image
@@ -296,9 +303,12 @@
           </div>
         </div>
         <div class="p-6">
-          <div *ngIf="images().length === 0" class="text-center py-8 border border-dashed border-gray-300 dark:border-gray-600 rounded-lg">
-            <svg xmlns="http://www.w3.org/2000/svg" class="mx-auto h-12 w-12 text-gray-400 dark:text-gray-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/>
+          <div *ngIf="images().length === 0"
+               class="text-center py-8 border border-dashed border-gray-300 dark:border-gray-600 rounded-lg">
+            <svg xmlns="http://www.w3.org/2000/svg" class="mx-auto h-12 w-12 text-gray-400 dark:text-gray-500"
+                 fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                    d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/>
             </svg>
             <h3 class="mt-2 text-sm font-medium text-gray-900 dark:text-white">No images added</h3>
             <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">Click 'Add Image' to upload product images</p>
@@ -309,19 +319,22 @@
               <!-- Image Upload/Preview -->
               <div class="relative">
                 <!-- Image Preview -->
-                <div *ngIf="image.preview" class="relative w-full h-48 rounded-lg overflow-hidden border border-gray-300 dark:border-gray-600 image-preview">
+                <div *ngIf="image.preview"
+                     class="relative w-full h-48 rounded-lg overflow-hidden border border-gray-300 dark:border-gray-600 image-preview">
                   <img [src]="image.preview" [alt]="image.alt_text" class="w-full h-full object-cover">
                   <button
                     type="button"
                     (click)="removeImage(i)"
                     class="absolute top-2 right-2 bg-red-500 text-white rounded-full p-1 hover:bg-red-600 focus:outline-none"
                   >
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24"
+                         stroke="currentColor">
                       <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
                     </svg>
                   </button>
                   <!-- Primary Badge -->
-                  <div *ngIf="image.is_primary" class="absolute top-2 left-2 bg-primary-500 text-white text-xs px-2 py-1 rounded-md">
+                  <div *ngIf="image.is_primary"
+                       class="absolute top-2 left-2 bg-primary-500 text-white text-xs px-2 py-1 rounded-md">
                     Primary
                   </div>
                 </div>
@@ -337,8 +350,11 @@
                   (click)="fileInput.click()"
                 >
                   <div class="text-center">
-                    <svg class="mx-auto h-12 w-12 text-gray-400 dark:text-gray-500" stroke="currentColor" fill="none" viewBox="0 0 48 48">
-                      <path d="M28 8H12a4 4 0 00-4 4v20m32-12v8m0 0v8a4 4 0 01-4 4H12a4 4 0 01-4-4v-4m32-4l-3.172-3.172a4 4 0 00-5.656 0L28 28M8 32l9.172-9.172a4 4 0 015.656 0L28 28m0 0l4 4m4-24h8m-4-4v8m-12 4h.02" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                    <svg class="mx-auto h-12 w-12 text-gray-400 dark:text-gray-500" stroke="currentColor" fill="none"
+                         viewBox="0 0 48 48">
+                      <path
+                        d="M28 8H12a4 4 0 00-4 4v20m32-12v8m0 0v8a4 4 0 01-4 4H12a4 4 0 01-4-4v-4m32-4l-3.172-3.172a4 4 0 00-5.656 0L28 28M8 32l9.172-9.172a4 4 0 015.656 0L28 28m0 0l4 4m4-24h8m-4-4v8m-12 4h.02"
+                        stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
                     </svg>
                     <div class="mt-4">
                       <span class="mt-2 block text-sm font-medium text-gray-900 dark:text-white">
@@ -413,7 +429,6 @@
                     class="text-xs text-red-600 dark:text-red-400 hover:text-red-800 dark:hover:text-red-300"
                   >
                     Remove
-
                   </button>
                 </div>
               </div>
@@ -423,255 +438,12 @@
       </div>
 
       <!-- Product Variations -->
-      <div *ngIf="hasVariations()" class="bg-white dark:bg-dark-bg-secondary shadow-sm rounded-lg border border-gray-200 dark:border-dark-border overflow-hidden">
-        <div class="px-6 py-4 border-b border-gray-200 dark:border-dark-border">
-          <div class="flex justify-between items-center">
-            <h2 class="text-lg font-medium text-gray-900 dark:text-white">Product Variations</h2>
-            <button
-              type="button"
-              (click)="addVariation()"
-              class="inline-flex items-center px-3 py-1.5 border border-transparent text-sm font-medium rounded-md text-primary-700 dark:text-primary-300 bg-primary-100 dark:bg-primary-900/30 hover:bg-primary-200 dark:hover:bg-primary-900/40 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500"
-            >
-              <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
-              </svg>
-              Add Variation
-            </button>
-          </div>
-        </div>
-        <div class="p-6">
-          <div *ngIf="variations().length === 0" class="text-center py-8 border border-dashed border-gray-300 dark:border-gray-600 rounded-lg">
-            <svg xmlns="http://www.w3.org/2000/svg" class="mx-auto h-12 w-12 text-gray-400 dark:text-gray-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
-            </svg>
-            <h3 class="mt-2 text-sm font-medium text-gray-900 dark:text-white">No variations added</h3>
-            <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">Click 'Add Variation' to create product variations</p>
-          </div>
-
-          <div class="space-y-6">
-            <div *ngFor="let variation of variations(); let i = index" class="variation-card p-6 rounded-lg">
-              <div class="space-y-4">
-                <!-- Variation Attributes Row 1 -->
-                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 grid-responsive">
-                  <!-- Size -->
-                  <div>
-                    <label [for]="'size-' + i" class="block text-sm font-medium text-gray-700 dark:text-gray-300">
-                      Size
-                    </label>
-                    <select
-                      [id]="'size-' + i"
-                      [value]="variation.size"
-                      (change)="onVariationSelectChange($event, i, 'size')"
-                      class="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm dark:bg-gray-800 dark:text-white"
-                    >
-                      <option value="">No Size</option>
-                      <option *ngFor="let option of sizeOptions" [value]="option.value">
-                        {{ option.label }}
-                      </option>
-                    </select>
-                  </div>
-
-                  <!-- Color -->
-                  <div>
-                    <label [for]="'color-' + i" class="block text-sm font-medium text-gray-700 dark:text-gray-300">
-                      Color
-                    </label>
-                    <input
-                      [id]="'color-' + i"
-                      type="text"
-                      [value]="variation.color"
-                      (input)="onVariationTextChange($event, i, 'color')"
-                      class="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm dark:bg-gray-800 dark:text-white"
-                      placeholder="e.g., Red, Blue"
-                    >
-                  </div>
-
-                  <!-- Memory -->
-                  <div>
-                    <label [for]="'memory-' + i" class="block text-sm font-medium text-gray-700 dark:text-gray-300">
-                      Memory/RAM
-                    </label>
-                    <select
-                      [id]="'memory-' + i"
-                      [value]="variation.memory"
-                      (change)="onVariationSelectChange($event, i, 'memory')"
-                      class="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm dark:bg-gray-800 dark:text-white"
-                    >
-                      <option value="">No Memory</option>
-                      <option *ngFor="let option of memoryOptions" [value]="option.value">
-                        {{ option.label }}
-                      </option>
-                    </select>
-                  </div>
-
-                  <!-- Storage -->
-                  <div>
-                    <label [for]="'storage-' + i" class="block text-sm font-medium text-gray-700 dark:text-gray-300">
-                      Storage
-                    </label>
-                    <select
-                      [id]="'storage-' + i"
-                      [value]="variation.storage"
-                      (change)="onVariationSelectChange($event, i, 'storage')"
-                      class="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm dark:bg-gray-800 dark:text-white"
-                    >
-                      <option value="">No Storage</option>
-                      <option *ngFor="let option of storageOptions" [value]="option.value">
-                        {{ option.label }}
-                      </option>
-                    </select>
-                  </div>
-                </div>
-
-                <!-- Custom Size (if CUSTOM is selected) -->
-                <div *ngIf="variation.size === 'CUSTOM'">
-                  <label [for]="'custom-size-' + i" class="block text-sm font-medium text-gray-700 dark:text-gray-300">
-                    Custom Size/Attribute
-                  </label>
-                  <input
-                    [id]="'custom-size-' + i"
-                    type="text"
-                    [value]="variation.custom_attribute"
-                    (input)="onVariationTextChange($event, i, 'custom_attribute')"
-                    class="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm dark:bg-gray-800 dark:text-white"
-                    placeholder="Enter custom size or attribute"
-                  >
-                </div>
-
-                <!-- Variation Attributes Row 2 -->
-                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 grid-responsive">
-                  <!-- Color Code -->
-                  <div>
-                    <label [for]="'color-code-' + i" class="block text-sm font-medium text-gray-700 dark:text-gray-300">
-                      Color Code
-                    </label>
-                    <div class="mt-1 flex items-center space-x-2">
-                      <input
-                        type="color"
-                        [value]="variation.color_code"
-                        (input)="onVariationTextChange($event, i, 'color_code')"
-                        class="h-10 w-16 rounded border border-gray-300 dark:border-gray-600 cursor-pointer"
-                      >
-                      <input
-                        [id]="'color-code-' + i"
-                        type="text"
-                        [value]="variation.color_code"
-                        (input)="onVariationTextChange($event, i, 'color_code')"
-                        class="flex-1 rounded-md border-gray-300 dark:border-gray-600 shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm dark:bg-gray-800 dark:text-white"
-                        placeholder="#000000"
-                      >
-                    </div>
-                  </div>
-
-                  <!-- Price Adjustment -->
-                  <div>
-                    <label [for]="'price-adjustment-' + i" class="block text-sm font-medium text-gray-700 dark:text-gray-300">
-                      Price Adjustment
-                    </label>
-                    <div class="mt-1 relative rounded-md shadow-sm">
-                      <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                        <span class="text-gray-500 dark:text-gray-400 sm:text-sm">UGX</span>
-                      </div>
-                      <input
-                        [id]="'price-adjustment-' + i"
-                        type="number"
-                        [value]="variation.price_adjustment"
-                        (input)="onVariationNumberChange($event, i, 'price_adjustment')"
-                        step="0.01"
-                        class="block w-full pl-12 rounded-md border-gray-300 dark:border-gray-600 shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm dark:bg-gray-800 dark:text-white"
-                        placeholder="0.00"
-                      >
-                    </div>
-                  </div>
-
-                  <!-- Stock Quantity -->
-                  <div>
-                    <label [for]="'stock-quantity-' + i" class="block text-sm font-medium text-gray-700 dark:text-gray-300">
-                      Stock Quantity <span class="text-red-500">*</span>
-                    </label>
-                    <input
-                      [id]="'stock-quantity-' + i"
-                      type="number"
-                      [value]="variation.stock_quantity"
-                      (input)="onVariationNumberChange($event, i, 'stock_quantity')"
-                      min="0"
-                      class="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm dark:bg-gray-800 dark:text-white"
-                      placeholder="0"
-                    >
-                  </div>
-
-                  <!-- SKU -->
-                  <div>
-                    <label [for]="'sku-' + i" class="block text-sm font-medium text-gray-700 dark:text-gray-300">
-                      SKU
-                    </label>
-                    <input
-                      [id]="'sku-' + i"
-                      type="text"
-                      [value]="variation.sku"
-                      (input)="onVariationTextChange($event, i, 'sku')"
-                      class="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm dark:bg-gray-800 dark:text-white"
-                      placeholder="auto-generated"
-                    >
-                  </div>
-                </div>
-
-                <!-- Image URL and Actions Row -->
-                <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
-                  <!-- Image URL -->
-                  <div>
-                    <label [for]="'variation-image-' + i" class="block text-sm font-medium text-gray-700 dark:text-gray-300">
-                      Variation Image URL
-                    </label>
-                    <input
-                      [id]="'variation-image-' + i"
-                      type="url"
-                      [value]="variation.image_url"
-                      (input)="onVariationTextChange($event, i, 'image_url')"
-                      class="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm dark:bg-gray-800 dark:text-white"
-                      placeholder="https://example.com/variation-image.jpg"
-                    >
-                  </div>
-
-                  <!-- Actions -->
-                  <div class="flex items-end justify-between">
-                    <div class="flex items-center">
-                      <input
-                        [id]="'variation-active-' + i"
-                        type="checkbox"
-                        [checked]="variation.is_active"
-                        (change)="onVariationCheckboxChange($event, i, 'is_active')"
-                        class="h-4 w-4 text-primary-600 border-gray-300 rounded focus:ring-primary-500 dark:bg-gray-800 dark:border-gray-600"
-                      >
-                      <label [for]="'variation-active-' + i" class="ml-2 text-sm text-gray-700 dark:text-gray-300">
-                        Active
-                      </label>
-                    </div>
-
-                    <button
-                      type="button"
-                      (click)="removeVariation(i)"
-                      class="inline-flex items-center px-2.5 py-1.5 border border-transparent text-xs font-medium rounded text-red-700 dark:text-red-300 bg-red-100 dark:bg-red-900/30 hover:bg-red-200 dark:hover:bg-red-900/40 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500"
-                    >
-                      <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
-                      </svg>
-                      Remove
-                    </button>
-                  </div>
-                </div>
-
-                <!-- Variation Preview -->
-                <div class="mt-4 p-3 bg-gray-50 dark:bg-gray-800 rounded-md">
-                  <h4 class="text-sm font-medium text-gray-900 dark:text-white mb-2">Variation Preview</h4>
-                  <div class="text-sm text-gray-600 dark:text-gray-400">
-                    {{ getVariationDisplay(variation) }}
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
+      <div *ngIf="hasVariations()">
+        <app-variation-manager
+          [variations]="variations()"
+          [basePrice]="productForm.get('price')?.value || 0"
+          (variationsChanged)="onVariationsChanged($event)"
+        />
       </div>
 
       <!-- Form Actions -->
@@ -687,9 +459,11 @@
           [disabled]="isSaving() || productForm.invalid"
           class="inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-primary-600 hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 disabled:opacity-50 disabled:cursor-not-allowed"
         >
-          <svg *ngIf="isSaving()" class="animate-spin -ml-1 mr-2 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+          <svg *ngIf="isSaving()" class="animate-spin -ml-1 mr-2 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg"
+               fill="none" viewBox="0 0 24 24">
             <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+            <path class="opacity-75" fill="currentColor"
+                  d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
           </svg>
           {{ isSaving() ? 'Saving...' : (isEdit() ? 'Update Product' : 'Create Product') }}
         </button>

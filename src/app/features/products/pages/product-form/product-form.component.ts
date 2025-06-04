@@ -6,13 +6,18 @@ import {ProductsService} from '../../services/products.service';
 import {Product, Category, Brand} from '../../models/product.model';
 import {ToastService} from '../../../../core/services/toast.service';
 import {ProductImage} from '../models/product-image.models';
-import {ProductVariation} from '../models/product-variation.models';
-
+import {ProductVariation} from '../../models/product-variation.model';
+import {VariationManagerComponent} from '../../components';
 
 @Component({
   selector: 'app-product-form',
   standalone: true,
-  imports: [CommonModule, RouterModule, ReactiveFormsModule],
+  imports: [
+    CommonModule,
+    RouterModule,
+    ReactiveFormsModule,
+    VariationManagerComponent
+  ],
   templateUrl: './product-form.component.html',
   styles: [`
     .drag-over {
@@ -26,15 +31,6 @@ import {ProductVariation} from '../models/product-variation.models';
 
     .image-preview:hover {
       transform: scale(1.02);
-    }
-
-    .variation-card {
-      transition: all 0.2s ease-in-out;
-      border: 1px solid #e5e7eb;
-    }
-
-    .variation-card:hover {
-      box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
     }
 
     @media (max-width: 640px) {
@@ -67,41 +63,6 @@ export class ProductFormComponent implements OnInit {
   protected variations = signal<ProductVariation[]>([]);
   protected removedImageIds = signal<string[]>([]);
 
-  // Options
-  protected sizeOptions = [
-    {value: 'XS', label: 'Extra Small'},
-    {value: 'S', label: 'Small'},
-    {value: 'M', label: 'Medium'},
-    {value: 'L', label: 'Large'},
-    {value: 'XL', label: 'Extra Large'},
-    {value: 'XXL', label: 'Double Extra Large'},
-    {value: '3XL', label: 'Triple Extra Large'},
-    {value: 'CUSTOM', label: 'Custom Size'}
-  ];
-
-  protected memoryOptions = [
-    {value: '2GB', label: '2 GB'},
-    {value: '3GB', label: '3 GB'},
-    {value: '4GB', label: '4 GB'},
-    {value: '6GB', label: '6 GB'},
-    {value: '8GB', label: '8 GB'},
-    {value: '12GB', label: '12 GB'},
-    {value: '16GB', label: '16 GB'},
-    {value: '32GB', label: '32 GB'},
-    {value: '64GB', label: '64 GB'}
-  ];
-
-  protected storageOptions = [
-    {value: '16GB', label: '16 GB'},
-    {value: '32GB', label: '32 GB'},
-    {value: '64GB', label: '64 GB'},
-    {value: '128GB', label: '128 GB'},
-    {value: '256GB', label: '256 GB'},
-    {value: '512GB', label: '512 GB'},
-    {value: '1TB', label: '1 TB'},
-    {value: '2TB', label: '2 TB'}
-  ];
-
   ngOnInit(): void {
     this.initForm();
     this.loadFormDependencies();
@@ -118,8 +79,8 @@ export class ProductFormComponent implements OnInit {
     // Watch for "has variations" changes
     this.productForm.get('has_variations')?.valueChanges.subscribe(hasVariations => {
       this.hasVariations.set(hasVariations);
-      if (hasVariations && this.variations().length === 0) {
-        this.addVariation();
+      if (!hasVariations) {
+        this.variations.set([]);
       }
     });
   }
@@ -207,119 +168,35 @@ export class ProductFormComponent implements OnInit {
       this.images.set(productImages);
     }
 
-    // Load variations
-    if (product.variations && product.variations.length > 0) {
-      const productVariations: ProductVariation[] = product.variations.map(variation => ({
-        id: variation.id,
-        sku: variation.sku,
-        size: variation.size || '',
-        color: variation.color || '',
-        color_code: variation.color_code || '',
-        memory: variation.memory || '',
-        storage: variation.storage || '',
-        custom_attribute: variation.custom_attribute || '',
-        price_adjustment: variation.price_adjustment,
-        stock_quantity: variation.stock_quantity,
-        image_url: variation.image || '',
-        is_active: variation.is_active
-      }));
-      this.variations.set(productVariations);
-    }
+    // Load variations - convert from old format to new format
+    // if (product.variations && product.variations.length > 0) {
+    //   const productVariations: ProductVariation[] = product.variations.map(variation => {
+    //     const attributes: { [key: string]: string } = {};
+    //
+    //     // Convert old structure to new attributes structure
+    //     if (variation.size) attributes['size'] = variation.size;
+    //     if (variation.color) attributes['color'] = variation.color;
+    //     if (variation.memory) attributes['ram'] = variation.memory;
+    //     if (variation.storage) attributes['storage'] = variation.storage;
+    //     if (variation.custom_attribute) attributes['custom'] = variation.custom_attribute;
+    //
+    //     return {
+    //       id: variation.id,
+    //       sku: variation.sku,
+    //       attributes,
+    //       price_adjustment: variation.price_adjustment,
+    //       stock_quantity: variation.stock_quantity,
+    //       image_url: variation.image || '',
+    //       is_active: variation.is_active
+    //     };
+    //   });
+    //   this.variations.set(productVariations);
+    // }
   }
 
-  // Form submission
-  protected handleCreateProduct(): void {
-    if (this.productForm.invalid) {
-      this.markFormGroupTouched(this.productForm);
-      this.toastService.warning('Please correct the errors in the form');
-      return;
-    }
-
-    this.isSaving.set(true);
-    const productData = this.prepareProductData();
-
-    const saveObservable = this.isEdit() && this.product()
-      ? this.productsService.handleUpdateProduct(this.product()!.id, productData)
-      : this.productsService.handleCreateProduct(productData);
-
-    saveObservable.subscribe({
-      next: (product) => {
-        this.isSaving.set(false);
-        const message = this.isEdit() ? 'Product updated successfully' : 'Product created successfully';
-        this.toastService.success(message);
-        this.router.navigate(['/products/view', product.id]).then(console.log);
-      },
-      error: (error) => {
-        console.error('Error saving product:', error);
-        const message = this.isEdit() ? 'Failed to update product' : 'Failed to create product';
-        this.toastService.error(message);
-        this.isSaving.set(false);
-      }
-    });
-  }
-
-  private prepareProductData(): FormData {
-    const formData = new FormData();
-    const formValue = this.productForm.value;
-
-    // Add basic product data
-    Object.keys(formValue).forEach(key => {
-      if (formValue[key] !== null && formValue[key] !== '') {
-        if (key === 'has_variations' || key === 'is_active' || key === 'is_featured') {
-          formData.append(key, formValue[key].toString());
-        } else {
-          formData.append(key, formValue[key]);
-        }
-      }
-    });
-
-    // Add image files
-    this.images().forEach((image, index) => {
-      if (image.file) {
-        formData.append('image_files', image.file);
-      }
-    });
-
-    // Add image metadata
-    const imageData = this.images().map(img => ({
-      id: img.id,
-      url: img.url,
-      alt_text: img.alt_text,
-      is_primary: img.is_primary,
-      display_order: img.display_order
-    }));
-    if (imageData.length > 0) {
-      formData.append('images', JSON.stringify(imageData));
-    }
-
-    // Add variations data
-    if (this.hasVariations() && this.variations().length > 0) {
-      const variationsData = this.variations().map(variation => {
-        const cleanedVariation: any = {...variation};
-        // Remove empty fields
-        Object.keys(cleanedVariation).forEach(key => {
-          if (cleanedVariation[key] === '' || cleanedVariation[key] === null) {
-            delete cleanedVariation[key];
-          }
-        });
-        return cleanedVariation;
-      });
-      formData.append('variations', JSON.stringify(variationsData));
-    }
-
-    // Add removed image IDs for updates
-    if (this.isEdit() && this.removedImageIds().length > 0) {
-      formData.append('removed_image_ids', JSON.stringify(this.removedImageIds()));
-    }
-
-    return formData;
-  }
-
-  private markFormGroupTouched(formGroup: FormGroup): void {
-    Object.keys(formGroup.controls).forEach(key => {
-      const control = formGroup.get(key);
-      control?.markAsTouched();
-    });
+  // Variation Management
+  protected onVariationsChanged(variations: ProductVariation[]): void {
+    this.variations.set(variations);
   }
 
   // Image handling
@@ -407,81 +284,89 @@ export class ProductFormComponent implements OnInit {
     });
   }
 
-  // Variation handling
-  protected addVariation(): void {
-    const newVariation: ProductVariation = {
-      sku: '',
-      size: '',
-      color: '',
-      color_code: '',
-      memory: '',
-      storage: '',
-      custom_attribute: '',
-      price_adjustment: 0,
-      stock_quantity: 0,
-      image_url: '',
-      is_active: true
-    };
-    this.variations.update(variations => [...variations, newVariation]);
-  }
+  // Form submission
+  protected handleCreateProduct(): void {
+    if (this.productForm.invalid) {
+      this.markFormGroupTouched(this.productForm);
+      this.toastService.warning('Please correct the errors in the form');
+      return;
+    }
 
-  protected removeVariation(index: number): void {
-    this.variations.update(variations => variations.filter((_, i) => i !== index));
-  }
+    this.isSaving.set(true);
+    const productData = this.prepareProductData();
 
-  protected updateVariation(index: number, field: string, value: any): void {
-    this.variations.update(variations => {
-      const newVariations = [...variations];
-      newVariations[index] = {...newVariations[index], [field]: value};
-      return newVariations;
+    const saveObservable = this.isEdit() && this.product()
+      ? this.productsService.handleUpdateProduct(this.product()!.id, productData)
+      : this.productsService.handleCreateProduct(productData);
+
+    saveObservable.subscribe({
+      next: (product) => {
+        this.isSaving.set(false);
+        const message = this.isEdit() ? 'Product updated successfully' : 'Product created successfully';
+        this.toastService.success(message);
+        this.router.navigate(['/products/view', product.id]);
+      },
+      error: (error) => {
+        console.error('Error saving product:', error);
+        const message = this.isEdit() ? 'Failed to update product' : 'Failed to create product';
+        this.toastService.error(message);
+        this.isSaving.set(false);
+      }
     });
   }
 
-  // Event handlers for variations
-  protected onVariationTextChange(event: Event, index: number, field: string): void {
-    const target = event.target as HTMLInputElement;
-    this.updateVariation(index, field, target.value);
-  }
+  private prepareProductData(): FormData {
+    const formData = new FormData();
+    const formValue = this.productForm.value;
 
-  protected onVariationSelectChange(event: Event, index: number, field: string): void {
-    const target = event.target as HTMLSelectElement;
-    this.updateVariation(index, field, target.value);
-  }
-
-  protected onVariationNumberChange(event: Event, index: number, field: string): void {
-    const target = event.target as HTMLInputElement;
-    this.updateVariation(index, field, +target.value);
-  }
-
-  protected onVariationCheckboxChange(event: Event, index: number, field: string): void {
-    const target = event.target as HTMLInputElement;
-    this.updateVariation(index, field, target.checked);
-  }
-
-  // Image handling event handlers
-  protected onImageTextChange(event: Event, index: number, field: string): void {
-    const target = event.target as HTMLInputElement;
-    if (field === 'url') {
-      this.updateImageUrl(index, target.value);
-    } else if (field === 'alt_text') {
-      this.updateImageAltText(index, target.value);
-    }
-  }
-
-  protected getVariationDisplay(variation: ProductVariation): string {
-    const parts: string[] = [];
-    if (variation.size) {
-      if (variation.size === 'CUSTOM' && variation.custom_attribute) {
-        parts.push(`Size: ${variation.custom_attribute}`);
-      } else {
-        const sizeLabel = this.sizeOptions.find(s => s.value === variation.size)?.label || variation.size;
-        parts.push(`Size: ${sizeLabel}`);
+    // Add basic product data
+    Object.keys(formValue).forEach(key => {
+      if (formValue[key] !== null && formValue[key] !== '') {
+        if (key === 'has_variations' || key === 'is_active' || key === 'is_featured') {
+          formData.append(key, formValue[key].toString());
+        } else {
+          formData.append(key, formValue[key]);
+        }
       }
+    });
+
+    // Add image files
+    this.images().forEach((image) => {
+      if (image.file) {
+        formData.append('image_files', image.file);
+      }
+    });
+
+    // Add image metadata
+    const imageData = this.images().map(img => ({
+      id: img.id,
+      url: img.url,
+      alt_text: img.alt_text,
+      is_primary: img.is_primary,
+      display_order: img.display_order
+    }));
+    if (imageData.length > 0) {
+      formData.append('images', JSON.stringify(imageData));
     }
-    if (variation.color) parts.push(`Color: ${variation.color}`);
-    if (variation.memory) parts.push(`Memory: ${variation.memory}`);
-    if (variation.storage) parts.push(`Storage: ${variation.storage}`);
-    return parts.join(', ') || 'No attributes set';
+
+    // Add variations data
+    if (this.hasVariations() && this.variations().length > 0) {
+      formData.append('variations', JSON.stringify(this.variations()));
+    }
+
+    // Add removed image IDs for updates
+    if (this.isEdit() && this.removedImageIds().length > 0) {
+      formData.append('removed_image_ids', JSON.stringify(this.removedImageIds()));
+    }
+
+    return formData;
+  }
+
+  private markFormGroupTouched(formGroup: FormGroup): void {
+    Object.keys(formGroup.controls).forEach(key => {
+      const control = formGroup.get(key);
+      control?.markAsTouched();
+    });
   }
 
   // Utility methods
@@ -517,5 +402,15 @@ export class ProductFormComponent implements OnInit {
   protected onDragLeave(event: DragEvent): void {
     event.preventDefault();
     this.dragOver.set(false);
+  }
+
+  // Image handling event handlers
+  protected onImageTextChange(event: Event, index: number, field: string): void {
+    const target = event.target as HTMLInputElement;
+    if (field === 'url') {
+      this.updateImageUrl(index, target.value);
+    } else if (field === 'alt_text') {
+      this.updateImageAltText(index, target.value);
+    }
   }
 }
