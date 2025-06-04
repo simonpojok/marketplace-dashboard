@@ -179,6 +179,11 @@ export class ProductFormComponent implements OnInit {
     this.variations.set(variations);
   }
 
+  // Helper method to calculate final price for variations
+  protected calculateVariationPrice(basePrice: number, priceAdjustment: number): number {
+    return basePrice + (priceAdjustment || 0);
+  }
+
   // Image handling
   protected addImage(): void {
     const newImage: ProductImage = {

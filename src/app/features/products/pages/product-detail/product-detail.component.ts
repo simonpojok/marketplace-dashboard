@@ -3,6 +3,7 @@ import {CommonModule} from '@angular/common';
 import {RouterModule, ActivatedRoute, Router} from '@angular/router';
 import {ProductsService} from '../../services/products.service';
 import {Product} from '../../models/product.model';
+import {ProductVariation, VARIATION_ATTRIBUTES} from '../../models/product-variation.model';
 import {ToastService} from '../../../../core/services/toast.service';
 
 @Component({
@@ -103,10 +104,9 @@ export class ProductDetailComponent implements OnInit {
     return !!this.product()?.discount_price;
   }
 
-  protected handMoreImages(): boolean {
+  protected hasMoreImages(): boolean {
     if (this.product()?.images) {
-      // @ts-ignore
-      return this.product()?.images.length > 0;
+      return (this.product()?.images?.length || 0) > 0;
     }
     return false;
   }
@@ -125,5 +125,86 @@ export class ProductDetailComponent implements OnInit {
     } else {
       return 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300';
     }
+  }
+
+  // Variation helper methods
+  protected calculateVariationPrice(basePrice: number, priceAdjustment: number): number {
+    return basePrice + (priceAdjustment || 0);
+  }
+
+  protected getVariationDisplayName(variation: ProductVariation): string {
+    const attributeStrings = Object.entries(variation.attributes)
+      .filter(([_, value]) => value.trim() !== '')
+      .map(([key, value]) => `${this.getAttributeLabel(key)}: ${this.formatAttributeValue(value)}`);
+
+    return attributeStrings.length > 0 ? attributeStrings.join(', ') : 'No attributes';
+  }
+
+  protected getAttributeLabel(key: string): string {
+    return VARIATION_ATTRIBUTES[key]?.label || key;
+  }
+
+  protected formatAttributeValue(value: string): string {
+    // If it's a custom value, show it more cleanly
+    if (value.startsWith('Custom:')) {
+      const customValue = value.replace('Custom:', '').trim();
+      return customValue || 'Custom';
+    }
+    return value;
+  }
+
+  protected getVariationAttributes(variation: ProductVariation): Array<{label: string, value: string}> {
+    return Object.entries(variation.attributes)
+      .filter(([_, value]) => value.trim() !== '')
+      .map(([key, value]) => ({
+        label: this.getAttributeLabel(key),
+        value: this.formatAttributeValue(value)
+      }));
+  }
+
+  protected getVariationStockStatusClass(stockQuantity: number): string {
+    if (stockQuantity === 0) {
+      return 'text-red-600 dark:text-red-400';
+    } else if (stockQuantity < 10) {
+      return 'text-yellow-600 dark:text-yellow-400';
+    } else {
+      return 'text-green-600 dark:text-green-400';
+    }
+  }
+
+  protected getColorValue(colorString: string): string | null {
+    // Check if the attribute contains a color hex code
+    const hexMatch = colorString.match(/#[0-9A-Fa-f]{6}/);
+    if (hexMatch) {
+      return hexMatch[0];
+    }
+
+    // Simple color name to hex mapping for common colors
+    const colorMap: { [key: string]: string } = {
+      'red': '#ff0000',
+      'blue': '#0000ff',
+      'green': '#008000',
+      'black': '#000000',
+      'white': '#ffffff',
+      'yellow': '#ffff00',
+      'pink': '#ffc0cb',
+      'purple': '#800080',
+      'orange': '#ffa500',
+      'gray': '#808080',
+      'grey': '#808080'
+    };
+
+    const lowerColor = colorString.toLowerCase();
+    for (const [colorName, hexValue] of Object.entries(colorMap)) {
+      if (lowerColor.includes(colorName)) {
+        return hexValue;
+      }
+    }
+
+    return null;
+  }
+
+  protected hasColorAttribute(variation: ProductVariation): boolean {
+    return 'color' in variation.attributes && variation.attributes['color'].trim() !== '';
   }
 }

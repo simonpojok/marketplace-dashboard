@@ -51,17 +51,29 @@ import {ProductVariation, VARIATION_ATTRIBUTES} from '../../models/product-varia
             >
 
             <!-- Select Input -->
-            <select
-              *ngIf="getAttributeType(attrKey) === 'select'"
-              [value]="formData().attributes?.[attrKey] || ''"
-              (change)="updateAttribute(attrKey, $event)"
-              class="w-full px-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500 dark:bg-gray-800 dark:text-white"
-            >
-              <option value="">Select {{ getAttributeLabel(attrKey) }}</option>
-              <option *ngFor="let option of getAttributeOptions(attrKey)" [value]="option">
-                {{ option }}
-              </option>
-            </select>
+            <div *ngIf="getAttributeType(attrKey) === 'select'">
+              <select
+                [value]="getSelectValue(attrKey)"
+                (change)="updateAttribute(attrKey, $event)"
+                class="w-full px-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500 dark:bg-gray-800 dark:text-white"
+              >
+                <option value="">Select {{ getAttributeLabel(attrKey) }}</option>
+                <option *ngFor="let option of getAttributeOptions(attrKey)" [value]="option">
+                  {{ option }}
+                </option>
+              </select>
+
+              <!-- Custom Input Field (shown when "Custom" is selected) -->
+              <div *ngIf="isCustomSelected(attrKey)" class="mt-2">
+                <input
+                  type="text"
+                  [value]="getCustomValue(attrKey)"
+                  (input)="updateCustomAttribute(attrKey, $event)"
+                  class="w-full px-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500 dark:bg-gray-800 dark:text-white"
+                  [placeholder]="'Enter custom ' + getAttributeLabel(attrKey).toLowerCase()"
+                >
+              </div>
+            </div>
 
             <!-- Color + Text Input -->
             <div *ngIf="getAttributeType(attrKey) === 'color-text'" class="flex space-x-2">
@@ -225,18 +237,67 @@ export class VariationFormComponent {
     const editing = this.editingVariation();
     if (editing) {
       this.formData.set({...editing});
+
+      // Set up custom selections for editing
+      const customSelections: { [key: string]: boolean } = {};
+      Object.entries(editing.attributes || {}).forEach(([key, value]) => {
+        if (value === 'Custom' || (value && value.startsWith('Custom:'))) {
+          customSelections[key] = true;
+        }
+      });
+      this.customSelections.set(customSelections);
     } else {
       this.resetForm();
     }
   }
 
+  // State to track which attributes have custom selection
+  protected customSelections = signal<{ [key: string]: boolean }>({});
+
   protected updateAttribute(attributeKey: string, event: Event): void {
-    const value = (event.target as HTMLInputElement).value;
+    const value = (event.target as HTMLInputElement | HTMLSelectElement).value;
+
+    // Track if "Custom" was selected
+    if (value === 'Custom') {
+      this.customSelections.update(selections => ({
+        ...selections,
+        [attributeKey]: true
+      }));
+
+      // Set the value to "Custom" initially
+      this.formData.update(data => ({
+        ...data,
+        attributes: {
+          ...data.attributes,
+          [attributeKey]: 'Custom'
+        }
+      }));
+    } else {
+      // Clear custom selection if a different option is chosen
+      this.customSelections.update(selections => ({
+        ...selections,
+        [attributeKey]: false
+      }));
+
+      this.formData.update(data => ({
+        ...data,
+        attributes: {
+          ...data.attributes,
+          [attributeKey]: value
+        }
+      }));
+    }
+  }
+
+  protected updateCustomAttribute(attributeKey: string, event: Event): void {
+    const customValue = (event.target as HTMLInputElement).value;
+
+    // Keep the custom selection active and store the custom value
     this.formData.update(data => ({
       ...data,
       attributes: {
         ...data.attributes,
-        [attributeKey]: value
+        [attributeKey]: customValue.trim() ? `Custom: ${customValue.trim()}` : 'Custom'
       }
     }));
   }
@@ -316,6 +377,9 @@ export class VariationFormComponent {
       image_url: '',
       is_active: true
     });
+
+    // Reset custom selections
+    this.customSelections.set({});
   }
 
   protected cancelEdit(): void {
@@ -393,5 +457,28 @@ export class VariationFormComponent {
 
   protected getAttributeOptions(key: string): string[] {
     return VARIATION_ATTRIBUTES[key]?.options || [];
+  }
+
+  protected isCustomSelected(attributeKey: string): boolean {
+    return this.customSelections()[attributeKey] || false;
+  }
+
+  protected getCustomValue(attributeKey: string): string {
+    const currentValue = this.formData().attributes?.[attributeKey];
+    if (currentValue && currentValue.startsWith('Custom:')) {
+      return currentValue.replace('Custom:', '').trim();
+    }
+    return '';
+  }
+
+  protected getSelectValue(attributeKey: string): string {
+    const currentValue = this.formData().attributes?.[attributeKey];
+
+    // If custom is selected, always return "Custom" for the select
+    if (this.customSelections()[attributeKey] || (currentValue && currentValue.startsWith('Custom'))) {
+      return 'Custom';
+    }
+
+    return currentValue || '';
   }
 }

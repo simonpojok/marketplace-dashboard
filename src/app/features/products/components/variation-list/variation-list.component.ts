@@ -241,7 +241,7 @@ export class VariationListComponent {
   protected getVariationDisplayName(variation: ProductVariation): string {
     const attributeStrings = Object.entries(variation.attributes)
       .filter(([_, value]) => value.trim() !== '')
-      .map(([key, value]) => `${this.getAttributeLabel(key)}: ${value}`);
+      .map(([key, value]) => `${this.getAttributeLabel(key)}: ${this.formatAttributeValue(value)}`);
 
     return attributeStrings.length > 0 ? attributeStrings.join(', ') : 'No attributes';
   }
@@ -251,8 +251,17 @@ export class VariationListComponent {
       .filter(([_, value]) => value.trim() !== '')
       .map(([key, value]) => ({
         label: this.getAttributeLabel(key),
-        value: value
+        value: this.formatAttributeValue(value)
       }));
+  }
+
+  protected formatAttributeValue(value: string): string {
+    // If it's a custom value, show it more cleanly
+    if (value.startsWith('Custom:')) {
+      const customValue = value.replace('Custom:', '').trim();
+      return customValue || 'Custom';
+    }
+    return value;
   }
 
   protected getAttributeLabel(key: string): string {

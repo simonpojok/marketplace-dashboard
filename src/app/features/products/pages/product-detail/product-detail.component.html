@@ -65,11 +65,11 @@
           class="bg-white dark:bg-dark-bg-secondary shadow-sm rounded-lg border border-gray-200 dark:border-dark-border overflow-hidden">
           <div class="relative pt-[100%]">
             <img
-              *ngIf="handMoreImages()"
+              *ngIf="hasMoreImages()"
               [src]="productImage()"
               class="absolute inset-0 w-full h-full object-cover"
             >
-            <div *ngIf="!handMoreImages()"
+            <div *ngIf="!hasMoreImages()"
                  class="absolute inset-0 flex items-center justify-center bg-gray-100 dark:bg-gray-700">
               <svg xmlns="http://www.w3.org/2000/svg" class="h-20 w-20 text-gray-400 dark:text-gray-500" fill="none"
                    viewBox="0 0 24 24" stroke="currentColor">
@@ -81,7 +81,7 @@
         </div>
 
         <!-- Thumbnail Images -->
-        <div *ngIf="handMoreImages()" class="grid grid-cols-5 gap-2">
+        <div *ngIf="hasMoreImages()" class="grid grid-cols-5 gap-2">
           <div
             *ngFor="let image of product()?.images; let i = index"
             (click)="setSelectedImage(i)"
@@ -297,27 +297,26 @@
                   </td>
                   <td class="px-6 py-4 whitespace-nowrap">
                     <div class="flex items-center">
-                      <!-- Color Swatch if available -->
-                      <div *ngIf="variation.color_code"
+                      <!-- Color Swatch if color attribute exists -->
+                      <div *ngIf="hasColorAttribute(variation) && getColorValue(variation.attributes['color'])"
                            class="w-6 h-6 rounded-full border border-gray-300 dark:border-gray-600 mr-2"
-                           [style.background-color]="variation.color_code"></div>
+                           [style.background-color]="getColorValue(variation.attributes['color'])"></div>
 
                       <div>
-                        <div *ngIf="variation.size" class="text-sm text-gray-900 dark:text-white">
-                          Size: {{ variation.size_display || variation.size }}
-                          <span
-                            *ngIf="variation.size === 'CUSTOM' && variation.custom_attribute">({{ variation.custom_attribute }}
-                            )</span>
+                        <div class="text-sm text-gray-900 dark:text-white">
+                          {{ getVariationDisplayName(variation) }}
                         </div>
-                        <div *ngIf="variation.color" class="text-sm text-gray-900 dark:text-white">
-                          Color: {{ variation.color }}
+                        <div class="text-xs text-gray-500 dark:text-gray-400">
+                          <span *ngFor="let attr of getVariationAttributes(variation); let last = last">
+                            {{ attr.label }}: {{ attr.value }}<span *ngIf="!last">, </span>
+                          </span>
                         </div>
                       </div>
                     </div>
                   </td>
                   <td class="px-6 py-4 whitespace-nowrap">
-                    <div
-                      class="text-sm font-medium text-gray-900 dark:text-white">{{ formatCurrency(variation.final_price) }}
+                    <div class="text-sm font-medium text-gray-900 dark:text-white">
+                      {{ formatCurrency(calculateVariationPrice(product()?.price || 0, variation.price_adjustment)) }}
                     </div>
                     <div *ngIf="variation.price_adjustment !== 0" class="text-xs text-gray-500 dark:text-gray-400">
                       {{ variation.price_adjustment > 0 ? '+' : '' }}{{ formatCurrency(variation.price_adjustment) }}
@@ -325,12 +324,8 @@
                   </td>
                   <td class="px-6 py-4 whitespace-nowrap">
                     <div
-                      [ngClass]="
-                          variation.stock_quantity === 0 ? 'text-red-600 dark:text-red-400' :
-                          (variation.stock_quantity < 10 ? 'text-yellow-600 dark:text-yellow-400' :
-                          'text-green-600 dark:text-green-400')
-                        "
                       class="text-sm font-medium"
+                      [ngClass]="getVariationStockStatusClass(variation.stock_quantity)"
                     >
                       {{ variation.stock_quantity }}
                     </div>
