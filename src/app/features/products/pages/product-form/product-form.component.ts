@@ -168,30 +168,10 @@ export class ProductFormComponent implements OnInit {
       this.images.set(productImages);
     }
 
-    // Load variations - convert from old format to new format
-    // if (product.variations && product.variations.length > 0) {
-    //   const productVariations: ProductVariation[] = product.variations.map(variation => {
-    //     const attributes: { [key: string]: string } = {};
-    //
-    //     // Convert old structure to new attributes structure
-    //     if (variation.size) attributes['size'] = variation.size;
-    //     if (variation.color) attributes['color'] = variation.color;
-    //     if (variation.memory) attributes['ram'] = variation.memory;
-    //     if (variation.storage) attributes['storage'] = variation.storage;
-    //     if (variation.custom_attribute) attributes['custom'] = variation.custom_attribute;
-    //
-    //     return {
-    //       id: variation.id,
-    //       sku: variation.sku,
-    //       attributes,
-    //       price_adjustment: variation.price_adjustment,
-    //       stock_quantity: variation.stock_quantity,
-    //       image_url: variation.image || '',
-    //       is_active: variation.is_active
-    //     };
-    //   });
-    //   this.variations.set(productVariations);
-    // }
+    // Load variations (backend will provide in the new format)
+    if (product.variations && product.variations.length > 0) {
+      this.variations.set(product.variations);
+    }
   }
 
   // Variation Management
