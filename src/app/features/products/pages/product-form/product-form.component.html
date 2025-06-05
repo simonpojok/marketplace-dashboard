@@ -613,7 +613,7 @@
                         {{ getAttributeLabel(attrKey) }}
                       </label>
 
-                      <!-- Text Input -->
+                      <!-- Text Input for processor, dimensions, capacity, power, fragrance -->
                       <input
                         *ngIf="getVariationAttributeType(attrKey) === 'text'"
                         type="text"
@@ -623,7 +623,7 @@
                         [placeholder]="'Enter ' + getAttributeLabel(attrKey).toLowerCase()"
                       >
 
-                      <!-- Select Input -->
+                      <!-- Select Input with Custom option -->
                       <div *ngIf="getVariationAttributeType(attrKey) === 'select'">
                         <select
                           [value]="getVariationSelectValue(attrKey)"
@@ -637,11 +637,11 @@
                         </select>
 
                         <!-- Custom Input Field -->
-                        <div *ngIf="isCustomVariationSelected(attrKey)" class="mt-2">
+                        <div *ngIf="isCustomInputActive(attrKey)" class="mt-2">
                           <input
                             type="text"
-                            [value]="getCustomVariationValue(attrKey)"
-                            (input)="updateCustomVariationAttribute(attrKey, $event)"
+                            [value]="getCustomInputValue(attrKey)"
+                            (input)="updateCustomVariationValue(attrKey, $event)"
                             class="w-full px-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500 dark:bg-gray-800 dark:text-white"
                             [placeholder]="'Enter custom ' + getAttributeLabel(attrKey).toLowerCase()"
                           >
@@ -662,6 +662,24 @@
                           (input)="updateVariationAttribute(attrKey, $event)"
                           class="flex-1 px-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500 dark:bg-gray-800 dark:text-white"
                           placeholder="Color name"
+                        >
+                      </div>
+
+                      <!-- Custom Attribute (name + value) -->
+                      <div *ngIf="attrKey === 'custom'" class="space-y-2">
+                        <input
+                          type="text"
+                          [value]="getCustomAttributeName()"
+                          (input)="updateCustomAttributeName($event)"
+                          class="w-full px-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500 dark:bg-gray-800 dark:text-white"
+                          placeholder="Attribute name (e.g., Weight, Material, etc.)"
+                        >
+                        <input
+                          type="text"
+                          [value]="getCustomInputValue('custom')"
+                          (input)="updateCustomVariationValue('custom', $event)"
+                          class="w-full px-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500 dark:bg-gray-800 dark:text-white"
+                          placeholder="Attribute value"
                         >
                       </div>
                     </div>

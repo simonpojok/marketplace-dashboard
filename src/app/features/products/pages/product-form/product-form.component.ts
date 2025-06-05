@@ -1,4 +1,4 @@
-import {Component, OnInit, inject, signal, computed} from '@angular/core';
+import {Component, OnInit, inject, signal, computed, ChangeDetectionStrategy} from '@angular/core';
 import {CommonModule} from '@angular/common';
 import {RouterModule, ActivatedRoute, Router} from '@angular/router';
 import {FormBuilder, FormGroup, ReactiveFormsModule, Validators, FormsModule} from '@angular/forms';
@@ -7,6 +7,7 @@ import {Product, Category, Brand} from '../../models/product.model';
 import {ToastService} from '../../../../core/services/toast.service';
 import {ProductImage} from '../models/product-image.models';
 import {ProductVariation, VARIATION_ATTRIBUTES, VariationAttribute} from '../../models/product-variation.model';
+import { debounceTime, distinctUntilChanged } from 'rxjs/operators';
 
 @Component({
   selector: 'app-product-form',
@@ -18,7 +19,8 @@ import {ProductVariation, VARIATION_ATTRIBUTES, VariationAttribute} from '../../
     FormsModule
   ],
   templateUrl: './product-form.component.html',
-  styleUrls: ['./product-form.component.scss']
+  styleUrls: ['./product-form.component.scss'],
+  changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class ProductFormComponent implements OnInit {
   private route = inject(ActivatedRoute);
@@ -68,7 +70,11 @@ export class ProductFormComponent implements OnInit {
     image_url: '',
     is_active: true
   });
-  protected customSelections = signal<{ [key: string]: boolean }>({});
+
+  // Track custom input states for each attribute
+  protected customInputStates = signal<{ [key: string]: boolean }>({});
+  protected customInputValues = signal<{ [key: string]: string }>({});
+  protected customAttributeNames = signal<{ [key: string]: string }>({});
 
   // Computed values
   protected isVariationEdit = computed(() => !!this.editingVariation());
@@ -120,8 +126,11 @@ export class ProductFormComponent implements OnInit {
       this.isLoading.set(false);
     }
 
-    // Watch for "has variations" changes
-    this.productForm.get('has_variations')?.valueChanges.subscribe(hasVariations => {
+    // Watch for "has variations" changes with debounce to prevent freezing
+    this.productForm.get('has_variations')?.valueChanges.pipe(
+      debounceTime(300),
+      distinctUntilChanged()
+    ).subscribe(hasVariations => {
       this.hasVariations.set(hasVariations);
       if (!hasVariations) {
         this.variations.set([]);
@@ -302,6 +311,25 @@ export class ProductFormComponent implements OnInit {
     });
 
     this.variations.set(updatedVariations);
+
+    // Clear custom states for this attribute
+    this.customInputStates.update(states => {
+      const newStates = {...states};
+      delete newStates[attributeKey];
+      return newStates;
+    });
+
+    this.customInputValues.update(values => {
+      const newValues = {...values};
+      delete newValues[attributeKey];
+      return newValues;
+    });
+
+    this.customAttributeNames.update(names => {
+      const newNames = {...names};
+      delete newNames[attributeKey];
+      return newNames;
+    });
   }
 
   protected removeAttribute(attributeKey: string): void {
@@ -314,14 +342,35 @@ export class ProductFormComponent implements OnInit {
 
   private initializeAttributesFromVariations(): void {
     const existingAttributes = new Set<string>();
+    const customStates: { [key: string]: boolean } = {};
+    const customValues: { [key: string]: string } = {};
+    const customNames: { [key: string]: string } = {};
 
     this.variations().forEach(variation => {
-      Object.keys(variation.attributes || {}).forEach(attr => {
+      Object.entries(variation.attributes || {}).forEach(([attr, value]) => {
         existingAttributes.add(attr);
+
+        // Check if it's a custom value
+        if (value.startsWith('Custom:')) {
+          customStates[attr] = true;
+          if (attr === 'custom') {
+            // For custom attribute, parse name:value format
+            const customParts = value.replace('Custom:', '').split(':');
+            if (customParts.length >= 2) {
+              customNames[attr] = customParts[0].trim();
+              customValues[attr] = customParts.slice(1).join(':').trim();
+            }
+          } else {
+            customValues[attr] = value.replace('Custom:', '').trim();
+          }
+        }
       });
     });
 
     this.availableAttributes.set(Array.from(existingAttributes));
+    this.customInputStates.set(customStates);
+    this.customInputValues.set(customValues);
+    this.customAttributeNames.set(customNames);
   }
 
   // ==========================================
@@ -331,64 +380,78 @@ export class ProductFormComponent implements OnInit {
   protected updateVariationAttribute(attributeKey: string, event: Event): void {
     const value = (event.target as HTMLInputElement | HTMLSelectElement).value;
 
-    // Track if "Custom" was selected
     if (value === 'Custom') {
-      this.customSelections.update(selections => ({
-        ...selections,
+      // Set custom input state to true
+      this.customInputStates.update(states => ({
+        ...states,
         [attributeKey]: true
       }));
 
-      // Set the value to "Custom" initially
-      this.variationFormData.update(data => ({
-        ...data,
-        attributes: {
-          ...data.attributes,
-          [attributeKey]: 'Custom'
-        }
-      }));
+      // Initialize with empty custom value
+      this.updateVariationFormAttribute(attributeKey, '');
     } else {
-      // Clear custom selection if a different option is chosen
-      this.customSelections.update(selections => ({
-        ...selections,
+      // Clear custom input state
+      this.customInputStates.update(states => ({
+        ...states,
         [attributeKey]: false
       }));
 
-      this.variationFormData.update(data => ({
-        ...data,
-        attributes: {
-          ...data.attributes,
-          [attributeKey]: value
-        }
-      }));
+      // Set the selected value
+      this.updateVariationFormAttribute(attributeKey, value);
     }
   }
 
-  protected updateCustomVariationAttribute(attributeKey: string, event: Event): void {
+  protected updateCustomVariationValue(attributeKey: string, event: Event): void {
     const customValue = (event.target as HTMLInputElement).value;
 
-    // Keep the custom selection active and store the custom value
-    this.variationFormData.update(data => ({
-      ...data,
-      attributes: {
-        ...data.attributes,
-        [attributeKey]: customValue.trim() ? `Custom: ${customValue.trim()}` : 'Custom'
-      }
+    this.customInputValues.update(values => ({
+      ...values,
+      [attributeKey]: customValue
     }));
+
+    if (attributeKey === 'custom') {
+      // For custom attribute, combine name and value
+      const customName = this.customAttributeNames()[attributeKey] || '';
+      const formattedValue = customName && customValue
+        ? `Custom:${customName}:${customValue}`
+        : '';
+      this.updateVariationFormAttribute(attributeKey, formattedValue);
+    } else {
+      // For other attributes, just store the custom value
+      const formattedValue = customValue.trim() ? `Custom:${customValue.trim()}` : '';
+      this.updateVariationFormAttribute(attributeKey, formattedValue);
+    }
+  }
+
+  protected updateCustomAttributeName(event: Event): void {
+    const customName = (event.target as HTMLInputElement).value;
+
+    this.customAttributeNames.update(names => ({
+      ...names,
+      'custom': customName
+    }));
+
+    // Update the variation form attribute with combined name:value
+    const customValue = this.customInputValues()['custom'] || '';
+    const formattedValue = customName && customValue
+      ? `Custom:${customName}:${customValue}`
+      : '';
+    this.updateVariationFormAttribute('custom', formattedValue);
   }
 
   protected updateColorVariationAttribute(attributeKey: string, event: Event): void {
     const colorValue = (event.target as HTMLInputElement).value;
-    const currentValue = this.variationFormData().attributes?.[attributeKey] || '';
-
-    // If there's already text, preserve it, otherwise use color name
     const colorName = this.getColorName(colorValue);
-    this.variationFormData.update(data => ({
-      ...data,
-      attributes: {
-        ...data.attributes,
-        [attributeKey]: currentValue || colorName
-      }
-    }));
+
+    // Update both the color and the text input if it's empty
+    const currentValue = this.variationFormData().attributes?.[attributeKey] || '';
+    if (!currentValue || currentValue === colorName) {
+      this.updateVariationFormAttribute(attributeKey, `${colorName} ${colorValue}`);
+    } else {
+      // If there's already a value, just update the color part
+      const updatedValue = currentValue.replace(/#[0-9A-Fa-f]{6}/, colorValue);
+      this.updateVariationFormAttribute(attributeKey, `${updatedValue} ${colorValue}`);
+    }
   }
 
   protected updateVariationField(field: string, event: Event): void {
@@ -405,6 +468,16 @@ export class ProductFormComponent implements OnInit {
     this.variationFormData.update(data => ({
       ...data,
       [field]: value
+    }));
+  }
+
+  private updateVariationFormAttribute(attributeKey: string, value: string): void {
+    this.variationFormData.update(data => ({
+      ...data,
+      attributes: {
+        ...data.attributes,
+        [attributeKey]: value
+      }
     }));
   }
 
@@ -469,8 +542,10 @@ export class ProductFormComponent implements OnInit {
       is_active: true
     });
 
-    // Reset custom selections
-    this.customSelections.set({});
+    // Reset custom input states
+    this.customInputStates.set({});
+    this.customInputValues.set({});
+    this.customAttributeNames.set({});
   }
 
   protected cancelVariationEdit(): void {
@@ -496,26 +571,31 @@ export class ProductFormComponent implements OnInit {
   }
 
   protected getVariationAttributeOptions(key: string): string[] {
-    return VARIATION_ATTRIBUTES[key]?.options || [];
-  }
-
-  protected isCustomVariationSelected(attributeKey: string): boolean {
-    return this.customSelections()[attributeKey] || false;
-  }
-
-  protected getCustomVariationValue(attributeKey: string): string {
-    const currentValue = this.variationFormData().attributes?.[attributeKey];
-    if (currentValue && currentValue.startsWith('Custom:')) {
-      return currentValue.replace('Custom:', '').trim();
+    const options = VARIATION_ATTRIBUTES[key]?.options || [];
+    // Add "Custom" option to all select fields except the dedicated custom field
+    if (key !== 'custom' && options.length > 0) {
+      return [...options, 'Custom'];
     }
-    return '';
+    return options;
+  }
+
+  protected isCustomInputActive(attributeKey: string): boolean {
+    return this.customInputStates()[attributeKey] || false;
+  }
+
+  protected getCustomInputValue(attributeKey: string): string {
+    return this.customInputValues()[attributeKey] || '';
+  }
+
+  protected getCustomAttributeName(): string {
+    return this.customAttributeNames()['custom'] || '';
   }
 
   protected getVariationSelectValue(attributeKey: string): string {
     const currentValue = this.variationFormData().attributes?.[attributeKey];
 
-    // If custom is selected, always return "Custom" for the select
-    if (this.customSelections()[attributeKey] || (currentValue && currentValue.startsWith('Custom'))) {
+    // If it's a custom value, return "Custom" for the select
+    if (currentValue && currentValue.startsWith('Custom:')) {
       return 'Custom';
     }
 
@@ -523,6 +603,12 @@ export class ProductFormComponent implements OnInit {
   }
 
   protected getVariationColorValue(colorName: string): string {
+    // Extract hex color from the color name string
+    const hexMatch = colorName.match(/#[0-9A-Fa-f]{6}/);
+    if (hexMatch) {
+      return hexMatch[0];
+    }
+
     // Simple color name to hex mapping
     const colorMap: { [key: string]: string } = {
       'red': '#ff0000',
@@ -555,14 +641,21 @@ export class ProductFormComponent implements OnInit {
       '#808080': 'Gray'
     };
 
-    return colorMap[hexColor.toLowerCase()] || 'Custom';
+    return colorMap[hexColor.toLowerCase()] || 'Custom Color';
   }
 
   private generateVariationSKU(): string {
     const attributes = this.variationFormData().attributes || {};
     const attrValues = Object.values(attributes)
       .filter(value => value.trim() !== '')
-      .map(value => value.substring(0, 2).toUpperCase())
+      .map(value => {
+        // Handle custom attributes
+        if (value.startsWith('Custom:')) {
+          const customPart = value.replace('Custom:', '');
+          return customPart.substring(0, 3).toUpperCase();
+        }
+        return value.substring(0, 2).toUpperCase();
+      })
       .join('-');
 
     const timestamp = Date.now().toString().slice(-4);
@@ -595,14 +688,31 @@ export class ProductFormComponent implements OnInit {
       // Populate variation form with editing data
       this.variationFormData.set({...variation});
 
-      // Set up custom selections for editing
-      const customSelections: { [key: string]: boolean } = {};
+      // Set up custom input states for editing
+      const customStates: { [key: string]: boolean } = {};
+      const customValues: { [key: string]: string } = {};
+      const customNames: { [key: string]: string } = {};
+
       Object.entries(variation.attributes || {}).forEach(([key, value]) => {
-        if (value === 'Custom' || (value && value.startsWith('Custom:'))) {
-          customSelections[key] = true;
+        if (value.startsWith('Custom:')) {
+          customStates[key] = true;
+
+          if (key === 'custom') {
+            // Parse custom attribute name:value format
+            const customParts = value.replace('Custom:', '').split(':');
+            if (customParts.length >= 2) {
+              customNames[key] = customParts[0].trim();
+              customValues[key] = customParts.slice(1).join(':').trim();
+            }
+          } else {
+            customValues[key] = value.replace('Custom:', '').trim();
+          }
         }
       });
-      this.customSelections.set(customSelections);
+
+      this.customInputStates.set(customStates);
+      this.customInputValues.set(customValues);
+      this.customAttributeNames.set(customNames);
     }
   }
 
@@ -662,10 +772,19 @@ export class ProductFormComponent implements OnInit {
   }
 
   protected formatAttributeValue(value: string): string {
-    // If it's a custom value, show it more cleanly
+    // Handle custom values
     if (value.startsWith('Custom:')) {
-      const customValue = value.replace('Custom:', '').trim();
-      return customValue || 'Custom';
+      const customValue = value.replace('Custom:', '');
+
+      // For custom attribute (name:value format)
+      if (customValue.includes(':')) {
+        const parts = customValue.split(':');
+        if (parts.length >= 2) {
+          return `${parts[0].trim()}: ${parts.slice(1).join(':').trim()}`;
+        }
+      }
+
+      return customValue.trim() || 'Custom';
     }
     return value;
   }

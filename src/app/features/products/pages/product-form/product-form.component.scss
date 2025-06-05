@@ -1,13 +1,31 @@
 /* ==========================================
+   PERFORMANCE OPTIMIZATIONS
+   ========================================== */
+
+// Use transform3d to enable hardware acceleration
+.hardware-accelerated {
+  transform: translate3d(0, 0, 0);
+  backface-visibility: hidden;
+  perspective: 1000px;
+}
+
+// Optimize animations with will-change
+.optimized-animation {
+  will-change: transform, opacity;
+}
+
+/* ==========================================
    DRAG & DROP STYLES
    ========================================== */
 .drag-over {
   border-color: #3b82f6 !important;
   background-color: rgba(59, 130, 246, 0.05) !important;
+  @extend .hardware-accelerated;
 }
 
 .drag-drop-area {
-  transition: all 0.2s ease-in-out;
+  transition: border-color 0.2s ease-in-out, background-color 0.2s ease-in-out;
+  @extend .hardware-accelerated;
 }
 
 .drag-drop-area:hover {
@@ -19,11 +37,12 @@
    IMAGE PREVIEW STYLES
    ========================================== */
 .image-preview {
-  transition: all 0.2s ease-in-out;
+  transition: transform 0.2s ease-in-out;
+  @extend .hardware-accelerated;
 }
 
 .image-preview:hover {
-  transform: scale(1.02);
+  transform: scale(1.02) translate3d(0, 0, 0);
 }
 
 /* ==========================================
@@ -31,6 +50,7 @@
    ========================================== */
 .variation-form {
   background: rgba(249, 250, 251, 0.5);
+  @extend .hardware-accelerated;
 }
 
 @media (prefers-color-scheme: dark) {
@@ -40,26 +60,30 @@
 }
 
 /* ==========================================
-   VARIATION TILE STYLES
+   VARIATION TILE STYLES - OPTIMIZED
    ========================================== */
 .variation-tile {
-  @apply border-2 border-gray-200 dark:border-gray-700 rounded-lg p-4 hover:border-primary-300 dark:hover:border-primary-600 transition-all duration-200;
+  @apply border-2 border-gray-200 dark:border-gray-700 rounded-lg p-4 transition-all duration-200;
+  @extend .hardware-accelerated;
   min-height: 200px;
   display: flex;
   flex-direction: column;
-}
 
-.variation-tile.selected {
-  @apply border-primary-500 bg-primary-50 dark:bg-primary-900/20;
-  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
-}
+  // Use transform instead of box-shadow for better performance
+  &:hover {
+    @apply border-primary-300 dark:border-primary-600;
+    transform: translate3d(0, -2px, 0);
+  }
 
-.variation-tile:hover {
-  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+  &.selected {
+    @apply border-primary-500 bg-primary-50 dark:bg-primary-900/20;
+    transform: translate3d(0, -1px, 0);
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+  }
 }
 
 /* ==========================================
-   ATTRIBUTE CHIP STYLES
+   ATTRIBUTE CHIP STYLES - OPTIMIZED
    ========================================== */
 .attribute-chip {
   @apply inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-gray-100 dark:bg-gray-700 text-gray-800 dark:text-gray-200;
@@ -67,6 +91,10 @@
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+  @extend .hardware-accelerated;
+
+  // Prevent layout thrashing
+  contain: layout style;
 }
 
 /* ==========================================
@@ -74,43 +102,62 @@
    ========================================== */
 .stock-indicator {
   @apply px-2 py-1 text-xs font-medium rounded-full;
-}
+  @extend .hardware-accelerated;
 
-.stock-indicator.in-stock {
-  @apply bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300;
-}
+  &.in-stock {
+    @apply bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300;
+  }
 
-.stock-indicator.low-stock {
-  @apply bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-300;
-}
+  &.low-stock {
+    @apply bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-300;
+  }
 
-.stock-indicator.out-of-stock {
-  @apply bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-300;
+  &.out-of-stock {
+    @apply bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-300;
+  }
 }
 
 /* ==========================================
-   FORM SECTION ANIMATIONS
+   FORM SECTION ANIMATIONS - OPTIMIZED
    ========================================== */
 .space-y-6 > * {
-  animation: fadeInUp 0.3s ease-out;
+  @extend .optimized-animation;
+  animation: fadeInUp 0.3s ease-out forwards;
+
+  // Prevent animation on initial load to reduce CPU usage
+  &:first-child {
+    animation-delay: 0s;
+  }
+
+  &:nth-child(2) {
+    animation-delay: 0.1s;
+  }
+
+  &:nth-child(3) {
+    animation-delay: 0.2s;
+  }
 }
 
 @keyframes fadeInUp {
   from {
     opacity: 0;
-    transform: translateY(10px);
+    transform: translate3d(0, 10px, 0);
   }
   to {
     opacity: 1;
-    transform: translateY(0);
+    transform: translate3d(0, 0, 0);
   }
 }
 
 /* ==========================================
-   ATTRIBUTE CATEGORY STYLES
+   ATTRIBUTE CATEGORY STYLES - OPTIMIZED
    ========================================== */
 .attribute-category-header {
-  transition: all 0.2s ease-in-out;
+  transition: background-color 0.2s ease-in-out;
+  @extend .hardware-accelerated;
+
+  // Use contain to prevent layout recalculation
+  contain: layout;
 }
 
 .attribute-category-header:hover {
@@ -124,7 +171,7 @@
 }
 
 /* ==========================================
-   VARIATION FORM GRID RESPONSIVE
+   VARIATION FORM GRID RESPONSIVE - OPTIMIZED
    ========================================== */
 @media (max-width: 640px) {
   .grid-responsive {
@@ -133,11 +180,21 @@
 
   .variation-tile {
     min-height: auto;
+    // Reduce complexity on mobile
+    &:hover {
+      transform: none;
+    }
   }
 
   .attribute-chip {
     font-size: 10px;
     padding: 2px 6px;
+  }
+
+  // Disable animations on mobile for better performance
+  * {
+    animation-duration: 0s !important;
+    transition-duration: 0s !important;
   }
 }
 
@@ -146,6 +203,7 @@
    ========================================== */
 .step-indicator {
   position: relative;
+  @extend .hardware-accelerated;
 }
 
 .step-indicator::after {
@@ -156,7 +214,7 @@
   width: 24px;
   height: 2px;
   background-color: #e5e7eb;
-  transform: translateY(-50%);
+  transform: translateY(-50%) translate3d(0, 0, 0);
 }
 
 .step-indicator.completed::after {
@@ -174,7 +232,7 @@
 }
 
 /* ==========================================
-   COLOR INPUT STYLES
+   COLOR INPUT STYLES - OPTIMIZED
    ========================================== */
 input[type="color"] {
   -webkit-appearance: none;
@@ -183,39 +241,47 @@ input[type="color"] {
   background-color: transparent;
   border: none;
   cursor: pointer;
-}
+  @extend .hardware-accelerated;
 
-input[type="color"]::-webkit-color-swatch-wrapper {
-  padding: 0;
-  border: 1px solid #d1d5db;
-  border-radius: 4px;
-}
+  // Prevent layout shifts
+  width: 3rem;
+  height: 2rem;
 
-input[type="color"]::-webkit-color-swatch {
-  border: none;
-  border-radius: 3px;
-}
+  &::-webkit-color-swatch-wrapper {
+    padding: 0;
+    border: 1px solid #d1d5db;
+    border-radius: 4px;
+  }
 
-input[type="color"]::-moz-color-swatch {
-  border: 1px solid #d1d5db;
-  border-radius: 4px;
+  &::-webkit-color-swatch {
+    border: none;
+    border-radius: 3px;
+  }
+
+  &::-moz-color-swatch {
+    border: 1px solid #d1d5db;
+    border-radius: 4px;
+  }
 }
 
 @media (prefers-color-scheme: dark) {
-  input[type="color"]::-webkit-color-swatch-wrapper {
-    border-color: #4b5563;
-  }
+  input[type="color"] {
+    &::-webkit-color-swatch-wrapper {
+      border-color: #4b5563;
+    }
 
-  input[type="color"]::-moz-color-swatch {
-    border-color: #4b5563;
+    &::-moz-color-swatch {
+      border-color: #4b5563;
+    }
   }
 }
 
 /* ==========================================
-   LOADING STATES
+   LOADING STATES - OPTIMIZED
    ========================================== */
 .loading-overlay {
   position: relative;
+  @extend .hardware-accelerated;
 }
 
 .loading-overlay::before {
@@ -231,6 +297,7 @@ input[type="color"]::-moz-color-swatch {
   display: flex;
   align-items: center;
   justify-content: center;
+  @extend .hardware-accelerated;
 }
 
 @media (prefers-color-scheme: dark) {
@@ -240,18 +307,19 @@ input[type="color"]::-moz-color-swatch {
 }
 
 /* ==========================================
-   FORM VALIDATION STYLES
+   FORM VALIDATION STYLES - OPTIMIZED
    ========================================== */
 .form-field-error {
+  @extend .optimized-animation;
   animation: shake 0.3s ease-in-out;
 }
 
 @keyframes shake {
   0%, 20%, 40%, 60%, 80%, 100% {
-    transform: translateX(0);
+    transform: translate3d(0, 0, 0);
   }
   10%, 30%, 50%, 70%, 90% {
-    transform: translateX(-5px);
+    transform: translate3d(-5px, 0, 0);
   }
 }
 
@@ -261,107 +329,118 @@ input[type="color"]::-moz-color-swatch {
 }
 
 /* ==========================================
-   CUSTOM SCROLLBAR
+   CUSTOM SCROLLBAR - OPTIMIZED
    ========================================== */
 .custom-scrollbar {
   scrollbar-width: thin;
   scrollbar-color: #d1d5db #f9fafb;
-}
 
-.custom-scrollbar::-webkit-scrollbar {
-  width: 6px;
-}
+  // Use hardware acceleration for smoother scrolling
+  @extend .hardware-accelerated;
 
-.custom-scrollbar::-webkit-scrollbar-track {
-  background: #f9fafb;
-  border-radius: 3px;
-}
+  &::-webkit-scrollbar {
+    width: 6px;
+  }
 
-.custom-scrollbar::-webkit-scrollbar-thumb {
-  background: #d1d5db;
-  border-radius: 3px;
-}
+  &::-webkit-scrollbar-track {
+    background: #f9fafb;
+    border-radius: 3px;
+  }
 
-.custom-scrollbar::-webkit-scrollbar-thumb:hover {
-  background: #9ca3af;
+  &::-webkit-scrollbar-thumb {
+    background: #d1d5db;
+    border-radius: 3px;
+    transition: background-color 0.2s ease;
+  }
+
+  &::-webkit-scrollbar-thumb:hover {
+    background: #9ca3af;
+  }
 }
 
 @media (prefers-color-scheme: dark) {
   .custom-scrollbar {
     scrollbar-color: #4b5563 #1f2937;
-  }
 
-  .custom-scrollbar::-webkit-scrollbar-track {
-    background: #1f2937;
-  }
+    &::-webkit-scrollbar-track {
+      background: #1f2937;
+    }
 
-  .custom-scrollbar::-webkit-scrollbar-thumb {
-    background: #4b5563;
-  }
+    &::-webkit-scrollbar-thumb {
+      background: #4b5563;
+    }
 
-  .custom-scrollbar::-webkit-scrollbar-thumb:hover {
-    background: #6b7280;
+    &::-webkit-scrollbar-thumb:hover {
+      background: #6b7280;
+    }
   }
 }
 
 /* ==========================================
-   TRANSITION IMPROVEMENTS
+   TRANSITION IMPROVEMENTS - OPTIMIZED
    ========================================== */
 .transition-colors {
   transition-property: color, background-color, border-color;
   transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
   transition-duration: 150ms;
+  @extend .hardware-accelerated;
 }
 
 .transition-all {
-  transition-property: all;
+  transition-property: transform, opacity, background-color, border-color;
   transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
   transition-duration: 150ms;
+  @extend .hardware-accelerated;
 }
 
 /* ==========================================
-   FOCUS STYLES
+   FOCUS STYLES - OPTIMIZED
    ========================================== */
 .focus-ring {
   outline: 2px solid transparent;
   outline-offset: 2px;
-}
 
-.focus-ring:focus {
-  outline: 2px solid #3b82f6;
-  outline-offset: 2px;
+  &:focus {
+    outline: 2px solid #3b82f6;
+    outline-offset: 2px;
+    @extend .hardware-accelerated;
+  }
 }
 
 /* ==========================================
-   BUTTON ENHANCEMENTS
+   BUTTON ENHANCEMENTS - OPTIMIZED
    ========================================== */
 .btn-primary {
   position: relative;
   overflow: hidden;
-}
+  @extend .hardware-accelerated;
 
-.btn-primary::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: -100%;
-  width: 100%;
-  height: 100%;
-  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
-  transition: left 0.5s;
-}
+  &::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+    transition: left 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+    @extend .hardware-accelerated;
+  }
 
-.btn-primary:hover::before {
-  left: 100%;
+  &:hover::before {
+    left: 100%;
+  }
 }
 
 /* ==========================================
-   UTILITY CLASSES
+   UTILITY CLASSES - OPTIMIZED
    ========================================== */
 .text-truncate {
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+  // Prevent layout recalculation
+  contain: layout;
 }
 
 .line-clamp-2 {
@@ -369,6 +448,7 @@ input[type="color"]::-moz-color-swatch {
   display: -webkit-box;
   -webkit-box-orient: vertical;
   -webkit-line-clamp: 2;
+  contain: layout;
 }
 
 .line-clamp-3 {
@@ -376,29 +456,146 @@ input[type="color"]::-moz-color-swatch {
   display: -webkit-box;
   -webkit-box-orient: vertical;
   -webkit-line-clamp: 3;
+  contain: layout;
 }
 
 /* ==========================================
-   DARK MODE ENHANCEMENTS
+   PERFORMANCE OPTIMIZATION CLASSES
+   ========================================== */
+.gpu-accelerated {
+  @extend .hardware-accelerated;
+  // Force GPU acceleration for heavy elements
+  transform: translateZ(0);
+}
+
+.contain-layout {
+  // Prevent layout recalculation for stable elements
+  contain: layout;
+}
+
+.contain-paint {
+  // Isolate painting for complex elements
+  contain: paint;
+}
+
+.contain-strict {
+  // Full containment for independent components
+  contain: strict;
+}
+
+/* ==========================================
+   CUSTOM ATTRIBUTE SPECIFIC STYLES
+   ========================================== */
+.custom-attribute-container {
+  @extend .hardware-accelerated;
+
+  .custom-name-input {
+    border-top-right-radius: 0;
+    border-bottom-right-radius: 0;
+    border-right: 0;
+  }
+
+  .custom-value-input {
+    border-top-left-radius: 0;
+    border-bottom-left-radius: 0;
+  }
+
+  // Visual separator
+  &::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 1px;
+    height: 60%;
+    background-color: #d1d5db;
+    transform: translate(-50%, -50%);
+    pointer-events: none;
+  }
+}
+
+@media (prefers-color-scheme: dark) {
+  .custom-attribute-container::after {
+    background-color: #4b5563;
+  }
+}
+
+/* ==========================================
+   REDUCED MOTION SUPPORT
+   ========================================== */
+@media (prefers-reduced-motion: reduce) {
+  * {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+
+  .variation-tile:hover {
+    transform: none;
+  }
+
+  .image-preview:hover {
+    transform: none;
+  }
+}
+
+/* ==========================================
+   DARK MODE ENHANCEMENTS - OPTIMIZED
    ========================================== */
 @media (prefers-color-scheme: dark) {
+  // Use CSS custom properties for better performance
+  :root {
+    --bg-primary: #1f2937;
+    --border-primary: #374151;
+    --text-primary: #f9fafb;
+    --text-secondary: #d1d5db;
+    --text-tertiary: #9ca3af;
+  }
+
   .bg-white {
-    background-color: #1f2937;
+    background-color: var(--bg-primary);
   }
 
   .border-gray-200 {
-    border-color: #374151;
+    border-color: var(--border-primary);
   }
 
   .text-gray-900 {
-    color: #f9fafb;
+    color: var(--text-primary);
   }
 
   .text-gray-600 {
-    color: #d1d5db;
+    color: var(--text-secondary);
   }
 
   .text-gray-500 {
-    color: #9ca3af;
+    color: var(--text-tertiary);
   }
+}
+
+/* ==========================================
+   VIEWPORT OPTIMIZATION
+   ========================================== */
+@media (min-width: 1024px) {
+  // Enable more complex animations on larger screens
+  .variation-tile {
+    &:hover {
+      transform: translate3d(0, -3px, 0) scale(1.02);
+    }
+  }
+}
+
+/* ==========================================
+   MEMORY OPTIMIZATION
+   ========================================== */
+.memory-optimized {
+  // Prevent memory leaks in long forms
+  contain: layout style paint;
+
+  // Optimize rendering layers
+  isolation: isolate;
+
+  // Prevent unnecessary repaints
+  backface-visibility: hidden;
 }
