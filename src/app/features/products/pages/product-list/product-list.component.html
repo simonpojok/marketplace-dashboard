@@ -44,7 +44,7 @@
             type="text"
             id="search"
             [ngModel]="searchTerm()"
-            (input)="onSearchInput($any($event.target).value)"
+            (input)="onSearchInput($event)"
             class="w-full pl-10 pr-10 py-2 border border-gray-300 dark:border-gray-600 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500 dark:bg-gray-800 dark:text-white"
             placeholder="Product name, SKU, or description..."
           >
@@ -75,8 +75,8 @@
         <label for="category" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Category</label>
         <select
           id="category"
-          [(ngModel)]="selectedCategory"
-          (change)="onFilter()"
+          [value]="selectedCategory()"
+          (change)="onCategoryChange($event)"
           class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500 dark:bg-gray-800 dark:text-white"
         >
           <option value="">All Categories</option>
@@ -89,8 +89,8 @@
         <label for="brand" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Brand</label>
         <select
           id="brand"
-          [(ngModel)]="selectedBrand"
-          (change)="onFilter()"
+          [value]="selectedBrand()"
+          (change)="onBrandChange($event)"
           class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500 dark:bg-gray-800 dark:text-white"
         >
           <option value="">All Brands</option>
@@ -104,8 +104,8 @@
         <div class="flex space-x-2">
           <select
             id="sortBy"
-            [(ngModel)]="sortBy"
-            (change)="onFilter()"
+            [value]="sortBy()"
+            (change)="onSortByChange($event)"
             class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500 dark:bg-gray-800 dark:text-white"
           >
             <option value="name">Name</option>
@@ -115,7 +115,7 @@
           </select>
           <button
             type="button"
-            (click)="handSortProducts()"
+            (click)="toggleSortOrder()"
             class="flex items-center justify-center px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg shadow-sm text-sm text-gray-700 dark:text-gray-200 bg-white dark:bg-dark-bg-secondary hover:bg-gray-50 dark:hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500"
           >
             <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor"
@@ -135,8 +135,8 @@
         <input
           id="inStock"
           type="checkbox"
-          [(ngModel)]="filterInStock"
-          (change)="onFilter()"
+          [checked]="filterInStock()"
+          (change)="onInStockChange($event)"
           class="h-4 w-4 text-primary-600 focus:ring-primary-500 border-gray-300 dark:border-gray-600 rounded"
         >
         <label for="inStock" class="ml-2 block text-sm text-gray-700 dark:text-gray-300">
@@ -147,8 +147,8 @@
         <input
           id="onSale"
           type="checkbox"
-          [(ngModel)]="filterOnSale"
-          (change)="onFilter()"
+          [checked]="filterOnSale()"
+          (change)="onOnSaleChange($event)"
           class="h-4 w-4 text-primary-600 focus:ring-primary-500 border-gray-300 dark:border-gray-600 rounded"
         >
         <label for="onSale" class="ml-2 block text-sm text-gray-700 dark:text-gray-300">
@@ -159,8 +159,8 @@
         <input
           id="featured"
           type="checkbox"
-          [(ngModel)]="filterFeatured"
-          (change)="onFilter()"
+          [checked]="filterFeatured()"
+          (change)="onFeaturedChange($event)"
           class="h-4 w-4 text-primary-600 focus:ring-primary-500 border-gray-300 dark:border-gray-600 rounded"
         >
         <label for="featured" class="ml-2 block text-sm text-gray-700 dark:text-gray-300">

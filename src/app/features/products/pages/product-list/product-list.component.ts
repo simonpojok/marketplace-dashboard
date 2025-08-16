@@ -44,6 +44,15 @@ export class ProductListComponent implements OnInit, OnDestroy {
   private searchSubject = new Subject<string>();
   private searchSubscription?: Subscription;
   private queryParamsSubscription?: Subscription;
+  private categoriesSubscription?: Subscription;
+  private brandsSubscription?: Subscription;
+
+  // Constants
+  private static readonly SEARCH_DEBOUNCE_TIME = 300;
+  
+  // Component state tracking
+  private categoriesLoaded = signal(false);
+  private brandsLoaded = signal(false);
 
   // For use in template
   protected readonly Math = Math;
@@ -56,32 +65,49 @@ export class ProductListComponent implements OnInit, OnDestroy {
   }
 
   ngOnDestroy(): void {
+    // Clean up all subscriptions to prevent memory leaks
     if (this.searchSubscription) {
       this.searchSubscription.unsubscribe();
     }
     if (this.queryParamsSubscription) {
       this.queryParamsSubscription.unsubscribe();
     }
+    if (this.categoriesSubscription) {
+      this.categoriesSubscription.unsubscribe();
+    }
+    if (this.brandsSubscription) {
+      this.brandsSubscription.unsubscribe();
+    }
   }
 
   private loadCategories(): void {
-    this.productsService.getCategories().subscribe({
+    this.categoriesSubscription = this.productsService.getCategories().subscribe({
       next: (categories) => {
         this.categories.set(categories);
+        this.categoriesLoaded.set(true);
+        this.checkIfReadyToLoadProducts();
       },
       error: (error) => {
         console.error('Error loading categories:', error);
+        this.toastService.error('Failed to load categories');
+        this.categoriesLoaded.set(true); // Still mark as loaded to avoid blocking
+        this.checkIfReadyToLoadProducts();
       }
     });
   }
 
   private loadBrands(): void {
-    this.productsService.getBrands().subscribe({
+    this.brandsSubscription = this.productsService.getBrands().subscribe({
       next: (brands) => {
         this.brands.set(brands);
+        this.brandsLoaded.set(true);
+        this.checkIfReadyToLoadProducts();
       },
       error: (error) => {
         console.error('Error loading brands:', error);
+        this.toastService.error('Failed to load brands');
+        this.brandsLoaded.set(true); // Still mark as loaded to avoid blocking
+        this.checkIfReadyToLoadProducts();
       }
     });
   }
@@ -178,7 +204,7 @@ export class ProductListComponent implements OnInit, OnDestroy {
     }
   }
 
-  public handSortProducts() {
+  protected toggleSortOrder() {
     this.sortOrder.update(value => value === 'asc' ? 'desc' : 'asc');
     this.updateUrlParams();
     this.loadProducts(1);
@@ -186,7 +212,7 @@ export class ProductListComponent implements OnInit, OnDestroy {
 
   private setupSearchDebouncing(): void {
     this.searchSubscription = this.searchSubject.pipe(
-      debounceTime(300),
+      debounceTime(ProductListComponent.SEARCH_DEBOUNCE_TIME),
       distinctUntilChanged()
     ).subscribe(searchTerm => {
       this.searchTerm.set(searchTerm);
@@ -197,20 +223,30 @@ export class ProductListComponent implements OnInit, OnDestroy {
 
   private setupQueryParamsSubscription(): void {
     this.queryParamsSubscription = this.route.queryParams.subscribe(params => {
-      // Read parameters from URL and update component state
+      // Read parameters from URL and update component state with validation
       this.searchTerm.set(params['search'] || '');
       this.selectedCategory.set(params['category'] || '');
       this.selectedBrand.set(params['brand'] || '');
       this.filterInStock.set(params['in_stock'] === 'true');
       this.filterOnSale.set(params['on_sale'] === 'true');
-      this.filterFeatured.set(params['featured'] === 'true');
+      this.filterFeatured.set(params['is_featured'] === 'true');
       this.sortBy.set(params['sort_by'] || 'created_at');
       this.sortOrder.set(params['sort_order'] || 'desc');
-      this.currentPage.set(parseInt(params['page'] || '1'));
       
-      // Load products with current parameters
-      this.loadProducts(this.currentPage());
+      // Validate and set page number
+      const pageParam = params['page'];
+      const page = pageParam ? Math.max(1, parseInt(pageParam) || 1) : 1;
+      this.currentPage.set(page);
+      
+      // Only load products if categories and brands are loaded
+      this.checkIfReadyToLoadProducts();
     });
+  }
+
+  private checkIfReadyToLoadProducts(): void {
+    if (this.categoriesLoaded() && this.brandsLoaded()) {
+      this.loadProducts(this.currentPage());
+    }
   }
 
   private updateUrlParams(): void {
@@ -222,7 +258,7 @@ export class ProductListComponent implements OnInit, OnDestroy {
     if (this.selectedBrand()) queryParams.brand = this.selectedBrand();
     if (this.filterInStock()) queryParams.in_stock = 'true';
     if (this.filterOnSale()) queryParams.on_sale = 'true';
-    if (this.filterFeatured()) queryParams.featured = 'true';
+    if (this.filterFeatured()) queryParams.is_featured = 'true';
     if (this.sortBy() !== 'created_at') queryParams.sort_by = this.sortBy();
     if (this.sortOrder() !== 'desc') queryParams.sort_order = this.sortOrder();
     if (this.currentPage() > 1) queryParams.page = this.currentPage().toString();
@@ -235,12 +271,55 @@ export class ProductListComponent implements OnInit, OnDestroy {
     });
   }
 
-  protected onSearchInput(value: string): void {
-    this.searchSubject.next(value);
+  protected onSearchInput(event: Event): void {
+    const target = event.target as HTMLInputElement;
+    this.searchSubject.next(target.value);
   }
 
   protected clearSearch(): void {
     this.searchTerm.set('');
+    this.updateUrlParams();
+    this.loadProducts(1);
+  }
+
+  protected onCategoryChange(event: Event): void {
+    const target = event.target as HTMLSelectElement;
+    this.selectedCategory.set(target.value);
+    this.updateUrlParams();
+    this.loadProducts(1);
+  }
+
+  protected onBrandChange(event: Event): void {
+    const target = event.target as HTMLSelectElement;
+    this.selectedBrand.set(target.value);
+    this.updateUrlParams();
+    this.loadProducts(1);
+  }
+
+  protected onSortByChange(event: Event): void {
+    const target = event.target as HTMLSelectElement;
+    this.sortBy.set(target.value);
+    this.updateUrlParams();
+    this.loadProducts(1);
+  }
+
+  protected onInStockChange(event: Event): void {
+    const target = event.target as HTMLInputElement;
+    this.filterInStock.set(target.checked);
+    this.updateUrlParams();
+    this.loadProducts(1);
+  }
+
+  protected onOnSaleChange(event: Event): void {
+    const target = event.target as HTMLInputElement;
+    this.filterOnSale.set(target.checked);
+    this.updateUrlParams();
+    this.loadProducts(1);
+  }
+
+  protected onFeaturedChange(event: Event): void {
+    const target = event.target as HTMLInputElement;
+    this.filterFeatured.set(target.checked);
     this.updateUrlParams();
     this.loadProducts(1);
   }
