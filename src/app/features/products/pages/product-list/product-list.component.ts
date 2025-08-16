@@ -1,7 +1,8 @@
-import {Component, OnInit, inject, signal, model} from '@angular/core';
+import {Component, OnInit, OnDestroy, inject, signal, model} from '@angular/core';
 import {CommonModule} from '@angular/common';
-import {RouterModule} from '@angular/router';
+import {RouterModule, Router, ActivatedRoute} from '@angular/router';
 import {FormsModule} from '@angular/forms';
+import {Subject, Subscription, debounceTime, distinctUntilChanged} from 'rxjs';
 import {ProductsService} from '../../services/products.service';
 import {Product, Category, Brand} from '../../models/product.model';
 import {ToastService} from '../../../../core/services/toast.service';
@@ -14,9 +15,11 @@ import {ProductCardComponent} from './components/product-card.component';
   templateUrl: 'product-list.component.html',
   styles: []
 })
-export class ProductListComponent implements OnInit {
+export class ProductListComponent implements OnInit, OnDestroy {
   private productsService = inject(ProductsService);
   private toastService = inject(ToastService);
+  private router = inject(Router);
+  private route = inject(ActivatedRoute);
 
   // Reactive state with signals
   protected isLoading = signal(true);
@@ -37,13 +40,28 @@ export class ProductListComponent implements OnInit {
   protected categories = signal<Category[]>([]);
   protected brands = signal<Brand[]>([]);
 
+  // Search debouncing
+  private searchSubject = new Subject<string>();
+  private searchSubscription?: Subscription;
+  private queryParamsSubscription?: Subscription;
+
   // For use in template
   protected readonly Math = Math;
 
   ngOnInit(): void {
     this.loadCategories();
     this.loadBrands();
-    this.loadProducts();
+    this.setupSearchDebouncing();
+    this.setupQueryParamsSubscription();
+  }
+
+  ngOnDestroy(): void {
+    if (this.searchSubscription) {
+      this.searchSubscription.unsubscribe();
+    }
+    if (this.queryParamsSubscription) {
+      this.queryParamsSubscription.unsubscribe();
+    }
   }
 
   private loadCategories(): void {
@@ -103,10 +121,12 @@ export class ProductListComponent implements OnInit {
   }
 
   protected onSearch(): void {
+    this.updateUrlParams();
     this.loadProducts(1);
   }
 
   protected onFilter(): void {
+    this.updateUrlParams();
     this.loadProducts(1);
   }
 
@@ -119,10 +139,13 @@ export class ProductListComponent implements OnInit {
       this.sortBy.set(field);
       this.sortOrder.set('asc');
     }
+    this.updateUrlParams();
     this.loadProducts(1);
   }
 
   protected onPageChange(page: number): void {
+    this.currentPage.set(page);
+    this.updateUrlParams();
     this.loadProducts(page);
   }
 
@@ -135,6 +158,8 @@ export class ProductListComponent implements OnInit {
     this.filterFeatured.set(false);
     this.sortBy.set('created_at');
     this.sortOrder.set('desc');
+    this.currentPage.set(1);
+    this.updateUrlParams();
     this.loadProducts(1);
   }
 
@@ -155,6 +180,68 @@ export class ProductListComponent implements OnInit {
 
   public handSortProducts() {
     this.sortOrder.update(value => value === 'asc' ? 'desc' : 'asc');
-    this.onFilter();
+    this.updateUrlParams();
+    this.loadProducts(1);
+  }
+
+  private setupSearchDebouncing(): void {
+    this.searchSubscription = this.searchSubject.pipe(
+      debounceTime(300),
+      distinctUntilChanged()
+    ).subscribe(searchTerm => {
+      this.searchTerm.set(searchTerm);
+      this.updateUrlParams();
+      this.loadProducts(1);
+    });
+  }
+
+  private setupQueryParamsSubscription(): void {
+    this.queryParamsSubscription = this.route.queryParams.subscribe(params => {
+      // Read parameters from URL and update component state
+      this.searchTerm.set(params['search'] || '');
+      this.selectedCategory.set(params['category'] || '');
+      this.selectedBrand.set(params['brand'] || '');
+      this.filterInStock.set(params['in_stock'] === 'true');
+      this.filterOnSale.set(params['on_sale'] === 'true');
+      this.filterFeatured.set(params['featured'] === 'true');
+      this.sortBy.set(params['sort_by'] || 'created_at');
+      this.sortOrder.set(params['sort_order'] || 'desc');
+      this.currentPage.set(parseInt(params['page'] || '1'));
+      
+      // Load products with current parameters
+      this.loadProducts(this.currentPage());
+    });
+  }
+
+  private updateUrlParams(): void {
+    const queryParams: any = {};
+    
+    // Only add parameters that have values
+    if (this.searchTerm()) queryParams.search = this.searchTerm();
+    if (this.selectedCategory()) queryParams.category = this.selectedCategory();
+    if (this.selectedBrand()) queryParams.brand = this.selectedBrand();
+    if (this.filterInStock()) queryParams.in_stock = 'true';
+    if (this.filterOnSale()) queryParams.on_sale = 'true';
+    if (this.filterFeatured()) queryParams.featured = 'true';
+    if (this.sortBy() !== 'created_at') queryParams.sort_by = this.sortBy();
+    if (this.sortOrder() !== 'desc') queryParams.sort_order = this.sortOrder();
+    if (this.currentPage() > 1) queryParams.page = this.currentPage().toString();
+    
+    // Update URL without triggering navigation
+    this.router.navigate([], {
+      relativeTo: this.route,
+      queryParams,
+      replaceUrl: true
+    });
+  }
+
+  protected onSearchInput(value: string): void {
+    this.searchSubject.next(value);
+  }
+
+  protected clearSearch(): void {
+    this.searchTerm.set('');
+    this.updateUrlParams();
+    this.loadProducts(1);
   }
 }
