@@ -187,7 +187,7 @@ export class ProductVideoService {
     }
 
     // Check file type
-    if (!VIDEO_VALIDATION.SUPPORTED_MIME_TYPES.includes(file.type)) {
+    if (!VIDEO_VALIDATION.SUPPORTED_MIME_TYPES.includes(file.type as any)) {
       return {
         valid: false,
         error: VIDEO_ERROR_MESSAGES.UNSUPPORTED_FORMAT

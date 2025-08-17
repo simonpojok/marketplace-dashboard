@@ -1,7 +1,7 @@
 import { Component, Input, Output, EventEmitter, inject, signal, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
-import { CdkDragDrop, DragDropModule, moveItemInArray } from '@angular/cdk/drag-drop';
+// Drag and drop temporarily disabled
 import { ProductVideoService } from '../../services/product-video.service';
 import { ProductVideo, ProductVideoFormData } from '../../models/product-video.model';
 import { ToastService } from '../../../../core/services/toast.service';
@@ -14,7 +14,7 @@ import { ProductVideoPreviewComponent } from '../product-video-preview/product-v
   imports: [
     CommonModule, 
     ReactiveFormsModule, 
-    DragDropModule,
+    // DragDropModule,
     ProductVideoUploadComponent,
     ProductVideoPreviewComponent
   ],
@@ -197,34 +197,9 @@ export class ProductVideoManagerComponent implements OnInit, OnDestroy {
     });
   }
 
-  protected onDrop(event: CdkDragDrop<ProductVideo[]>): void {
-    if (event.previousIndex === event.currentIndex) return;
-
-    const currentVideos = [...this.videos()];
-    moveItemInArray(currentVideos, event.previousIndex, event.currentIndex);
-
-    // Update display_order for all videos
-    const reorderedVideos = currentVideos.map((video, index) => ({
-      ...video,
-      display_order: index + 1
-    }));
-
-    this.videos.set(reorderedVideos);
-
-    // Send reorder request to backend
-    const videoIds = reorderedVideos.map(v => v.id);
-    this.videoService.reorderVideos(this.productId, videoIds).subscribe({
-      next: () => {
-        this.videosChanged.emit(reorderedVideos);
-        this.toastService.success('Video order updated');
-      },
-      error: (error) => {
-        console.error('Failed to reorder videos:', error);
-        // Revert the order on error
-        this.loadVideos();
-        this.toastService.error('Failed to update video order');
-      }
-    });
+  protected onDrop(event: any): void {
+    // Temporarily disabled - drag and drop functionality
+    console.log('Drag and drop temporarily disabled');
   }
 
   protected onDragStarted(): void {
