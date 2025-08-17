@@ -437,6 +437,43 @@
         </div>
       </div>
 
+      <!-- Product Videos -->
+      <div *ngIf="isEdit() && getCurrentProductId()"
+        class="bg-white dark:bg-dark-bg-secondary shadow-sm rounded-lg border border-gray-200 dark:border-dark-border overflow-hidden">
+        <div class="px-6 py-4 border-b border-gray-200 dark:border-dark-border">
+          <h2 class="text-lg font-medium text-gray-900 dark:text-white">Product Videos</h2>
+          <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">
+            Upload and manage videos for this product. Videos help customers better understand your product.
+          </p>
+        </div>
+        <div class="p-6">
+          <app-product-video-manager
+            [productId]="getCurrentProductId()!"
+            [initialVideos]="videos()"
+            (videosChanged)="onVideosChanged($event)"
+          ></app-product-video-manager>
+        </div>
+      </div>
+
+      <!-- Video Upload Placeholder for New Products -->
+      <div *ngIf="!isEdit()"
+        class="bg-white dark:bg-dark-bg-secondary shadow-sm rounded-lg border border-gray-200 dark:border-dark-border overflow-hidden">
+        <div class="px-6 py-4 border-b border-gray-200 dark:border-dark-border">
+          <h2 class="text-lg font-medium text-gray-900 dark:text-white">Product Videos</h2>
+        </div>
+        <div class="p-6">
+          <div class="text-center py-8 border border-dashed border-gray-300 dark:border-gray-600 rounded-lg">
+            <svg xmlns="http://www.w3.org/2000/svg" class="mx-auto h-12 w-12 text-gray-400 dark:text-gray-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z"/>
+            </svg>
+            <h3 class="mt-2 text-sm font-medium text-gray-900 dark:text-white">Videos available after product creation</h3>
+            <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">
+              Save this product first, then you can upload and manage videos
+            </p>
+          </div>
+        </div>
+      </div>
+
       <!-- Product Variations -->
       <div *ngIf="hasVariations()">
         <!-- Variation Manager -->

@@ -4,12 +4,14 @@ import {RouterModule, ActivatedRoute, Router} from '@angular/router';
 import {ProductsService} from '../../services/products.service';
 import {Product} from '../../models/product.model';
 import {ProductVariation, VARIATION_ATTRIBUTES} from '../../models/product-variation.model';
+import {ProductVideo} from '../../models/product-video.model';
+import {ProductVideoPreviewComponent} from '../../components/product-video-preview/product-video-preview.component';
 import {ToastService} from '../../../../core/services/toast.service';
 
 @Component({
   selector: 'app-product-detail',
   standalone: true,
-  imports: [CommonModule, RouterModule],
+  imports: [CommonModule, RouterModule, ProductVideoPreviewComponent],
   templateUrl: './product-detail.component.html',
   styles: []
 })
@@ -24,6 +26,8 @@ export class ProductDetailComponent implements OnInit {
   protected isDeletingProduct = signal(false);
   protected product = signal<Product | null>(null);
   protected selectedImageIndex = signal(0);
+  protected selectedVideoIndex = signal(0);
+  protected showVideoModal = signal(false);
 
   ngOnInit(): void {
     // Get the product ID from the route
@@ -206,5 +210,56 @@ export class ProductDetailComponent implements OnInit {
 
   protected hasColorAttribute(variation: ProductVariation): boolean {
     return 'color' in variation.attributes && variation.attributes['color'].trim() !== '';
+  }
+
+  // Video helper methods
+  protected hasVideos(): boolean {
+    return !!(this.product()?.videos && this.product()!.videos!.length > 0);
+  }
+
+  protected getVideos(): ProductVideo[] {
+    return this.product()?.videos || [];
+  }
+
+  protected getFeaturedVideo(): ProductVideo | null {
+    const videos = this.getVideos();
+    return videos.find(video => video.is_featured) || (videos.length > 0 ? videos[0] : null);
+  }
+
+  protected setSelectedVideo(index: number): void {
+    this.selectedVideoIndex.set(index);
+  }
+
+  protected openVideoModal(index: number): void {
+    this.selectedVideoIndex.set(index);
+    this.showVideoModal.set(true);
+  }
+
+  protected closeVideoModal(): void {
+    this.showVideoModal.set(false);
+  }
+
+  protected onVideoPlay(video: ProductVideo): void {
+    // You can add analytics tracking here
+    console.log('Video played:', video.title);
+  }
+
+  protected onVideoError(event: {video: ProductVideo, error: any}): void {
+    console.error('Video error:', event.error);
+    this.toastService.error(`Failed to load video: ${event.video.title}`);
+  }
+
+  protected formatDuration(seconds: number): string {
+    if (seconds < 60) {
+      return `${Math.round(seconds)}s`;
+    } else if (seconds < 3600) {
+      const minutes = Math.floor(seconds / 60);
+      const remainingSeconds = Math.round(seconds % 60);
+      return remainingSeconds > 0 ? `${minutes}m ${remainingSeconds}s` : `${minutes}m`;
+    } else {
+      const hours = Math.floor(seconds / 3600);
+      const minutes = Math.floor((seconds % 3600) / 60);
+      return minutes > 0 ? `${hours}h ${minutes}m` : `${hours}h`;
+    }
   }
 }
