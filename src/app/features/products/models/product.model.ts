@@ -1,4 +1,5 @@
 import {ProductVariation} from './product-variation.model';
+import {ProductVideo} from './product-video.model';
 
 export interface Product {
   id: string;
@@ -20,6 +21,7 @@ export interface Product {
   is_active: boolean;
   is_featured: boolean;
   images: ProductImage[];
+  videos?: ProductVideo[];
   variations: ProductVariation[];
   created_at: string;
   updated_at: string;

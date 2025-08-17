@@ -3,6 +3,7 @@ import {HttpClient, HttpParams} from '@angular/common/http';
 import {Observable} from 'rxjs';
 import {environment} from '../../../../environments/environment';
 import {Product, Category, Brand, ProductListResponse} from '../models/product.model';
+import {ProductVideo} from '../models/product-video.model';
 
 @Injectable({
   providedIn: 'root'
@@ -145,5 +146,28 @@ export class ProductsService {
 
   getCategoryChildren(parentId: string): Observable<Category[]> {
     return this.http.get<Category[]>(`${this.apiUrl}/admin/categories/${parentId}/children/`);
+  }
+
+  // Video Management
+  getProductVideos(productId: string): Observable<ProductVideo[]> {
+    return this.http.get<ProductVideo[]>(`${this.apiUrl}/products/${productId}/videos/`);
+  }
+
+  uploadProductVideo(productId: string, videoData: FormData): Observable<ProductVideo> {
+    return this.http.post<ProductVideo>(`${this.apiUrl}/products/${productId}/videos/`, videoData);
+  }
+
+  updateProductVideo(productId: string, videoId: string, data: any): Observable<ProductVideo> {
+    return this.http.patch<ProductVideo>(`${this.apiUrl}/products/${productId}/videos/${videoId}/`, data);
+  }
+
+  deleteProductVideo(productId: string, videoId: string): Observable<void> {
+    return this.http.delete<void>(`${this.apiUrl}/products/${productId}/videos/${videoId}/`);
+  }
+
+  reorderProductVideos(productId: string, videoIds: string[]): Observable<void> {
+    return this.http.post<void>(`${this.apiUrl}/products/${productId}/videos/reorder/`, {
+      video_ids: videoIds
+    });
   }
 }

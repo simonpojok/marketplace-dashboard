@@ -7,6 +7,8 @@ import {Product, Category, Brand} from '../../models/product.model';
 import {ToastService} from '../../../../core/services/toast.service';
 import {ProductImage} from '../models/product-image.models';
 import {ProductVariation, VARIATION_ATTRIBUTES, VariationAttribute} from '../../models/product-variation.model';
+import {ProductVideo} from '../../models/product-video.model';
+import {ProductVideoManagerComponent} from '../../components/product-video-manager/product-video-manager.component';
 import { debounceTime, distinctUntilChanged } from 'rxjs/operators';
 
 @Component({
@@ -16,7 +18,8 @@ import { debounceTime, distinctUntilChanged } from 'rxjs/operators';
     CommonModule,
     RouterModule,
     ReactiveFormsModule,
-    FormsModule
+    FormsModule,
+    ProductVideoManagerComponent
   ],
   templateUrl: './product-form.component.html',
   styleUrls: ['./product-form.component.scss'],
@@ -42,6 +45,7 @@ export class ProductFormComponent implements OnInit {
   // Form and data
   protected productForm!: FormGroup;
   protected images = signal<ProductImage[]>([]);
+  protected videos = signal<ProductVideo[]>([]);
   protected variations = signal<ProductVariation[]>([]);
   protected removedImageIds = signal<string[]>([]);
 
@@ -224,6 +228,11 @@ export class ProductFormComponent implements OnInit {
         preview: img.image
       }));
       this.images.set(productImages);
+    }
+
+    // Load videos
+    if (product.videos && product.videos.length > 0) {
+      this.videos.set(product.videos);
     }
 
     // Load variations and initialize attributes
@@ -904,6 +913,15 @@ export class ProductFormComponent implements OnInit {
       newImages[index] = {...newImages[index], url: url, preview: url};
       return newImages;
     });
+  }
+
+  // Video management methods
+  protected onVideosChanged(videos: ProductVideo[]): void {
+    this.videos.set(videos);
+  }
+
+  protected getCurrentProductId(): string | null {
+    return this.product()?.id || null;
   }
 
   protected onDragOver(event: DragEvent): void {
