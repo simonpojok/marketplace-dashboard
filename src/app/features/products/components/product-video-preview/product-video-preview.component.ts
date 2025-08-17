@@ -1,4 +1,4 @@
-import { Component, Input, Output, EventEmitter, inject, signal, OnInit, OnDestroy } from '@angular/core';
+import { Component, Input, Output, EventEmitter, inject, signal, OnInit, OnDestroy, ChangeDetectionStrategy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ProductVideo } from '../../models/product-video.model';
 import { ProductVideoService } from '../../services/product-video.service';
@@ -10,7 +10,8 @@ export type VideoSize = 'small' | 'medium' | 'large' | 'full';
   standalone: true,
   imports: [CommonModule],
   templateUrl: './product-video-preview.component.html',
-  styleUrls: ['./product-video-preview.component.scss']
+  styleUrls: ['./product-video-preview.component.scss'],
+  changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class ProductVideoPreviewComponent implements OnInit, OnDestroy {
   @Input() video!: ProductVideo;
@@ -58,6 +59,7 @@ export class ProductVideoPreviewComponent implements OnInit, OnDestroy {
   ngOnDestroy(): void {
     this.cleanupObserver();
     this.pauseVideo();
+    this.cleanupVideoElement();
   }
 
   private setupIntersectionObserver(): void {
@@ -72,11 +74,19 @@ export class ProductVideoPreviewComponent implements OnInit, OnDestroy {
         entries.forEach(entry => {
           if (entry.isIntersecting) {
             this.isVisible.set(true);
-            this.cleanupObserver();
+            this.cleanupObserver(); // Clean up once visible
+          } else {
+            // Pause video when not visible to save resources
+            if (this.isPlaying()) {
+              this.pauseVideo();
+            }
           }
         });
       },
-      { threshold: 0.1 }
+      { 
+        threshold: 0.1,
+        rootMargin: '50px' // Start loading slightly before coming into view
+      }
     );
   }
 
@@ -84,6 +94,21 @@ export class ProductVideoPreviewComponent implements OnInit, OnDestroy {
     if (this.intersectionObserver) {
       this.intersectionObserver.disconnect();
       this.intersectionObserver = null;
+    }
+  }
+
+  private cleanupVideoElement(): void {
+    if (this.videoElement) {
+      // Remove all event listeners
+      this.videoElement.removeEventListener('play', this.onPlay.bind(this));
+      this.videoElement.removeEventListener('pause', this.onPause.bind(this));
+      this.videoElement.removeEventListener('ended', this.onEnded.bind(this));
+      this.videoElement.removeEventListener('error', this.onError.bind(this));
+      
+      // Clear src to free memory
+      this.videoElement.src = '';
+      this.videoElement.load();
+      this.videoElement = null;
     }
   }
 

@@ -1,4 +1,4 @@
-import {Component, OnInit, inject, signal} from '@angular/core';
+import {Component, OnInit, OnDestroy, inject, signal, computed, ChangeDetectionStrategy} from '@angular/core';
 import {CommonModule} from '@angular/common';
 import {RouterModule, ActivatedRoute, Router} from '@angular/router';
 import {ProductsService} from '../../services/products.service';
@@ -13,9 +13,10 @@ import {ToastService} from '../../../../core/services/toast.service';
   standalone: true,
   imports: [CommonModule, RouterModule, ProductVideoPreviewComponent],
   templateUrl: './product-detail.component.html',
-  styles: []
+  styles: [],
+  changeDetection: ChangeDetectionStrategy.OnPush
 })
-export class ProductDetailComponent implements OnInit {
+export class ProductDetailComponent implements OnInit, OnDestroy {
   private route = inject(ActivatedRoute);
   private router = inject(Router);
   private productsService = inject(ProductsService);
@@ -28,6 +29,43 @@ export class ProductDetailComponent implements OnInit {
   protected selectedImageIndex = signal(0);
   protected selectedVideoIndex = signal(0);
   protected showVideoModal = signal(false);
+
+  // Performance-optimized computed signals
+  protected videos = computed(() => this.product()?.videos || []);
+  protected videosCount = computed(() => this.videos().length);
+  protected hasVideos = computed(() => this.videosCount() > 0);
+  protected selectedVideo = computed(() => {
+    const vids = this.videos();
+    const index = this.selectedVideoIndex();
+    return vids[index] || null;
+  });
+  protected featuredVideo = computed(() => {
+    const vids = this.videos();
+    return vids.find(video => video.is_featured) || (vids.length > 0 ? vids[0] : null);
+  });
+
+  // Image computed signals
+  protected images = computed(() => this.product()?.images || []);
+  protected hasImages = computed(() => this.images().length > 0);
+  protected selectedImage = computed(() => {
+    const imgs = this.images();
+    const index = this.selectedImageIndex();
+    return imgs[index] || null;
+  });
+
+  // Product computed signals
+  protected hasDiscount = computed(() => !!this.product()?.discount_price);
+  protected stockQuantity = computed(() => this.product()?.stock_quantity || 0);
+  protected stockStatusClass = computed(() => {
+    const stockQty = this.stockQuantity();
+    if (stockQty === 0) {
+      return 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-300';
+    } else if (stockQty < 10) {
+      return 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-300';
+    } else {
+      return 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300';
+    }
+  });
 
   ngOnInit(): void {
     // Get the product ID from the route
@@ -51,6 +89,9 @@ export class ProductDetailComponent implements OnInit {
           this.selectedImageIndex.set(primaryIndex !== -1 ? primaryIndex : 0);
         }
 
+        // Reset video selection when product changes
+        this.selectedVideoIndex.set(0);
+
         this.isLoading.set(false);
       },
       error: (error) => {
@@ -60,6 +101,12 @@ export class ProductDetailComponent implements OnInit {
         this.router.navigate(['/products']);
       }
     });
+  }
+
+  ngOnDestroy(): void {
+    // Clean up any resources if needed
+    // Video cleanup will be handled by individual video components
+    this.showVideoModal.set(false);
   }
 
   protected setSelectedImage(index: number): void {
@@ -104,31 +151,14 @@ export class ProductDetailComponent implements OnInit {
     }
   }
 
-  protected hasDiscount(): boolean {
-    return !!this.product()?.discount_price;
-  }
+  // TrackBy functions for performance optimization
+  protected trackByImageIndex = (index: number, item: any): number => index;
+  protected trackByVideoId = (index: number, video: ProductVideo): string => video.id;
+  protected trackByVariationId = (index: number, variation: ProductVariation): string => variation.id;
 
-  protected hasMoreImages(): boolean {
-    if (this.product()?.images) {
-      return (this.product()?.images?.length || 0) > 0;
-    }
-    return false;
-  }
-
+  // Image helpers (updated to use computed signals)
   protected productImage(): string {
-    return this.product()?.images[this.selectedImageIndex()]?.image ?? '';
-  }
-
-  protected getStockStatusClass(): string {
-    const stockQty = this.product()?.stock_quantity || 0;
-
-    if (stockQty === 0) {
-      return 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-300';
-    } else if (stockQty < 10) {
-      return 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-300';
-    } else {
-      return 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300';
-    }
+    return this.selectedImage()?.image ?? '';
   }
 
   // Variation helper methods
@@ -212,18 +242,17 @@ export class ProductDetailComponent implements OnInit {
     return 'color' in variation.attributes && variation.attributes['color'].trim() !== '';
   }
 
-  // Video helper methods
-  protected hasVideos(): boolean {
-    return !!(this.product()?.videos && this.product()!.videos!.length > 0);
-  }
-
+  // Video helper methods (updated to use computed signals)
   protected getVideos(): ProductVideo[] {
-    return this.product()?.videos || [];
+    return this.videos();
   }
 
   protected getFeaturedVideo(): ProductVideo | null {
-    const videos = this.getVideos();
-    return videos.find(video => video.is_featured) || (videos.length > 0 ? videos[0] : null);
+    return this.featuredVideo();
+  }
+
+  protected getVideosCount(): number {
+    return this.videosCount();
   }
 
   protected setSelectedVideo(index: number): void {

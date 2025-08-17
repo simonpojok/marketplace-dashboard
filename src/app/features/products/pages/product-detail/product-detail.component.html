@@ -81,9 +81,9 @@
         </div>
 
         <!-- Thumbnail Images -->
-        <div *ngIf="hasMoreImages()" class="grid grid-cols-5 gap-2">
+        <div *ngIf="hasImages()" class="grid grid-cols-5 gap-2">
           <div
-            *ngFor="let image of product()?.images; let i = index"
+            *ngFor="let image of images(); let i = index; trackBy: trackByImageIndex"
             (click)="setSelectedImage(i)"
             class="relative pt-[100%] bg-white dark:bg-dark-bg-secondary border rounded-md overflow-hidden cursor-pointer hover:border-primary-500 dark:hover:border-primary-500 transition-colors"
             [class.border-primary-500]="i === selectedImageIndex()"
@@ -301,7 +301,7 @@
               </div>
 
               <!-- Current Selling Price if no discount -->
-              <div *ngIf="!hasDiscount()">
+              <div *ngIf="!hasDiscount()"
                 <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">Current Price</dt>
                 <dd class="mt-1 text-lg font-medium text-gray-900 dark:text-white">
                   {{ formatCurrency(product()?.current_price || 0) }}
@@ -313,10 +313,10 @@
                 <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">Stock Quantity</dt>
                 <dd class="mt-1 text-sm">
                   <span
-                    [ngClass]="getStockStatusClass()"
+                    [ngClass]="stockStatusClass()"
                     class="px-2.5 py-0.5 rounded-full text-xs font-medium"
                   >
-                    {{ product()?.stock_quantity || 0 }} units
+                    {{ stockQuantity() }} units
                   </span>
                 </dd>
               </div>
@@ -374,7 +374,7 @@
                 </tr>
                 </thead>
                 <tbody class="bg-white dark:bg-dark-bg-secondary divide-y divide-gray-200 dark:divide-dark-border">
-                <tr *ngFor="let variation of product()?.variations"
+                <tr *ngFor="let variation of product()?.variations; trackBy: trackByVariationId"
                     class="hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors">
                   <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white">
                     {{ variation.sku }}
