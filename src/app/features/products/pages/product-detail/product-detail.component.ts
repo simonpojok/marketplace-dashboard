@@ -1,19 +1,20 @@
-import {Component, OnInit, inject, signal} from '@angular/core';
+import {Component, OnInit, inject, signal, computed, ChangeDetectionStrategy} from '@angular/core';
 import {CommonModule} from '@angular/common';
 import {RouterModule, ActivatedRoute, Router} from '@angular/router';
 import {ProductsService} from '../../services/products.service';
 import {Product} from '../../models/product.model';
 import {ProductVariation, VARIATION_ATTRIBUTES} from '../../models/product-variation.model';
 import {ProductVideo} from '../../models/product-video.model';
-import {ProductVideoPreviewComponent} from '../../components/product-video-preview/product-video-preview.component';
+// import {ProductVideoPreviewComponent} from '../../components/product-video-preview/product-video-preview.component';
 import {ToastService} from '../../../../core/services/toast.service';
 
 @Component({
   selector: 'app-product-detail',
   standalone: true,
-  imports: [CommonModule, RouterModule, ProductVideoPreviewComponent],
+  imports: [CommonModule, RouterModule],
   templateUrl: './product-detail.component.html',
-  styles: []
+  styles: [],
+  changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class ProductDetailComponent implements OnInit {
   private route = inject(ActivatedRoute);
@@ -212,18 +213,32 @@ export class ProductDetailComponent implements OnInit {
     return 'color' in variation.attributes && variation.attributes['color'].trim() !== '';
   }
 
-  // Video helper methods
-  protected hasVideos(): boolean {
-    return !!(this.product()?.videos && this.product()!.videos!.length > 0);
-  }
+  // Performance-optimized computed signals for videos
+  protected videos = computed(() => this.product()?.videos || []);
+  protected videosCount = computed(() => this.videos().length);
+  protected hasVideos = computed(() => this.videosCount() > 0);
+  protected selectedVideo = computed(() => {
+    const vids = this.videos();
+    const index = this.selectedVideoIndex();
+    return vids[index] || null;
+  });
+  protected featuredVideo = computed(() => {
+    const vids = this.videos();
+    return vids.find(video => video.is_featured) || (vids.length > 0 ? vids[0] : null);
+  });
 
+  // TrackBy functions for performance optimization
+  protected trackByImageIndex = (index: number, item: any): number => index;
+  protected trackByVideoId = (index: number, video: ProductVideo): string => video.id;
+  protected trackByVariationId = (index: number, variation: ProductVariation): string => variation.id || `variation-${index}`;
+
+  // Backward compatibility methods
   protected getVideos(): ProductVideo[] {
-    return this.product()?.videos || [];
+    return this.videos();
   }
 
   protected getFeaturedVideo(): ProductVideo | null {
-    const videos = this.getVideos();
-    return videos.find(video => video.is_featured) || (videos.length > 0 ? videos[0] : null);
+    return this.featuredVideo();
   }
 
   protected setSelectedVideo(index: number): void {

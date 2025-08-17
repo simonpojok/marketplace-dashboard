@@ -112,51 +112,41 @@
           class="bg-white dark:bg-dark-bg-secondary shadow-sm rounded-lg border border-gray-200 dark:border-dark-border overflow-hidden">
           <div class="px-6 py-4 border-b border-gray-200 dark:border-dark-border">
             <h3 class="text-lg font-medium text-gray-900 dark:text-white">Product Videos</h3>
-            <p class="text-sm text-gray-500 dark:text-gray-400">{{ getVideos().length }} video{{ getVideos().length === 1 ? '' : 's' }}</p>
+            <p class="text-sm text-gray-500 dark:text-gray-400">{{ videosCount() }} video{{ videosCount() === 1 ? '' : 's' }}</p>
           </div>
           <div class="p-6 space-y-4">
             <!-- Featured/Main Video -->
-            <div *ngIf="getFeaturedVideo()" class="space-y-3">
+            <div *ngIf="featuredVideo()" class="space-y-3">
               <div class="relative">
-                <app-product-video-preview
-                  [video]="getFeaturedVideo()!"
-                  [size]="'medium'"
-                  [showControls]="true"
-                  [showTitle]="false"
-                  [showDuration]="true"
-                  [clickToPlay]="true"
-                  (videoPlay)="onVideoPlay($event)"
-                  (videoError)="onVideoError($event)"
-                  (videoClick)="openVideoModal(0)"
-                ></app-product-video-preview>
+                <video
+                  [src]="featuredVideo()!.video_file"
+                  class="w-full h-48 object-cover rounded-lg"
+                  controls
+                  preload="metadata"
+                ></video>
               </div>
               <div class="text-center">
-                <h4 class="font-medium text-gray-900 dark:text-white text-sm">{{ getFeaturedVideo()!.title }}</h4>
-                <p *ngIf="getFeaturedVideo()!.description" class="text-xs text-gray-500 dark:text-gray-400 mt-1">
-                  {{ getFeaturedVideo()!.description }}
+                <h4 class="font-medium text-gray-900 dark:text-white text-sm">{{ featuredVideo()!.title }}</h4>
+                <p *ngIf="featuredVideo()!.description" class="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                  {{ featuredVideo()!.description }}
                 </p>
               </div>
             </div>
 
             <!-- Video Thumbnails Grid -->
-            <div *ngIf="getVideos().length > 1" class="grid grid-cols-3 gap-2">
+            <div *ngIf="videosCount() > 1" class="grid grid-cols-3 gap-2">
               <div
-                *ngFor="let video of getVideos(); let i = index"
+                *ngFor="let video of videos(); let i = index; trackBy: trackByVideoId"
                 (click)="openVideoModal(i)"
                 class="relative cursor-pointer group"
-                [class.opacity-50]="video.id === getFeaturedVideo()?.id"
+                [class.opacity-50]="video.id === featuredVideo()?.id"
               >
                 <div class="relative pt-[75%] bg-gray-100 dark:bg-gray-800 rounded-md overflow-hidden">
-                  <app-product-video-preview
-                    [video]="video"
-                    [size]="'small'"
-                    [showControls]="false"
-                    [showTitle]="false"
-                    [showDuration]="true"
-                    [clickToPlay]="false"
-                    [autoplay]="false"
-                    [preload]="'metadata'"
-                  ></app-product-video-preview>
+                  <video
+                    [src]="video.video_file"
+                    class="absolute inset-0 w-full h-full object-cover"
+                    preload="metadata"
+                  ></video>
                   
                   <!-- Play overlay -->
                   <div class="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-30 transition-all duration-200 flex items-center justify-center">
@@ -172,6 +162,11 @@
                     </svg>
                     Featured
                   </div>
+                  
+                  <!-- Duration badge -->
+                  <div class="absolute bottom-1 right-1 bg-black bg-opacity-75 text-white text-xs rounded px-1">
+                    {{ formatDuration(video.duration) }}
+                  </div>
                 </div>
                 
                 <!-- Video title -->
@@ -180,12 +175,12 @@
             </div>
 
             <!-- View All Videos Button -->
-            <div *ngIf="getVideos().length > 3" class="text-center pt-2">
+            <div *ngIf="videosCount() > 3" class="text-center pt-2">
               <button
                 (click)="openVideoModal(0)"
                 class="text-primary-600 dark:text-primary-400 hover:text-primary-800 dark:hover:text-primary-300 text-sm font-medium"
               >
-                View all {{ getVideos().length }} videos
+                View all {{ videosCount() }} videos
               </button>
             </div>
           </div>
@@ -449,7 +444,7 @@
         <div class="bg-white dark:bg-gray-900 px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
           <div class="flex items-center justify-between">
             <h3 class="text-lg leading-6 font-medium text-gray-900 dark:text-white">
-              {{ getVideos()[selectedVideoIndex()].title || 'Video' }}
+              {{ selectedVideo()?.title || 'Video' }}
             </h3>
             <button
               type="button"
@@ -467,33 +462,28 @@
         <div class="bg-white dark:bg-gray-900 px-4 pb-4 sm:px-6 sm:pb-6">
           <div class="mt-3 text-center sm:mt-0 sm:text-left">
             <div class="mt-2">
-              <app-product-video-preview
-                *ngIf="getVideos()[selectedVideoIndex()]"
-                [video]="getVideos()[selectedVideoIndex()]"
-                [size]="'full'"
-                [showControls]="true"
-                [showTitle]="false"
-                [showDuration]="true"
-                [autoplay]="false"
-                [clickToPlay]="false"
-                (videoPlay)="onVideoPlay($event)"
-                (videoError)="onVideoError($event)"
-              ></app-product-video-preview>
+              <video
+                *ngIf="selectedVideo()"
+                [src]="selectedVideo()!.video_file"
+                class="w-full h-96 object-contain rounded-lg"
+                controls
+                preload="metadata"
+              ></video>
             </div>
             
             <!-- Video Description -->
-            <div *ngIf="getVideos()[selectedVideoIndex()].description" class="mt-4">
+            <div *ngIf="selectedVideo()?.description" class="mt-4">
               <p class="text-sm text-gray-600 dark:text-gray-400">
-                {{ getVideos()[selectedVideoIndex()].description || '' }}
+                {{ selectedVideo()!.description }}
               </p>
             </div>
 
             <!-- Video Navigation -->
-            <div *ngIf="getVideos().length > 1" class="mt-6">
+            <div *ngIf="videosCount() > 1" class="mt-6">
               <h4 class="text-sm font-medium text-gray-900 dark:text-white mb-3">Other Videos</h4>
               <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
                 <div
-                  *ngFor="let video of getVideos(); let i = index"
+                  *ngFor="let video of videos(); let i = index; trackBy: trackByVideoId"
                   (click)="setSelectedVideo(i)"
                   class="relative cursor-pointer group"
                   [class.ring-2]="i === selectedVideoIndex()"
@@ -501,16 +491,11 @@
                   [class.opacity-50]="i === selectedVideoIndex()"
                 >
                   <div class="relative pt-[75%] bg-gray-100 dark:bg-gray-800 rounded-md overflow-hidden">
-                    <app-product-video-preview
-                      [video]="video"
-                      [size]="'small'"
-                      [showControls]="false"
-                      [showTitle]="false"
-                      [showDuration]="true"
-                      [clickToPlay]="false"
-                      [autoplay]="false"
-                      [preload]="'metadata'"
-                    ></app-product-video-preview>
+                    <video
+                      [src]="video.video_file"
+                      class="absolute inset-0 w-full h-full object-cover"
+                      preload="metadata"
+                    ></video>
                     
                     <!-- Play overlay -->
                     <div class="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-30 transition-all duration-200 flex items-center justify-center">
@@ -521,6 +506,11 @@
                     
                     <!-- Current video indicator -->
                     <div *ngIf="i === selectedVideoIndex()" class="absolute inset-0 border-2 border-primary-500 rounded-md"></div>
+                    
+                    <!-- Duration badge -->
+                    <div class="absolute bottom-1 right-1 bg-black bg-opacity-75 text-white text-xs rounded px-1">
+                      {{ formatDuration(video.duration) }}
+                    </div>
                   </div>
                   
                   <!-- Video title -->
