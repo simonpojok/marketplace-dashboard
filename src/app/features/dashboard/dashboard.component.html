@@ -47,30 +47,30 @@
     <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
       <app-stats-card
         title="Total Sales"
-        [value]="dashboardData()?.summary.totalSales || 0"
-        [change]="dashboardData()?.summary.salesChange || 0"
+        [value]="dashboardData()?.summary?.totalSales || 0"
+        [change]="dashboardData()?.summary?.salesChange || 0"
         icon="cash"
         format="currency"
       ></app-stats-card>
 
       <app-stats-card
         title="Total Orders"
-        [value]="dashboardData()?.summary.totalOrders || 0"
-        [change]="dashboardData()?.summary.ordersChange || 0"
+        [value]="dashboardData()?.summary?.totalOrders || 0"
+        [change]="dashboardData()?.summary?.ordersChange || 0"
         icon="shopping-bag"
       ></app-stats-card>
 
       <app-stats-card
         title="Customers"
-        [value]="dashboardData()?.summary.totalCustomers || 0"
-        [change]="dashboardData()?.summary.customersChange || 0"
+        [value]="dashboardData()?.summary?.totalCustomers || 0"
+        [change]="dashboardData()?.summary?.customersChange || 0"
         icon="users"
       ></app-stats-card>
 
       <app-stats-card
         title="Avg. Order Value"
-        [value]="dashboardData()?.summary.averageOrderValue || 0"
-        [change]="dashboardData()?.summary.aovChange || 0"
+        [value]="dashboardData()?.summary?.averageOrderValue || 0"
+        [change]="dashboardData()?.summary?.aovChange || 0"
         icon="chart-bar"
         format="currency"
       ></app-stats-card>

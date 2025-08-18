@@ -3,7 +3,7 @@ import {CommonModule} from '@angular/common';
 import {RouterModule, ActivatedRoute, Router} from '@angular/router';
 import {FormBuilder, ReactiveFormsModule, Validators} from '@angular/forms';
 import {OrdersService} from '../../services/orders.service';
-import {Order, OrderStatus} from '../../models/order.model';
+import {Order, OrderStatus, OrderUpdateParams} from '../../models/order.model';
 import {ToastService} from '../../../../core/services/toast.service';
 
 @Component({
@@ -89,12 +89,7 @@ export class OrderDetailComponent implements OnInit {
     this.isUpdating.set(true);
 
 
-    const formValue = this.statusForm.value as {
-      status: string;
-      tracking_number?: string;
-      payment_status?: boolean;
-      notes?: string;
-    };
+    const formValue = this.statusForm.value as OrderUpdateParams;
     this.ordersService.updateOrder(this.order()!.id, formValue).subscribe({
       next: (updatedOrder) => {
         this.order.set(updatedOrder);

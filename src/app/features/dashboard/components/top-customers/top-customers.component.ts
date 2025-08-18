@@ -1,17 +1,7 @@
 import { Component, Input, ChangeDetectionStrategy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
-
-interface TopCustomer {
-  id: string;
-  name: string;
-  email?: string;
-  phone?: string;
-  total_orders: number;
-  total_spent: number;
-  last_order_date: string;
-  avatar_url?: string;
-}
+import { TopCustomer } from '../../models/dashboard.model';
 
 @Component({
   selector: 'app-top-customers',

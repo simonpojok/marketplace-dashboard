@@ -253,15 +253,15 @@ export class ProductListComponent implements OnInit, OnDestroy {
     const queryParams: Record<string, string> = {};
     
     // Only add parameters that have values
-    if (this.searchTerm()) queryParams.search = this.searchTerm();
-    if (this.selectedCategory()) queryParams.category = this.selectedCategory();
-    if (this.selectedBrand()) queryParams.brand = this.selectedBrand();
-    if (this.filterInStock()) queryParams.in_stock = 'true';
-    if (this.filterOnSale()) queryParams.on_sale = 'true';
-    if (this.filterFeatured()) queryParams.is_featured = 'true';
-    if (this.sortBy() !== 'created_at') queryParams.sort_by = this.sortBy();
-    if (this.sortOrder() !== 'desc') queryParams.sort_order = this.sortOrder();
-    if (this.currentPage() > 1) queryParams.page = this.currentPage().toString();
+    if (this.searchTerm()) queryParams['search'] = this.searchTerm();
+    if (this.selectedCategory()) queryParams['category'] = this.selectedCategory();
+    if (this.selectedBrand()) queryParams['brand'] = this.selectedBrand();
+    if (this.filterInStock()) queryParams['in_stock'] = 'true';
+    if (this.filterOnSale()) queryParams['on_sale'] = 'true';
+    if (this.filterFeatured()) queryParams['is_featured'] = 'true';
+    if (this.sortBy() !== 'created_at') queryParams['sort_by'] = this.sortBy();
+    if (this.sortOrder() !== 'desc') queryParams['sort_order'] = this.sortOrder();
+    if (this.currentPage() > 1) queryParams['page'] = this.currentPage().toString();
     
     // Update URL without triggering navigation
     this.router.navigate([], {
