@@ -1,0 +1,139 @@
+.tiktok-player-container {
+  position: relative;
+  width: 100%;
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  background: #000;
+}
+
+.tiktok-iframe {
+  width: 100%;
+  height: 100%;
+  border: none;
+  border-radius: 12px;
+  display: block;
+}
+
+.error-state {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 400px;
+  background: #f8fafc;
+  border: 2px dashed #e2e8f0;
+  border-radius: 12px;
+  color: #64748b;
+}
+
+.error-content {
+  text-align: center;
+  padding: 2rem;
+}
+
+.error-icon {
+  width: 48px;
+  height: 48px;
+  margin: 0 auto 1rem;
+  color: #ef4444;
+}
+
+.error-message {
+  font-size: 1.125rem;
+  font-weight: 600;
+  color: #374151;
+  margin: 0 0 0.5rem;
+}
+
+.error-description {
+  font-size: 0.875rem;
+  color: #6b7280;
+  margin: 0;
+}
+
+.loading-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 400px;
+  background: #f8fafc;
+  border-radius: 12px;
+}
+
+.loading-spinner {
+  width: 40px;
+  height: 40px;
+  border: 4px solid #e2e8f0;
+  border-top: 4px solid #3b82f6;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+  margin-bottom: 1rem;
+}
+
+.loading-text {
+  color: #64748b;
+  font-size: 0.875rem;
+  margin: 0;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+/* Dark mode styles */
+@media (prefers-color-scheme: dark) {
+  .error-state {
+    background: #1e293b;
+    border-color: #334155;
+    color: #94a3b8;
+  }
+
+  .error-message {
+    color: #f1f5f9;
+  }
+
+  .error-description {
+    color: #94a3b8;
+  }
+
+  .loading-state {
+    background: #1e293b;
+  }
+
+  .loading-text {
+    color: #94a3b8;
+  }
+
+  .loading-spinner {
+    border-color: #334155;
+    border-top-color: #3b82f6;
+  }
+}
+
+/* Responsive design */
+@media (max-width: 768px) {
+  .tiktok-player-container {
+    border-radius: 8px;
+  }
+
+  .tiktok-iframe {
+    border-radius: 8px;
+  }
+
+  .error-state,
+  .loading-state {
+    min-height: 300px;
+    border-radius: 8px;
+  }
+
+  .error-content {
+    padding: 1.5rem;
+  }
+
+  .error-icon {
+    width: 40px;
+    height: 40px;
+  }
+}
