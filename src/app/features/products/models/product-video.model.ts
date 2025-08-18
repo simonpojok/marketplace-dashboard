@@ -1,32 +1,40 @@
+// Updated video models for integrated product video upload
+
 export interface ProductVideo {
-  id: string;
-  product: string;
-  video_file: string;
-  title: string;
-  description?: string;
-  duration: number;
-  formatted_duration?: string;
+  id?: string;
+  video_url?: string;
   thumbnail_url?: string;
-  file_size?: number;
-  is_featured: boolean;
-  is_active: boolean;
-  display_order: number;
-  view_count: number;
-  created_at: string;
-  updated_at: string;
-}
-
-export interface ProductVideoUploadData {
-  title: string;
   description?: string;
+  duration?: number;
+  formatted_duration?: string;
   is_featured: boolean;
   is_active: boolean;
   display_order: number;
+  product_name?: string;
+  file_size_display?: string;
+  created_at?: string;
+  updated_at?: string;
 }
 
-export interface ProductVideoFormData extends ProductVideoUploadData {
-  video_file?: File;
+// Form data interface for video upload during product creation/update
+export interface ProductVideoFormData {
+  file?: File;
+  description?: string;
+  duration?: number;
+  is_featured: boolean;
+  is_active: boolean;
+  display_order: number;
   preview?: string;
+}
+
+// Video request interface matching API specification
+export interface VideoMetadata {
+  id?: string; // For updates
+  description?: string;
+  duration?: number;
+  is_featured?: boolean;
+  is_active?: boolean;
+  display_order?: number;
 }
 
 // Video validation interfaces
@@ -49,16 +57,12 @@ export interface VideoFileInfo {
 
 // Video validation constants
 export const VIDEO_VALIDATION = {
-  MAX_SIZE: 100 * 1024 * 1024, // 100MB
+  MAX_SIZE: 50 * 1024 * 1024, // 50MB as per API spec
   MIN_SIZE: 100 * 1024, // 100KB minimum
-  MAX_DURATION: 600, // 10 minutes in seconds
+  MAX_DURATION: 300, // 5 minutes in seconds as per API spec
   MIN_DURATION: 1, // 1 second minimum
   SUPPORTED_FORMATS: ['.mp4', '.mov', '.webm', '.avi'],
   SUPPORTED_MIME_TYPES: ['video/mp4', 'video/quicktime', 'video/webm', 'video/avi'],
-  TITLE: {
-    MIN_LENGTH: 3,
-    MAX_LENGTH: 100
-  },
   DESCRIPTION: {
     MAX_LENGTH: 500
   },
@@ -73,9 +77,6 @@ export const VIDEO_ERROR_MESSAGES = {
   DURATION_TOO_SHORT: `Video duration is below the minimum limit of ${VIDEO_VALIDATION.MIN_DURATION} second`,
   UNSUPPORTED_FORMAT: `Unsupported video format. Please use: ${VIDEO_VALIDATION.SUPPORTED_FORMATS.join(', ')}`,
   INVALID_FILE: 'Please select a valid video file',
-  TITLE_REQUIRED: 'Video title is required',
-  TITLE_TOO_SHORT: `Title must be at least ${VIDEO_VALIDATION.TITLE.MIN_LENGTH} characters`,
-  TITLE_TOO_LONG: `Title cannot exceed ${VIDEO_VALIDATION.TITLE.MAX_LENGTH} characters`,
   DESCRIPTION_TOO_LONG: `Description cannot exceed ${VIDEO_VALIDATION.DESCRIPTION.MAX_LENGTH} characters`,
   MAX_VIDEOS_REACHED: `Cannot upload more than ${VIDEO_VALIDATION.MAX_VIDEOS_PER_PRODUCT} videos per product`,
   UPLOAD_FAILED: 'Failed to upload video. Please try again.',

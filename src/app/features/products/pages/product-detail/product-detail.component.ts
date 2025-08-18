@@ -229,7 +229,7 @@ export class ProductDetailComponent implements OnInit {
 
   // TrackBy functions for performance optimization
   protected trackByImageIndex = (index: number, item: any): number => index;
-  protected trackByVideoId = (index: number, video: ProductVideo): string => video.id;
+  protected trackByVideoId = (index: number, video: ProductVideo): string => video.id || `video-${index}`;
   protected trackByVariationId = (index: number, variation: ProductVariation): string => variation.id || `variation-${index}`;
 
   // Backward compatibility methods
@@ -256,12 +256,12 @@ export class ProductDetailComponent implements OnInit {
 
   protected onVideoPlay(video: ProductVideo): void {
     // You can add analytics tracking here
-    console.log('Video played:', video.title);
+    console.log('Video played:', video.product_name);
   }
 
   protected onVideoError(event: {video: ProductVideo, error: any}): void {
     console.error('Video error:', event.error);
-    this.toastService.error(`Failed to load video: ${event.video.title}`);
+    this.toastService.error(`Failed to load video: ${event.video.product_name}`);
   }
 
   protected formatDuration(seconds: number): string {

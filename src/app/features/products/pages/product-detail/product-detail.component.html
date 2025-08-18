@@ -119,17 +119,18 @@
             <div *ngIf="featuredVideo()" class="space-y-3">
               <div class="relative">
                 <video
-                  [src]="featuredVideo()!.video_file"
+                  [src]="featuredVideo()!.video_url"
                   class="w-full h-48 object-cover rounded-lg"
                   controls
                   preload="metadata"
                 ></video>
               </div>
               <div class="text-center">
-                <h4 class="font-medium text-gray-900 dark:text-white text-sm">{{ featuredVideo()!.title }}</h4>
+                <h4 class="font-medium text-gray-900 dark:text-white text-sm">{{ featuredVideo()!.product_name }} Video</h4>
                 <p *ngIf="featuredVideo()!.description" class="text-xs text-gray-500 dark:text-gray-400 mt-1">
                   {{ featuredVideo()!.description }}
                 </p>
+                <p class="text-xs text-gray-500 dark:text-gray-400">{{ featuredVideo()!.file_size_display }}</p>
               </div>
             </div>
 
@@ -143,7 +144,7 @@
               >
                 <div class="relative pt-[75%] bg-gray-100 dark:bg-gray-800 rounded-md overflow-hidden">
                   <video
-                    [src]="video.video_file"
+                    [src]="video.video_url"
                     class="absolute inset-0 w-full h-full object-cover"
                     preload="metadata"
                   ></video>
@@ -165,12 +166,12 @@
                   
                   <!-- Duration badge -->
                   <div class="absolute bottom-1 right-1 bg-black bg-opacity-75 text-white text-xs rounded px-1">
-                    {{ formatDuration(video.duration) }}
+                    {{ video.formatted_duration }}
                   </div>
                 </div>
                 
-                <!-- Video title -->
-                <p class="text-xs text-gray-600 dark:text-gray-400 mt-1 truncate text-center">{{ video.title }}</p>
+                <!-- Video info -->
+                <p class="text-xs text-gray-600 dark:text-gray-400 mt-1 truncate text-center">{{ video.file_size_display }}</p>
               </div>
             </div>
 
@@ -444,7 +445,7 @@
         <div class="bg-white dark:bg-gray-900 px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
           <div class="flex items-center justify-between">
             <h3 class="text-lg leading-6 font-medium text-gray-900 dark:text-white">
-              {{ selectedVideo()?.title || 'Video' }}
+              {{ selectedVideo()!.product_name || 'Product' }} Video
             </h3>
             <button
               type="button"
@@ -464,7 +465,7 @@
             <div class="mt-2">
               <video
                 *ngIf="selectedVideo()"
-                [src]="selectedVideo()!.video_file"
+                [src]="selectedVideo()!.video_url"
                 class="w-full h-96 object-contain rounded-lg"
                 controls
                 preload="metadata"
@@ -492,7 +493,7 @@
                 >
                   <div class="relative pt-[75%] bg-gray-100 dark:bg-gray-800 rounded-md overflow-hidden">
                     <video
-                      [src]="video.video_file"
+                      [src]="video.video_url"
                       class="absolute inset-0 w-full h-full object-cover"
                       preload="metadata"
                     ></video>
@@ -509,12 +510,12 @@
                     
                     <!-- Duration badge -->
                     <div class="absolute bottom-1 right-1 bg-black bg-opacity-75 text-white text-xs rounded px-1">
-                      {{ formatDuration(video.duration) }}
+                      {{ video.formatted_duration }}
                     </div>
                   </div>
                   
-                  <!-- Video title -->
-                  <p class="text-xs text-gray-600 dark:text-gray-400 mt-1 truncate text-center">{{ video.title }}</p>
+                  <!-- Video info -->
+                  <p class="text-xs text-gray-600 dark:text-gray-400 mt-1 truncate text-center">{{ video.file_size_display }}</p>
                 </div>
               </div>
             </div>

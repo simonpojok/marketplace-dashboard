@@ -1,9 +1,15 @@
 import {Injectable, inject} from '@angular/core';
-import {HttpClient, HttpParams} from '@angular/common/http';
-import {Observable} from 'rxjs';
+import {HttpClient, HttpParams, HttpRequest, HttpEvent, HttpEventType} from '@angular/common/http';
+import {Observable, map} from 'rxjs';
 import {environment} from '../../../../environments/environment';
 import {Product, Category, Brand, ProductListResponse} from '../models/product.model';
-import {ProductVideo} from '../models/product-video.model';
+
+export interface ProductUploadProgress {
+  progress: number;
+  product?: Product;
+  error?: string;
+  completed: boolean;
+}
 
 @Injectable({
   providedIn: 'root'
@@ -38,6 +44,76 @@ export class ProductsService {
 
   handleUpdateProduct(id: string, product: FormData): Observable<Product> {
     return this.http.patch<Product>(`${this.apiUrl}/products/${id}/`, product);
+  }
+
+  /**
+   * Create product with progress tracking (for video uploads)
+   */
+  createProductWithProgress(productData: FormData): Observable<ProductUploadProgress> {
+    const request = new HttpRequest('POST', `${this.apiUrl}/products/`, productData, {
+      reportProgress: true
+    });
+
+    return this.http.request<Product>(request).pipe(
+      map((event: HttpEvent<Product>) => {
+        switch (event.type) {
+          case HttpEventType.UploadProgress:
+            const progress = event.total ? Math.round(100 * event.loaded / event.total) : 0;
+            return {
+              progress,
+              completed: false
+            };
+
+          case HttpEventType.Response:
+            return {
+              progress: 100,
+              product: event.body!,
+              completed: true
+            };
+
+          default:
+            return {
+              progress: 0,
+              completed: false
+            };
+        }
+      })
+    );
+  }
+
+  /**
+   * Update product with progress tracking (for video uploads)
+   */
+  updateProductWithProgress(id: string, productData: FormData): Observable<ProductUploadProgress> {
+    const request = new HttpRequest('PATCH', `${this.apiUrl}/products/${id}/`, productData, {
+      reportProgress: true
+    });
+
+    return this.http.request<Product>(request).pipe(
+      map((event: HttpEvent<Product>) => {
+        switch (event.type) {
+          case HttpEventType.UploadProgress:
+            const progress = event.total ? Math.round(100 * event.loaded / event.total) : 0;
+            return {
+              progress,
+              completed: false
+            };
+
+          case HttpEventType.Response:
+            return {
+              progress: 100,
+              product: event.body!,
+              completed: true
+            };
+
+          default:
+            return {
+              progress: 0,
+              completed: false
+            };
+        }
+      })
+    );
   }
 
   deleteProduct(id: string): Observable<void> {
@@ -148,26 +224,4 @@ export class ProductsService {
     return this.http.get<Category[]>(`${this.apiUrl}/admin/categories/${parentId}/children/`);
   }
 
-  // Video Management
-  getProductVideos(productId: string): Observable<ProductVideo[]> {
-    return this.http.get<ProductVideo[]>(`${this.apiUrl}/products/${productId}/videos/`);
-  }
-
-  uploadProductVideo(productId: string, videoData: FormData): Observable<ProductVideo> {
-    return this.http.post<ProductVideo>(`${this.apiUrl}/products/${productId}/videos/`, videoData);
-  }
-
-  updateProductVideo(productId: string, videoId: string, data: any): Observable<ProductVideo> {
-    return this.http.patch<ProductVideo>(`${this.apiUrl}/products/${productId}/videos/${videoId}/`, data);
-  }
-
-  deleteProductVideo(productId: string, videoId: string): Observable<void> {
-    return this.http.delete<void>(`${this.apiUrl}/products/${productId}/videos/${videoId}/`);
-  }
-
-  reorderProductVideos(productId: string, videoIds: string[]): Observable<void> {
-    return this.http.post<void>(`${this.apiUrl}/products/${productId}/videos/reorder/`, {
-      video_ids: videoIds
-    });
-  }
 }
