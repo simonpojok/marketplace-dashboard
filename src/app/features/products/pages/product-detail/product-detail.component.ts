@@ -229,7 +229,7 @@ export class ProductDetailComponent implements OnInit {
 
   // TrackBy functions for performance optimization
   protected trackByImageIndex = (index: number, item: any): number => index;
-  protected trackByVideoId = (index: number, video: ProductVideo): string => video.id;
+  protected trackByVideoId = (index: number, video: ProductVideo): string => video.id || `video-${index}`;
   protected trackByVariationId = (index: number, variation: ProductVariation): string => variation.id || `variation-${index}`;
 
   // Backward compatibility methods
