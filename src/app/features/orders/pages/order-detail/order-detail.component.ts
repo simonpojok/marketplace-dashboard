@@ -89,8 +89,13 @@ export class OrderDetailComponent implements OnInit {
     this.isUpdating.set(true);
 
 
-    // @ts-ignore
-    this.ordersService.updateOrder(this.order()!.id, this.statusForm.value).subscribe({
+    const formValue = this.statusForm.value as {
+      status: string;
+      tracking_number?: string;
+      payment_status?: boolean;
+      notes?: string;
+    };
+    this.ordersService.updateOrder(this.order()!.id, formValue).subscribe({
       next: (updatedOrder) => {
         this.order.set(updatedOrder);
         this.showUpdateStatus.set(false);

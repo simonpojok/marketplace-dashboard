@@ -1,4 +1,4 @@
-import { Component, Input } from '@angular/core';
+import { Component, Input, ChangeDetectionStrategy } from '@angular/core';
 import { CommonModule, DecimalPipe } from '@angular/common';
 
 @Component({
@@ -6,7 +6,8 @@ import { CommonModule, DecimalPipe } from '@angular/common';
   standalone: true,
   imports: [CommonModule, DecimalPipe],
   templateUrl: './stats-card.component.html',
-  styles: []
+  styles: [],
+  changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class StatsCardComponent {
   @Input() title = '';

@@ -80,7 +80,7 @@
           class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500 dark:bg-gray-800 dark:text-white"
         >
           <option value="">All Categories</option>
-          <option *ngFor="let category of categories()" [value]="category.id">{{ category.name }}</option>
+          <option *ngFor="let category of categories(); trackBy: trackByCategoryId" [value]="category.id">{{ category.name }}</option>
         </select>
       </div>
 
@@ -94,7 +94,7 @@
           class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500 dark:bg-gray-800 dark:text-white"
         >
           <option value="">All Brands</option>
-          <option *ngFor="let brand of brands()" [value]="brand.id">{{ brand.name }}</option>
+          <option *ngFor="let brand of brands(); trackBy: trackByBrandId" [value]="brand.id">{{ brand.name }}</option>
         </select>
       </div>
 
@@ -188,7 +188,7 @@
   <div *ngIf="!isLoading() && products().length > 0"
        class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
     <app-product-card
-      *ngFor="let product of products()"
+      *ngFor="let product of products(); trackBy: trackByProductId"
       [product]="product"
       [brands]="brands()"
       [categories]="categories()"

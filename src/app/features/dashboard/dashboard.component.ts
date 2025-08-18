@@ -1,7 +1,9 @@
-import { Component, OnInit, inject, signal } from '@angular/core';
+import { Component, OnInit, inject, signal, ChangeDetectionStrategy, DestroyRef } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
 import { DashboardService } from './services/dashboard.service';
+import { DashboardData } from './models/dashboard.model';
 import { StatsCardComponent } from './components/stats-card/stats-card.component';
 import { SalesTrendComponent } from './components/sales-trend/sales-trend.component';
 import {RecentOrdersComponent} from './components/recent-orders/recent-orders.component';
@@ -21,14 +23,16 @@ import {TopCustomersComponent} from './components/top-customers/top-customers.co
     TopCustomersComponent
   ],
   templateUrl: './dashboard.component.html',
-  styles: []
+  styles: [],
+  changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class DashboardComponent implements OnInit {
   private dashboardService = inject(DashboardService);
+  private destroyRef = inject(DestroyRef);
 
   // Reactive state with signals
   protected isLoading = signal(true);
-  protected dashboardData = signal<any | null>(null);
+  protected dashboardData = signal<DashboardData | null>(null);
 
   ngOnInit(): void {
     this.loadDashboardData();
@@ -41,15 +45,17 @@ export class DashboardComponent implements OnInit {
   private loadDashboardData(): void {
     this.isLoading.set(true);
 
-    this.dashboardService.getDashboardData().subscribe({
-      next: (data) => {
-        this.dashboardData.set(data);
-        this.isLoading.set(false);
-      },
-      error: (error) => {
-        console.error('Error loading dashboard data:', error);
-        this.isLoading.set(false);
-      }
-    });
+    this.dashboardService.getDashboardData()
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({
+        next: (data) => {
+          this.dashboardData.set(data);
+          this.isLoading.set(false);
+        },
+        error: (error) => {
+          console.error('Error loading dashboard data:', error);
+          this.isLoading.set(false);
+        }
+      });
   }
 }

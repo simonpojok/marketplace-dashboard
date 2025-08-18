@@ -45,14 +45,14 @@
 
         <!-- Order Stats -->
         <div class="text-right">
-          <p class="text-sm font-medium text-gray-900 dark:text-white">{{ formatCurrency(customer.totalSpent) }}</p>
-          <p class="text-xs text-gray-600 dark:text-gray-400">{{ customer.totalOrders }} orders</p>
+          <p class="text-sm font-medium text-gray-900 dark:text-white">{{ formatCurrency(customer.total_spent) }}</p>
+          <p class="text-xs text-gray-600 dark:text-gray-400">{{ customer.total_orders }} orders</p>
         </div>
       </div>
 
       <!-- Last Order Date -->
       <div class="mt-2 text-xs text-gray-600 dark:text-gray-400">
-        Last order: {{ formatDate(customer.lastOrderDate) }}
+        Last order: {{ formatDate(customer.last_order_date) }}
       </div>
     </div>
   </div>
