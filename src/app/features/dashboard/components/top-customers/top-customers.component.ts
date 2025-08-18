@@ -1,16 +1,17 @@
-import { Component, Input } from '@angular/core';
+import { Component, Input, ChangeDetectionStrategy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
+import { TopCustomer } from '../../models/dashboard.model';
 
 @Component({
   selector: 'app-top-customers',
   standalone: true,
   imports: [CommonModule, RouterModule],
   templateUrl: './top-customers.component.html',
-  styles: []
+  styles: [],
+  changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class TopCustomersComponent {
-  // @ts-ignore
   @Input() customers: TopCustomer[] = [];
   @Input() isLoading = false;
 

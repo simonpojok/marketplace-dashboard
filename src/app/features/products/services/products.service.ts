@@ -19,7 +19,7 @@ export class ProductsService {
   private apiUrl = `${environment.apiUrl}${environment.apiVersion}/admin`;
 
   // Products
-  getProducts(params?: any): Observable<ProductListResponse> {
+  getProducts(params?: Record<string, string | number | null>): Observable<ProductListResponse> {
     let httpParams = new HttpParams();
 
     if (params) {
@@ -134,7 +134,7 @@ export class ProductsService {
   }
 
   // Categories
-  getCategories(params?: any): Observable<Category[]> {
+  getCategories(params?: Record<string, string | number>): Observable<Category[]> {
     let httpParams = new HttpParams();
 
     if (params) {

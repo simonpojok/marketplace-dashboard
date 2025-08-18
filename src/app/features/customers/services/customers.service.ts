@@ -12,7 +12,7 @@ export class CustomersService {
   private apiUrl = `${environment.apiUrl}${environment.apiVersion}/users`;
   private apiOrdersUrl = `${environment.apiUrl}${environment.apiVersion}/orders`;
 
-  getCustomers(params?: any): Observable<CustomerListResponse> {
+  getCustomers(params?: Record<string, string | number>): Observable<CustomerListResponse> {
     let httpParams = new HttpParams();
 
     if (params) {
@@ -30,7 +30,7 @@ export class CustomersService {
     return this.http.get<Customer>(`${this.apiUrl}/customers/${id}/`);
   }
 
-  getCustomerOrders(id: string, params?: any): Observable<CustomerOrdersResponse> {
+  getCustomerOrders(id: string, params?: Record<string, string | number>): Observable<CustomerOrdersResponse> {
     let httpParams = new HttpParams();
 
     if (params) {

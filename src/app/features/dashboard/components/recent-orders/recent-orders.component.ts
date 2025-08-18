@@ -1,4 +1,4 @@
-import { Component, Input } from '@angular/core';
+import { Component, Input, ChangeDetectionStrategy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
 import {RecentOrder} from '../../models/dashboard.model';
@@ -8,11 +8,15 @@ import {RecentOrder} from '../../models/dashboard.model';
   standalone: true,
   imports: [CommonModule, RouterModule],
   templateUrl: './recent-orders.component.html',
-  styles: []
+  styles: [],
+  changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class RecentOrdersComponent {
   @Input() orders: RecentOrder[] = [];
   @Input() isLoading = false;
+
+  // TrackBy function for performance
+  protected trackByOrderId = (index: number, order: RecentOrder): string => order.id;
 
   protected formatCurrency(value: number): string {
     return new Intl.NumberFormat('en-UG', {

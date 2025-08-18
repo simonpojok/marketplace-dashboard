@@ -1,10 +1,10 @@
-import { Component, EventEmitter, Input, Output, inject } from '@angular/core';
+import { Component, EventEmitter, Input, Output, inject, ChangeDetectionStrategy, DestroyRef, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
 import { AuthService } from '../../auth/services/auth.service';
 import { ThemeService } from '../../services/theme.service';
 import { User } from '../../auth/models/user.model';
-import {toObservable} from '@angular/core/rxjs-interop';
+import {toObservable, takeUntilDestroyed} from '@angular/core/rxjs-interop';
 import {UserProfile} from '../../auth/models/user-profile.model';
 
 @Component({
@@ -12,23 +12,27 @@ import {UserProfile} from '../../auth/models/user-profile.model';
   standalone: true,
   imports: [CommonModule, RouterModule],
   templateUrl: './header.component.html',
-  styles: []
+  styles: [],
+  changeDetection: ChangeDetectionStrategy.OnPush
 })
-export class HeaderComponent {
+export class HeaderComponent implements OnDestroy {
   @Input() sidebarCollapsed = false;
   @Output() toggleSidebar = new EventEmitter<void>();
 
   private authService = inject(AuthService);
   protected themeService = inject(ThemeService);
+  private destroyRef = inject(DestroyRef);
 
   protected userMenuOpen = false;
   protected userProfile: UserProfile | null = null;
 
   constructor() {
     // Subscribe to user changes
-    toObservable(this.authService.profile).subscribe(user => {
-      this.userProfile = user;
-    });
+    toObservable(this.authService.profile)
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe(user => {
+        this.userProfile = user;
+      });
   }
 
   protected toggleUserMenu(): void {
@@ -47,8 +51,15 @@ export class HeaderComponent {
     document.removeEventListener('click', this.closeUserMenu);
   };
 
+  ngOnDestroy(): void {
+    // Clean up event listener if still attached
+    document.removeEventListener('click', this.closeUserMenu);
+  }
+
   protected logout(): void {
-    this.authService.logout().subscribe();
+    this.authService.logout()
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe();
   }
 
   protected getUserInitialAvatar(): string {

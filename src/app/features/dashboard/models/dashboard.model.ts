@@ -38,9 +38,9 @@ export interface TopCustomer {
   id: string;
   name: string;
   phone: string;
-  totalOrders: number;
-  totalSpent: number;
-  lastOrderDate: string;
+  total_orders: number;
+  total_spent: number;
+  last_order_date: string;
 }
 
 export interface DashboardData {

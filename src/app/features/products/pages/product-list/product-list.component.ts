@@ -1,8 +1,9 @@
-import {Component, OnInit, OnDestroy, inject, signal, model} from '@angular/core';
+import {Component, OnInit, OnDestroy, inject, signal, model, ChangeDetectionStrategy, DestroyRef} from '@angular/core';
 import {CommonModule} from '@angular/common';
 import {RouterModule, Router, ActivatedRoute} from '@angular/router';
 import {FormsModule} from '@angular/forms';
-import {Subject, Subscription, debounceTime, distinctUntilChanged} from 'rxjs';
+import {Subject, Subscription, debounceTime, distinctUntilChanged, takeUntil} from 'rxjs';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import {ProductsService} from '../../services/products.service';
 import {Product, Category, Brand} from '../../models/product.model';
 import {ToastService} from '../../../../core/services/toast.service';
@@ -13,13 +14,15 @@ import {ProductCardComponent} from './components/product-card.component';
   standalone: true,
   imports: [CommonModule, RouterModule, FormsModule, ProductCardComponent],
   templateUrl: 'product-list.component.html',
-  styles: []
+  styles: [],
+  changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class ProductListComponent implements OnInit, OnDestroy {
   private productsService = inject(ProductsService);
   private toastService = inject(ToastService);
   private router = inject(Router);
   private route = inject(ActivatedRoute);
+  private destroyRef = inject(DestroyRef);
 
   // Reactive state with signals
   protected isLoading = signal(true);
@@ -42,10 +45,6 @@ export class ProductListComponent implements OnInit, OnDestroy {
 
   // Search debouncing
   private searchSubject = new Subject<string>();
-  private searchSubscription?: Subscription;
-  private queryParamsSubscription?: Subscription;
-  private categoriesSubscription?: Subscription;
-  private brandsSubscription?: Subscription;
 
   // Constants
   private static readonly SEARCH_DEBOUNCE_TIME = 300;
@@ -57,6 +56,11 @@ export class ProductListComponent implements OnInit, OnDestroy {
   // For use in template
   protected readonly Math = Math;
 
+  // TrackBy functions for performance
+  protected trackByProductId = (index: number, product: Product): string => product.id;
+  protected trackByCategoryId = (index: number, category: Category): string => category.id;
+  protected trackByBrandId = (index: number, brand: Brand): string => brand.id;
+
   ngOnInit(): void {
     this.loadCategories();
     this.loadBrands();
@@ -65,51 +69,44 @@ export class ProductListComponent implements OnInit, OnDestroy {
   }
 
   ngOnDestroy(): void {
-    // Clean up all subscriptions to prevent memory leaks
-    if (this.searchSubscription) {
-      this.searchSubscription.unsubscribe();
-    }
-    if (this.queryParamsSubscription) {
-      this.queryParamsSubscription.unsubscribe();
-    }
-    if (this.categoriesSubscription) {
-      this.categoriesSubscription.unsubscribe();
-    }
-    if (this.brandsSubscription) {
-      this.brandsSubscription.unsubscribe();
-    }
+    // Cleanup handled by takeUntilDestroyed
+    this.searchSubject.complete();
   }
 
   private loadCategories(): void {
-    this.categoriesSubscription = this.productsService.getCategories().subscribe({
-      next: (categories) => {
-        this.categories.set(categories);
-        this.categoriesLoaded.set(true);
-        this.checkIfReadyToLoadProducts();
-      },
-      error: (error) => {
-        console.error('Error loading categories:', error);
-        this.toastService.error('Failed to load categories');
-        this.categoriesLoaded.set(true); // Still mark as loaded to avoid blocking
-        this.checkIfReadyToLoadProducts();
-      }
-    });
+    this.productsService.getCategories()
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({
+        next: (categories) => {
+          this.categories.set(categories);
+          this.categoriesLoaded.set(true);
+          this.checkIfReadyToLoadProducts();
+        },
+        error: (error) => {
+          console.error('Error loading categories:', error);
+          this.toastService.error('Failed to load categories');
+          this.categoriesLoaded.set(true); // Still mark as loaded to avoid blocking
+          this.checkIfReadyToLoadProducts();
+        }
+      });
   }
 
   private loadBrands(): void {
-    this.brandsSubscription = this.productsService.getBrands().subscribe({
-      next: (brands) => {
-        this.brands.set(brands);
-        this.brandsLoaded.set(true);
-        this.checkIfReadyToLoadProducts();
-      },
-      error: (error) => {
-        console.error('Error loading brands:', error);
-        this.toastService.error('Failed to load brands');
-        this.brandsLoaded.set(true); // Still mark as loaded to avoid blocking
-        this.checkIfReadyToLoadProducts();
-      }
-    });
+    this.productsService.getBrands()
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({
+        next: (brands) => {
+          this.brands.set(brands);
+          this.brandsLoaded.set(true);
+          this.checkIfReadyToLoadProducts();
+        },
+        error: (error) => {
+          console.error('Error loading brands:', error);
+          this.toastService.error('Failed to load brands');
+          this.brandsLoaded.set(true); // Still mark as loaded to avoid blocking
+          this.checkIfReadyToLoadProducts();
+        }
+      });
   }
 
   protected loadProducts(page: number = 1): void {
@@ -211,9 +208,10 @@ export class ProductListComponent implements OnInit, OnDestroy {
   }
 
   private setupSearchDebouncing(): void {
-    this.searchSubscription = this.searchSubject.pipe(
+    this.searchSubject.pipe(
       debounceTime(ProductListComponent.SEARCH_DEBOUNCE_TIME),
-      distinctUntilChanged()
+      distinctUntilChanged(),
+      takeUntilDestroyed(this.destroyRef)
     ).subscribe(searchTerm => {
       this.searchTerm.set(searchTerm);
       this.updateUrlParams();
@@ -222,25 +220,27 @@ export class ProductListComponent implements OnInit, OnDestroy {
   }
 
   private setupQueryParamsSubscription(): void {
-    this.queryParamsSubscription = this.route.queryParams.subscribe(params => {
-      // Read parameters from URL and update component state with validation
-      this.searchTerm.set(params['search'] || '');
-      this.selectedCategory.set(params['category'] || '');
-      this.selectedBrand.set(params['brand'] || '');
-      this.filterInStock.set(params['in_stock'] === 'true');
-      this.filterOnSale.set(params['on_sale'] === 'true');
-      this.filterFeatured.set(params['is_featured'] === 'true');
-      this.sortBy.set(params['sort_by'] || 'created_at');
-      this.sortOrder.set(params['sort_order'] || 'desc');
-      
-      // Validate and set page number
-      const pageParam = params['page'];
-      const page = pageParam ? Math.max(1, parseInt(pageParam) || 1) : 1;
-      this.currentPage.set(page);
-      
-      // Only load products if categories and brands are loaded
-      this.checkIfReadyToLoadProducts();
-    });
+    this.route.queryParams
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe(params => {
+        // Read parameters from URL and update component state with validation
+        this.searchTerm.set(params['search'] || '');
+        this.selectedCategory.set(params['category'] || '');
+        this.selectedBrand.set(params['brand'] || '');
+        this.filterInStock.set(params['in_stock'] === 'true');
+        this.filterOnSale.set(params['on_sale'] === 'true');
+        this.filterFeatured.set(params['is_featured'] === 'true');
+        this.sortBy.set(params['sort_by'] || 'created_at');
+        this.sortOrder.set(params['sort_order'] || 'desc');
+        
+        // Validate and set page number
+        const pageParam = params['page'];
+        const page = pageParam ? Math.max(1, parseInt(pageParam) || 1) : 1;
+        this.currentPage.set(page);
+        
+        // Only load products if categories and brands are loaded
+        this.checkIfReadyToLoadProducts();
+      });
   }
 
   private checkIfReadyToLoadProducts(): void {
@@ -250,18 +250,18 @@ export class ProductListComponent implements OnInit, OnDestroy {
   }
 
   private updateUrlParams(): void {
-    const queryParams: any = {};
+    const queryParams: Record<string, string> = {};
     
     // Only add parameters that have values
-    if (this.searchTerm()) queryParams.search = this.searchTerm();
-    if (this.selectedCategory()) queryParams.category = this.selectedCategory();
-    if (this.selectedBrand()) queryParams.brand = this.selectedBrand();
-    if (this.filterInStock()) queryParams.in_stock = 'true';
-    if (this.filterOnSale()) queryParams.on_sale = 'true';
-    if (this.filterFeatured()) queryParams.is_featured = 'true';
-    if (this.sortBy() !== 'created_at') queryParams.sort_by = this.sortBy();
-    if (this.sortOrder() !== 'desc') queryParams.sort_order = this.sortOrder();
-    if (this.currentPage() > 1) queryParams.page = this.currentPage().toString();
+    if (this.searchTerm()) queryParams['search'] = this.searchTerm();
+    if (this.selectedCategory()) queryParams['category'] = this.selectedCategory();
+    if (this.selectedBrand()) queryParams['brand'] = this.selectedBrand();
+    if (this.filterInStock()) queryParams['in_stock'] = 'true';
+    if (this.filterOnSale()) queryParams['on_sale'] = 'true';
+    if (this.filterFeatured()) queryParams['is_featured'] = 'true';
+    if (this.sortBy() !== 'created_at') queryParams['sort_by'] = this.sortBy();
+    if (this.sortOrder() !== 'desc') queryParams['sort_order'] = this.sortOrder();
+    if (this.currentPage() > 1) queryParams['page'] = this.currentPage().toString();
     
     // Update URL without triggering navigation
     this.router.navigate([], {
