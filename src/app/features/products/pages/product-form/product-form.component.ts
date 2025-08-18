@@ -7,9 +7,12 @@ import {Product, Category, Brand} from '../../models/product.model';
 import {ToastService} from '../../../../core/services/toast.service';
 import {ProductImage} from '../models/product-image.models';
 import {ProductVariation, VARIATION_ATTRIBUTES, VariationAttribute} from '../../models/product-variation.model';
-import {ProductVideo} from '../../models/product-video.model';
-import {ProductVideoManagerComponent} from '../../components/product-video-manager/product-video-manager.component';
 import { debounceTime, distinctUntilChanged } from 'rxjs/operators';
+import { ProductVideoFormData, VideoMetadata } from '../../models/product-video.model';
+import { ProductUploadProgress } from '../../services/products.service';
+import { VideoFileUploaderComponent } from '../../components/video-file-uploader/video-file-uploader.component';
+import { VideoMetadataFormComponent } from '../../components/video-metadata-form/video-metadata-form.component';
+import { GlobalProgressBarComponent } from '../../../../shared/components/global-progress-bar/global-progress-bar.component';
 
 @Component({
   selector: 'app-product-form',
@@ -19,7 +22,9 @@ import { debounceTime, distinctUntilChanged } from 'rxjs/operators';
     RouterModule,
     ReactiveFormsModule,
     FormsModule,
-    ProductVideoManagerComponent
+    VideoFileUploaderComponent,
+    VideoMetadataFormComponent,
+    GlobalProgressBarComponent
   ],
   templateUrl: './product-form.component.html',
   styleUrls: ['./product-form.component.scss'],
@@ -45,9 +50,15 @@ export class ProductFormComponent implements OnInit {
   // Form and data
   protected productForm!: FormGroup;
   protected images = signal<ProductImage[]>([]);
-  protected videos = signal<ProductVideo[]>([]);
   protected variations = signal<ProductVariation[]>([]);
   protected removedImageIds = signal<string[]>([]);
+  protected videos = signal<ProductVideoFormData[]>([]);
+
+  // Upload progress state
+  protected isUploading = signal(false);
+  protected uploadProgress = signal(0);
+  protected uploadMessage = signal('Uploading...');
+  protected videoValidationError = signal<string | null>(null);
 
   // Variation management state
   protected isVariationManagerExpanded = signal(true);
@@ -230,10 +241,6 @@ export class ProductFormComponent implements OnInit {
       this.images.set(productImages);
     }
 
-    // Load videos
-    if (product.videos && product.videos.length > 0) {
-      this.videos.set(product.videos);
-    }
 
     // Load variations and initialize attributes
     if (product.variations && product.variations.length > 0) {
@@ -915,14 +922,6 @@ export class ProductFormComponent implements OnInit {
     });
   }
 
-  // Video management methods
-  protected onVideosChanged(videos: ProductVideo[]): void {
-    this.videos.set(videos);
-  }
-
-  protected getCurrentProductId(): string | null {
-    return this.product()?.id || null;
-  }
 
   protected onDragOver(event: DragEvent): void {
     event.preventDefault();
@@ -932,6 +931,38 @@ export class ProductFormComponent implements OnInit {
   protected onDragLeave(event: DragEvent): void {
     event.preventDefault();
     this.dragOver.set(false);
+  }
+
+  // ==========================================
+  // VIDEO MANAGEMENT METHODS
+  // ==========================================
+
+  protected onVideoFilesSelected(videos: ProductVideoFormData[]): void {
+    this.videos.set(videos);
+    this.videoValidationError.set(null);
+  }
+
+  protected onVideoValidationError(error: string): void {
+    this.videoValidationError.set(error);
+    this.toastService.error(error);
+  }
+
+  protected onVideosChanged(videos: ProductVideoFormData[]): void {
+    this.videos.set(videos);
+  }
+
+  protected removeVideo(index: number): void {
+    const currentVideos = this.videos();
+    const updatedVideos = currentVideos.filter((_, i) => i !== index);
+    // Reorder remaining videos
+    updatedVideos.forEach((video, i) => {
+      video.display_order = i;
+    });
+    this.videos.set(updatedVideos);
+  }
+
+  protected hasVideos(): boolean {
+    return this.videos().length > 0;
   }
 
   // ==========================================
@@ -945,6 +976,17 @@ export class ProductFormComponent implements OnInit {
       return;
     }
 
+    // Check if we have videos - if so, use progress tracking
+    const hasVideos = this.videos().length > 0;
+
+    if (hasVideos) {
+      this.handleCreateProductWithProgress();
+    } else {
+      this.handleCreateProductStandard();
+    }
+  }
+
+  private handleCreateProductStandard(): void {
     this.isSaving.set(true);
     const productData = this.prepareProductData();
 
@@ -966,6 +1008,64 @@ export class ProductFormComponent implements OnInit {
         this.isSaving.set(false);
       }
     });
+  }
+
+  private handleCreateProductWithProgress(): void {
+    this.isSaving.set(true);
+    this.isUploading.set(true);
+    this.uploadProgress.set(0);
+    this.uploadMessage.set(this.isEdit() ? 'Updating product with videos...' : 'Creating product with videos...');
+
+    const productData = this.prepareProductData();
+
+    const saveObservable = this.isEdit() && this.product()
+      ? this.productsService.updateProductWithProgress(this.product()!.id, productData)
+      : this.productsService.createProductWithProgress(productData);
+
+    saveObservable.subscribe({
+      next: (progress: ProductUploadProgress) => {
+        this.uploadProgress.set(progress.progress);
+        
+        if (progress.completed && progress.product) {
+          this.onUploadComplete(progress.product);
+        }
+      },
+      error: (error) => {
+        console.error('Error saving product:', error);
+        this.onUploadError(error);
+      }
+    });
+  }
+
+  private onUploadComplete(product: Product): void {
+    this.isSaving.set(false);
+    this.isUploading.set(false);
+    this.uploadProgress.set(100);
+    this.uploadMessage.set('Upload completed successfully!');
+    
+    const message = this.isEdit() ? 'Product updated successfully' : 'Product created successfully';
+    this.toastService.success(message);
+    
+    // Hide progress bar after a short delay
+    setTimeout(() => {
+      this.isUploading.set(false);
+      this.router.navigate(['/products/view', product.id]);
+    }, 1500);
+  }
+
+  private onUploadError(error: any): void {
+    this.isSaving.set(false);
+    this.isUploading.set(false);
+    this.uploadProgress.set(0);
+    
+    let errorMessage = this.isEdit() ? 'Failed to update product' : 'Failed to create product';
+    if (error.error?.message) {
+      errorMessage = error.error.message;
+    } else if (error.message) {
+      errorMessage = error.message;
+    }
+    
+    this.toastService.error(errorMessage);
   }
 
   private prepareProductData(): FormData {
@@ -1005,6 +1105,25 @@ export class ProductFormComponent implements OnInit {
     // Add variations data
     if (this.hasVariations() && this.variations().length > 0) {
       formData.append('variations', JSON.stringify(this.variations()));
+    }
+
+    // Add video files according to API spec
+    this.videos().forEach((video) => {
+      if (video.file) {
+        formData.append('video_files', video.file);
+      }
+    });
+
+    // Add video metadata as JSON according to API spec
+    const videoMetadata = this.videos().map(video => ({
+      description: video.description,
+      duration: video.duration,
+      is_featured: video.is_featured,
+      is_active: video.is_active,
+      display_order: video.display_order
+    }));
+    if (videoMetadata.length > 0) {
+      formData.append('videos', JSON.stringify(videoMetadata));
     }
 
     // Add removed image IDs for updates

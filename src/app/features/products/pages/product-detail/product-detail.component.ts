@@ -256,12 +256,12 @@ export class ProductDetailComponent implements OnInit {
 
   protected onVideoPlay(video: ProductVideo): void {
     // You can add analytics tracking here
-    console.log('Video played:', video.title);
+    console.log('Video played:', video.product_name);
   }
 
   protected onVideoError(event: {video: ProductVideo, error: any}): void {
     console.error('Video error:', event.error);
-    this.toastService.error(`Failed to load video: ${event.video.title}`);
+    this.toastService.error(`Failed to load video: ${event.video.product_name}`);
   }
 
   protected formatDuration(seconds: number): string {
