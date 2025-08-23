@@ -1,3 +1,8 @@
+.tiktok-player-wrapper {
+  position: relative;
+  width: 100%;
+}
+
 .tiktok-player-container {
   position: relative;
   width: 100%;
@@ -82,6 +87,98 @@
   100% { transform: rotate(360deg); }
 }
 
+/* Player Controls */
+.player-controls {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 10;
+  background: rgba(0, 0, 0, 0);
+  transition: background 0.3s ease;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.tiktok-player-container:hover .player-controls {
+  opacity: 1;
+  pointer-events: all;
+  background: rgba(0, 0, 0, 0.1);
+}
+
+.play-pause-btn {
+  width: 80px;
+  height: 80px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.9);
+  border: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  backdrop-filter: blur(10px);
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+}
+
+.play-pause-btn:hover {
+  background: rgba(255, 255, 255, 1);
+  transform: scale(1.1);
+  box-shadow: 0 6px 25px rgba(0, 0, 0, 0.4);
+}
+
+.play-pause-btn:active {
+  transform: scale(0.95);
+}
+
+.play-pause-btn.playing {
+  background: rgba(0, 0, 0, 0.8);
+  color: white;
+}
+
+.play-pause-btn.playing:hover {
+  background: rgba(0, 0, 0, 0.9);
+}
+
+.play-icon,
+.pause-icon {
+  width: 32px;
+  height: 32px;
+  color: inherit;
+}
+
+.play-icon {
+  margin-left: 4px; /* Adjust for visual centering */
+}
+
+/* Loading Overlay */
+.loading-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(0, 0, 0, 0.5);
+  z-index: 5;
+  backdrop-filter: blur(2px);
+}
+
+.loading-overlay .loading-spinner {
+  width: 50px;
+  height: 50px;
+  border: 4px solid rgba(255, 255, 255, 0.3);
+  border-top: 4px solid #ff0050;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
 /* Dark mode styles */
 @media (prefers-color-scheme: dark) {
   .error-state {
@@ -135,5 +232,35 @@
   .error-icon {
     width: 40px;
     height: 40px;
+  }
+
+  /* Mobile player controls */
+  .play-pause-btn {
+    width: 60px;
+    height: 60px;
+  }
+
+  .play-icon,
+  .pause-icon {
+    width: 24px;
+    height: 24px;
+  }
+
+  .loading-overlay .loading-spinner {
+    width: 40px;
+    height: 40px;
+  }
+}
+
+@media (max-width: 480px) {
+  .play-pause-btn {
+    width: 50px;
+    height: 50px;
+  }
+
+  .play-icon,
+  .pause-icon {
+    width: 20px;
+    height: 20px;
   }
 }

@@ -215,6 +215,7 @@ export class ProductDetailComponent implements OnInit {
     !!this.product()?.has_tiktok_video && !!this.product()?.tiktok_video_url
   );
 
+
   // TrackBy functions for performance optimization
   protected trackByImageIndex = (index: number, item: any): number => index;
   protected trackByVariationId = (index: number, variation: ProductVariation): string => variation.id || `variation-${index}`;

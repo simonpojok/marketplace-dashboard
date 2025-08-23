@@ -56,10 +56,10 @@
       </div>
     </div>
 
-    <!-- Product Details -->
-    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mt-5">
-      <!-- Left Column - Images -->
-      <div class="lg:col-span-1 space-y-4">
+    <!-- Main Product Grid -->
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+      <!-- Left Column - Images & Video -->
+      <div class="lg:col-span-1 space-y-6">
         <!-- Main Product Image -->
         <div
           class="bg-white dark:bg-dark-bg-secondary shadow-sm rounded-lg border border-gray-200 dark:border-dark-border overflow-hidden">
@@ -80,8 +80,8 @@
           </div>
         </div>
 
-        <!-- Thumbnail Images -->
-        <div *ngIf="hasMoreImages()" class="grid grid-cols-5 gap-2">
+        <!-- Image Thumbnails -->
+        <div *ngIf="hasMoreImages()" class="grid grid-cols-4 gap-2">
           <div
             *ngFor="let image of product()?.images; let i = index"
             (click)="setSelectedImage(i)"
@@ -107,26 +107,38 @@
           </div>
         </div>
 
-        <!-- TikTok Video -->
+        <!-- TikTok Video Player Card -->
         <div *ngIf="hasTikTokVideo()"
-          class="bg-white dark:bg-dark-bg-secondary shadow-sm rounded-lg border border-gray-200 dark:border-dark-border overflow-hidden">
+             class="bg-white dark:bg-dark-bg-secondary shadow-sm rounded-lg border border-gray-200 dark:border-dark-border overflow-hidden">
           <div class="px-6 py-4 border-b border-gray-200 dark:border-dark-border">
-            <h3 class="text-lg font-medium text-gray-900 dark:text-white">Product Video</h3>
-            <p class="text-sm text-gray-500 dark:text-gray-400">TikTok product demonstration</p>
+            <div class="flex items-center space-x-3">
+              <div class="flex-shrink-0">
+                <div class="w-8 h-8 bg-gradient-to-br from-pink-500 to-purple-600 rounded-lg flex items-center justify-center">
+                  <svg class="h-5 w-5 text-white" fill="currentColor" viewBox="0 0 24 24">
+                    <path d="M19.59 6.69a4.83 4.83 0 01-3.77-4.25V2h-3.45v13.67a2.89 2.89 0 01-5.2 1.74 2.89 2.89 0 012.31-4.64 2.93 2.93 0 01.88.13V9.4a6.84 6.84 0 00-.88-.05A6.33 6.33 0 005 20.1a6.34 6.34 0 0010.86-4.43V7a8.16 8.16 0 004.77 1.52v-3.4a4.85 4.85 0 01-1-.43z"/>
+                  </svg>
+                </div>
+              </div>
+              <div>
+                <h3 class="text-lg font-semibold text-gray-900 dark:text-white">Product Video</h3>
+                <p class="text-sm text-gray-500 dark:text-gray-400">See {{ product()?.name }} in action</p>
+              </div>
+            </div>
           </div>
-          <div class="p-6">
+          <div class="p-0">
             <app-tiktok-player
               [videoUrl]="product()?.tiktok_video_url"
               [embedUrl]="product()?.tiktok_embed_url"
               [videoId]="product()?.tiktok_embed_id"
-              height="500"
+              [showControls]="true"
+              height="400"
               class="w-full">
             </app-tiktok-player>
           </div>
         </div>
       </div>
 
-      <!-- Right Column - Info -->
+      <!-- Right Column - Product Info -->
       <div class="lg:col-span-2 space-y-6">
         <!-- Basic Info Card -->
         <div
@@ -365,5 +377,6 @@
       </div>
     </div>
   </div>
+
 
 </div>
