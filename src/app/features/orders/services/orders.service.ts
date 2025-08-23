@@ -10,7 +10,7 @@ import {OrderListResponse} from '../models/order-list-response.model';
 })
 export class OrdersService {
   private http = inject(HttpClient);
-  private apiUrl = `${environment.apiUrl}${environment.apiVersion}/orders`;
+  private apiUrl = `${environment.apiUrl}${environment.apiVersion}`;
 
   getOrders(params?: OrderFilterParams): Observable<OrderListResponse> {
     let httpParams = new HttpParams();
