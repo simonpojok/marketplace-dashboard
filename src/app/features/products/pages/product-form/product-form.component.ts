@@ -8,10 +8,7 @@ import {ToastService} from '../../../../core/services/toast.service';
 import {ProductImage} from '../models/product-image.models';
 import {ProductVariation, VARIATION_ATTRIBUTES, VariationAttribute} from '../../models/product-variation.model';
 import { debounceTime, distinctUntilChanged } from 'rxjs/operators';
-import { ProductVideoFormData, VideoMetadata } from '../../models/product-video.model';
 import { ProductUploadProgress } from '../../services/products.service';
-import { VideoFileUploaderComponent } from '../../components/video-file-uploader/video-file-uploader.component';
-import { VideoMetadataFormComponent } from '../../components/video-metadata-form/video-metadata-form.component';
 import { GlobalProgressBarComponent } from '../../../../shared/components/global-progress-bar/global-progress-bar.component';
 
 @Component({
@@ -22,8 +19,6 @@ import { GlobalProgressBarComponent } from '../../../../shared/components/global
     RouterModule,
     ReactiveFormsModule,
     FormsModule,
-    VideoFileUploaderComponent,
-    VideoMetadataFormComponent,
     GlobalProgressBarComponent
   ],
   templateUrl: './product-form.component.html',
@@ -52,13 +47,12 @@ export class ProductFormComponent implements OnInit {
   protected images = signal<ProductImage[]>([]);
   protected variations = signal<ProductVariation[]>([]);
   protected removedImageIds = signal<string[]>([]);
-  protected videos = signal<ProductVideoFormData[]>([]);
 
   // Upload progress state
   protected isUploading = signal(false);
   protected uploadProgress = signal(0);
   protected uploadMessage = signal('Uploading...');
-  protected videoValidationError = signal<string | null>(null);
+  protected tiktokUrlError = signal<string | null>(null);
 
   // Variation management state
   protected isVariationManagerExpanded = signal(true);
@@ -170,6 +164,7 @@ export class ProductFormComponent implements OnInit {
       discount_price: [null],
       stock_quantity: [0, [Validators.required, Validators.min(0)]],
       has_variations: [false],
+      tiktok_video_url: [''],
       is_active: [true],
       is_featured: [false]
     });
@@ -224,6 +219,7 @@ export class ProductFormComponent implements OnInit {
       discount_price: product.discount_price,
       stock_quantity: product.stock_quantity,
       has_variations: product.has_variations,
+      tiktok_video_url: product.tiktok_video_url || '',
       is_active: product.is_active,
       is_featured: product.is_featured
     });
@@ -934,35 +930,29 @@ export class ProductFormComponent implements OnInit {
   }
 
   // ==========================================
-  // VIDEO MANAGEMENT METHODS
+  // TIKTOK URL MANAGEMENT METHODS
   // ==========================================
 
-  protected onVideoFilesSelected(videos: ProductVideoFormData[]): void {
-    this.videos.set(videos);
-    this.videoValidationError.set(null);
+  protected validateTikTokUrl(url: string): boolean {
+    if (!url) return true; // Optional field
+    
+    // TikTok URL patterns
+    const patterns = [
+      /^https?:\/\/(www\.)?tiktok\.com\/@[\w.-]+\/video\/\d+/,
+      /^https?:\/\/vm\.tiktok\.com\/[\w\d]+/,
+      /^https?:\/\/m\.tiktok\.com\/v\/\d+/
+    ];
+    
+    return patterns.some(pattern => pattern.test(url));
   }
 
-  protected onVideoValidationError(error: string): void {
-    this.videoValidationError.set(error);
-    this.toastService.error(error);
-  }
-
-  protected onVideosChanged(videos: ProductVideoFormData[]): void {
-    this.videos.set(videos);
-  }
-
-  protected removeVideo(index: number): void {
-    const currentVideos = this.videos();
-    const updatedVideos = currentVideos.filter((_, i) => i !== index);
-    // Reorder remaining videos
-    updatedVideos.forEach((video, i) => {
-      video.display_order = i;
-    });
-    this.videos.set(updatedVideos);
-  }
-
-  protected hasVideos(): boolean {
-    return this.videos().length > 0;
+  protected onTikTokUrlChange(): void {
+    const url = this.productForm.get('tiktok_video_url')?.value;
+    if (url && !this.validateTikTokUrl(url)) {
+      this.tiktokUrlError.set('Please enter a valid TikTok video URL (e.g., https://www.tiktok.com/@username/video/123... or https://vm.tiktok.com/...)');
+    } else {
+      this.tiktokUrlError.set(null);
+    }
   }
 
   // ==========================================
@@ -976,14 +966,15 @@ export class ProductFormComponent implements OnInit {
       return;
     }
 
-    // Check if we have videos - if so, use progress tracking
-    const hasVideos = this.videos().length > 0;
-
-    if (hasVideos) {
-      this.handleCreateProductWithProgress();
-    } else {
-      this.handleCreateProductStandard();
+    // Validate TikTok URL if provided
+    const tiktokUrl = this.productForm.get('tiktok_video_url')?.value;
+    if (tiktokUrl && !this.validateTikTokUrl(tiktokUrl)) {
+      this.tiktokUrlError.set('Please enter a valid TikTok video URL');
+      this.toastService.warning('Please enter a valid TikTok video URL');
+      return;
     }
+
+    this.handleCreateProductStandard();
   }
 
   private handleCreateProductStandard(): void {
@@ -1010,63 +1001,6 @@ export class ProductFormComponent implements OnInit {
     });
   }
 
-  private handleCreateProductWithProgress(): void {
-    this.isSaving.set(true);
-    this.isUploading.set(true);
-    this.uploadProgress.set(0);
-    this.uploadMessage.set(this.isEdit() ? 'Updating product with videos...' : 'Creating product with videos...');
-
-    const productData = this.prepareProductData();
-
-    const saveObservable = this.isEdit() && this.product()
-      ? this.productsService.updateProductWithProgress(this.product()!.id, productData)
-      : this.productsService.createProductWithProgress(productData);
-
-    saveObservable.subscribe({
-      next: (progress: ProductUploadProgress) => {
-        this.uploadProgress.set(progress.progress);
-        
-        if (progress.completed && progress.product) {
-          this.onUploadComplete(progress.product);
-        }
-      },
-      error: (error) => {
-        console.error('Error saving product:', error);
-        this.onUploadError(error);
-      }
-    });
-  }
-
-  private onUploadComplete(product: Product): void {
-    this.isSaving.set(false);
-    this.isUploading.set(false);
-    this.uploadProgress.set(100);
-    this.uploadMessage.set('Upload completed successfully!');
-    
-    const message = this.isEdit() ? 'Product updated successfully' : 'Product created successfully';
-    this.toastService.success(message);
-    
-    // Hide progress bar after a short delay
-    setTimeout(() => {
-      this.isUploading.set(false);
-      this.router.navigate(['/products/view', product.id]);
-    }, 1500);
-  }
-
-  private onUploadError(error: any): void {
-    this.isSaving.set(false);
-    this.isUploading.set(false);
-    this.uploadProgress.set(0);
-    
-    let errorMessage = this.isEdit() ? 'Failed to update product' : 'Failed to create product';
-    if (error.error?.message) {
-      errorMessage = error.error.message;
-    } else if (error.message) {
-      errorMessage = error.message;
-    }
-    
-    this.toastService.error(errorMessage);
-  }
 
   private prepareProductData(): FormData {
     const formData = new FormData();
@@ -1107,24 +1041,6 @@ export class ProductFormComponent implements OnInit {
       formData.append('variations', JSON.stringify(this.variations()));
     }
 
-    // Add video files according to API spec
-    this.videos().forEach((video) => {
-      if (video.file) {
-        formData.append('video_files', video.file);
-      }
-    });
-
-    // Add video metadata as JSON according to API spec
-    const videoMetadata = this.videos().map(video => ({
-      description: video.description,
-      duration: video.duration,
-      is_featured: video.is_featured,
-      is_active: video.is_active,
-      display_order: video.display_order
-    }));
-    if (videoMetadata.length > 0) {
-      formData.append('videos', JSON.stringify(videoMetadata));
-    }
 
     // Add removed image IDs for updates
     if (this.isEdit() && this.removedImageIds().length > 0) {

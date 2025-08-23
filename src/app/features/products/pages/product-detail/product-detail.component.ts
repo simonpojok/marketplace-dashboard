@@ -4,14 +4,13 @@ import {RouterModule, ActivatedRoute, Router} from '@angular/router';
 import {ProductsService} from '../../services/products.service';
 import {Product} from '../../models/product.model';
 import {ProductVariation, VARIATION_ATTRIBUTES} from '../../models/product-variation.model';
-import {ProductVideo} from '../../models/product-video.model';
-// import {ProductVideoPreviewComponent} from '../../components/product-video-preview/product-video-preview.component';
+import {TiktokPlayerComponent} from '../../components/tiktok-player/tiktok-player.component';
 import {ToastService} from '../../../../core/services/toast.service';
 
 @Component({
   selector: 'app-product-detail',
   standalone: true,
-  imports: [CommonModule, RouterModule],
+  imports: [CommonModule, RouterModule, TiktokPlayerComponent],
   templateUrl: './product-detail.component.html',
   styles: [],
   changeDetection: ChangeDetectionStrategy.OnPush
@@ -27,8 +26,6 @@ export class ProductDetailComponent implements OnInit {
   protected isDeletingProduct = signal(false);
   protected product = signal<Product | null>(null);
   protected selectedImageIndex = signal(0);
-  protected selectedVideoIndex = signal(0);
-  protected showVideoModal = signal(false);
 
   ngOnInit(): void {
     // Get the product ID from the route
@@ -213,68 +210,13 @@ export class ProductDetailComponent implements OnInit {
     return 'color' in variation.attributes && variation.attributes['color'].trim() !== '';
   }
 
-  // Performance-optimized computed signals for videos
-  protected videos = computed(() => this.product()?.videos || []);
-  protected videosCount = computed(() => this.videos().length);
-  protected hasVideos = computed(() => this.videosCount() > 0);
-  protected selectedVideo = computed(() => {
-    const vids = this.videos();
-    const index = this.selectedVideoIndex();
-    return vids[index] || null;
-  });
-  protected featuredVideo = computed(() => {
-    const vids = this.videos();
-    return vids.find(video => video.is_featured) || (vids.length > 0 ? vids[0] : null);
-  });
+  // TikTok video support
+  protected hasTikTokVideo = computed(() => 
+    !!this.product()?.has_tiktok_video && !!this.product()?.tiktok_video_url
+  );
+
 
   // TrackBy functions for performance optimization
   protected trackByImageIndex = (index: number, item: any): number => index;
-  protected trackByVideoId = (index: number, video: ProductVideo): string => video.id || `video-${index}`;
   protected trackByVariationId = (index: number, variation: ProductVariation): string => variation.id || `variation-${index}`;
-
-  // Backward compatibility methods
-  protected getVideos(): ProductVideo[] {
-    return this.videos();
-  }
-
-  protected getFeaturedVideo(): ProductVideo | null {
-    return this.featuredVideo();
-  }
-
-  protected setSelectedVideo(index: number): void {
-    this.selectedVideoIndex.set(index);
-  }
-
-  protected openVideoModal(index: number): void {
-    this.selectedVideoIndex.set(index);
-    this.showVideoModal.set(true);
-  }
-
-  protected closeVideoModal(): void {
-    this.showVideoModal.set(false);
-  }
-
-  protected onVideoPlay(video: ProductVideo): void {
-    // You can add analytics tracking here
-    console.log('Video played:', video.product_name);
-  }
-
-  protected onVideoError(event: {video: ProductVideo, error: any}): void {
-    console.error('Video error:', event.error);
-    this.toastService.error(`Failed to load video: ${event.video.product_name}`);
-  }
-
-  protected formatDuration(seconds: number): string {
-    if (seconds < 60) {
-      return `${Math.round(seconds)}s`;
-    } else if (seconds < 3600) {
-      const minutes = Math.floor(seconds / 60);
-      const remainingSeconds = Math.round(seconds % 60);
-      return remainingSeconds > 0 ? `${minutes}m ${remainingSeconds}s` : `${minutes}m`;
-    } else {
-      const hours = Math.floor(seconds / 3600);
-      const minutes = Math.floor((seconds % 3600) / 60);
-      return minutes > 0 ? `${hours}h ${minutes}m` : `${hours}h`;
-    }
-  }
 }
