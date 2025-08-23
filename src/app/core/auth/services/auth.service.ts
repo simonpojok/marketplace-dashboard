@@ -39,7 +39,7 @@ export class AuthService {
   login(credentials: LoginCredentials): Observable<AuthResponse> {
     this.isLoadingSignal.set(true);
 
-    return this.http.post<AuthResponse>(`${this.apiUrl}/users/login/`, credentials).pipe(
+    return this.http.post<AuthResponse>(`${this.apiUrl}/users/auth/login/`, credentials).pipe(
       tap(response => this.handleAuthSuccess(response)),
       catchError(error => {
         this.isLoadingSignal.set(false);
@@ -51,7 +51,7 @@ export class AuthService {
   register(credentials: RegisterCredentials): Observable<AuthResponse> {
     this.isLoadingSignal.set(true);
 
-    return this.http.post<AuthResponse>(`${this.apiUrl}/users/register/`, credentials).pipe(
+    return this.http.post<AuthResponse>(`${this.apiUrl}/users/auth/register/`, credentials).pipe(
       tap(response => this.handleAuthSuccess(response)),
       catchError(error => {
         this.isLoadingSignal.set(false);
@@ -71,7 +71,7 @@ export class AuthService {
     }
 
     // Otherwise, blacklist the token on the server
-    return this.http.post<{ message: string }>(`${this.apiUrl}/users/logout/`, { refresh }).pipe(
+    return this.http.post<{ message: string }>(`${this.apiUrl}/users/auth/logout/`, { refresh }).pipe(
       tap(() => this.clearAuthState()),
       catchError(error => {
         // Even if the server request fails, clear local auth state
@@ -89,7 +89,7 @@ export class AuthService {
       throw new Error('No refresh token available');
     }
 
-    return this.http.post<Tokens>(`${this.apiUrl}/users/token/refresh/`, { refresh }).pipe(
+    return this.http.post<Tokens>(`${this.apiUrl}/users/auth/refresh-token/`, { refresh }).pipe(
       tap(tokens => {
         this.storeTokens(tokens);
       }),

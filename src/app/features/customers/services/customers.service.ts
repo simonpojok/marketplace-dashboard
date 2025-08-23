@@ -23,11 +23,11 @@ export class CustomersService {
       });
     }
 
-    return this.http.get<CustomerListResponse>(`${this.apiUrl}/customers/`, {params: httpParams});
+    return this.http.get<CustomerListResponse>(`${this.apiUrl}/customers-list/`, {params: httpParams});
   }
 
   getCustomer(id: string): Observable<Customer> {
-    return this.http.get<Customer>(`${this.apiUrl}/customers/${id}/`);
+    return this.http.get<Customer>(`${this.apiUrl}/${id}/`);
   }
 
   getCustomerOrders(id: string, params?: Record<string, string | number>): Observable<CustomerOrdersResponse> {
@@ -45,10 +45,10 @@ export class CustomersService {
   }
 
   updateCustomer(id: string, data: Partial<Customer>): Observable<Customer> {
-    return this.http.patch<Customer>(`${this.apiUrl}/customers/${id}/`, data);
+    return this.http.patch<Customer>(`${this.apiUrl}/${id}/`, data);
   }
 
   searchCustomers(query: string): Observable<Customer[]> {
-    return this.http.get<Customer[]>(`${this.apiUrl}/customers/search/`, {params: {q: query}});
+    return this.http.get<Customer[]>(`${this.apiUrl}/`, {params: {search: query}});
   }
 }

@@ -12,7 +12,7 @@ export class DashboardService {
   private apiUrl = `${environment.apiUrl}${environment.apiVersion}`;
 
   getDashboardData(): Observable<DashboardData> {
-    // Make HTTP request to the real API endpoint
-    return this.http.get<DashboardData>(`${this.apiUrl}/dashboard/summary/`);
+    // Make HTTP request to the real API endpoint - using proper analytics endpoint from backend
+    return this.http.get<DashboardData>(`${this.apiUrl}/users/customers-overview/`);
   }
 }

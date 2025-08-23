@@ -38,11 +38,11 @@ export class PromotionsService {
       });
     }
 
-    return this.http.get<CampaignListResponse>(`${this.apiUrl}/admin/campaigns/`, {params: httpParams});
+    return this.http.get<CampaignListResponse>(`${this.apiUrl}/campaigns/`, {params: httpParams});
   }
 
   getCampaign(id: string): Observable<Campaign> {
-    return this.http.get<Campaign>(`${this.apiUrl}/admin/campaigns/${id}/`);
+    return this.http.get<Campaign>(`${this.apiUrl}/campaigns/${id}/`);
   }
 
   createCampaign(data: CampaignCreateRequest): Observable<Campaign> {
@@ -59,7 +59,7 @@ export class PromotionsService {
       }
     });
 
-    return this.http.post<Campaign>(`${this.apiUrl}/admin/campaigns/`, formData);
+    return this.http.post<Campaign>(`${this.apiUrl}/campaigns/`, formData);
   }
 
   updateCampaign(id: string, data: Partial<CampaignCreateRequest>): Observable<Campaign> {
@@ -76,35 +76,35 @@ export class PromotionsService {
       }
     });
 
-    return this.http.patch<Campaign>(`${this.apiUrl}/admin/campaigns/${id}/`, formData);
+    return this.http.patch<Campaign>(`${this.apiUrl}/campaigns/${id}/`, formData);
   }
 
   deleteCampaign(id: string): Observable<void> {
-    return this.http.delete<void>(`${this.apiUrl}/admin/campaigns/${id}/`);
+    return this.http.delete<void>(`${this.apiUrl}/campaigns/${id}/`);
   }
 
   activateCampaign(id: string): Observable<{ message: string; campaign: Campaign }> {
     return this.http.post<{ message: string; campaign: Campaign }>(
-      `${this.apiUrl}/admin/campaigns/${id}/activate/`, {}
+      `${this.apiUrl}/campaigns/${id}/activate/`, {}
     );
   }
 
   deactivateCampaign(id: string): Observable<{ message: string; campaign: Campaign }> {
     return this.http.post<{ message: string; campaign: Campaign }>(
-      `${this.apiUrl}/admin/campaigns/${id}/deactivate/`, {}
+      `${this.apiUrl}/campaigns/${id}/deactivate/`, {}
     );
   }
 
   getCampaignAnalytics(id: string): Observable<CampaignAnalytics> {
-    return this.http.get<CampaignAnalytics>(`${this.apiUrl}/admin/campaigns/${id}/analytics/`);
+    return this.http.get<CampaignAnalytics>(`${this.apiUrl}/campaigns/${id}/analytics/`);
   }
 
   getActiveCampaigns(): Observable<Campaign[]> {
-    return this.http.get<Campaign[]>(`${this.apiUrl}/admin/campaigns/active/`);
+    return this.http.get<Campaign[]>(`${this.apiUrl}/campaigns/active/`);
   }
 
   getFeaturedCampaigns(): Observable<Campaign[]> {
-    return this.http.get<Campaign[]>(`${this.apiUrl}/admin/campaigns/featured/`);
+    return this.http.get<Campaign[]>(`${this.apiUrl}/campaigns/featured/`);
   }
 
   // Promotion methods
@@ -114,23 +114,23 @@ export class PromotionsService {
       httpParams = httpParams.set('campaign', campaignId);
     }
 
-    return this.http.get<PromotionListResponse>(`${this.apiUrl}/admin/promotions/`, {params: httpParams});
+    return this.http.get<PromotionListResponse>(`${this.apiUrl}/promotions/`, {params: httpParams});
   }
 
   getPromotion(id: string): Observable<Promotion> {
-    return this.http.get<Promotion>(`${this.apiUrl}/admin/promotions/${id}/`);
+    return this.http.get<Promotion>(`${this.apiUrl}/promotions/${id}/`);
   }
 
   createPromotion(data: PromotionCreateRequest): Observable<Promotion> {
-    return this.http.post<Promotion>(`${this.apiUrl}/admin/promotions/`, data);
+    return this.http.post<Promotion>(`${this.apiUrl}/promotions/`, data);
   }
 
   updatePromotion(id: string, data: Partial<PromotionCreateRequest>): Observable<Promotion> {
-    return this.http.patch<Promotion>(`${this.apiUrl}/admin/promotions/${id}/`, data);
+    return this.http.patch<Promotion>(`${this.apiUrl}/promotions/${id}/`, data);
   }
 
   deletePromotion(id: string): Observable<void> {
-    return this.http.delete<void>(`${this.apiUrl}/admin/promotions/${id}/`);
+    return this.http.delete<void>(`${this.apiUrl}/promotions/${id}/`);
   }
 
   // Coupon methods
@@ -140,15 +140,15 @@ export class PromotionsService {
       httpParams = httpParams.set('campaign', campaignId);
     }
 
-    return this.http.get<CouponListResponse>(`${this.apiUrl}/admin/coupons/`, {params: httpParams});
+    return this.http.get<CouponListResponse>(`${this.apiUrl}/coupons/`, {params: httpParams});
   }
 
   getCoupon(id: string): Observable<Coupon> {
-    return this.http.get<Coupon>(`${this.apiUrl}/admin/coupons/${id}/`);
+    return this.http.get<Coupon>(`${this.apiUrl}/coupons/${id}/`);
   }
 
   createCoupon(data: CouponCreateRequest): Observable<Coupon> {
-    return this.http.post<Coupon>(`${this.apiUrl}/admin/coupons/`, data);
+    return this.http.post<Coupon>(`${this.apiUrl}/coupons/`, data);
   }
 
   createBulkCoupons(data: Partial<{
@@ -160,28 +160,28 @@ export class PromotionsService {
     prefix?: string;
   }>): Observable<{ message: string; coupons: Coupon[] }> {
     return this.http.post<{ message: string; coupons: Coupon[] }>(
-      `${this.apiUrl}/admin/coupons/bulk_create/`, data
+      `${this.apiUrl}/coupons/generate-bulk/`, data
     );
   }
 
   updateCoupon(id: string, data: Partial<CouponCreateRequest>): Observable<Coupon> {
-    return this.http.patch<Coupon>(`${this.apiUrl}/admin/coupons/${id}/`, data);
+    return this.http.patch<Coupon>(`${this.apiUrl}/coupons/${id}/`, data);
   }
 
   deleteCoupon(id: string): Observable<void> {
-    return this.http.delete<void>(`${this.apiUrl}/admin/coupons/${id}/`);
+    return this.http.delete<void>(`${this.apiUrl}/coupons/${id}/`);
   }
 
   // Public methods (for customers)
   getPublicCampaigns(): Observable<Campaign[]> {
-    return this.http.get<Campaign[]>(`${this.apiUrl}/public/campaigns/`);
+    return this.http.get<Campaign[]>(`${this.apiUrl}/campaigns/`);
   }
 
   getPublicActiveCampaigns(): Observable<Campaign[]> {
-    return this.http.get<Campaign[]>(`${this.apiUrl}/public/campaigns/active/`);
+    return this.http.get<Campaign[]>(`${this.apiUrl}/campaigns/active/`);
   }
 
   validateCoupon(data: CouponValidationRequest): Observable<CouponValidationResponse> {
-    return this.http.post<CouponValidationResponse>(`${this.apiUrl}/public/coupons/validate/`, data);
+    return this.http.post<CouponValidationResponse>(`${this.apiUrl}/coupons/validate/`, data);
   }
 }

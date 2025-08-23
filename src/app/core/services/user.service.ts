@@ -109,7 +109,7 @@ export class UserService {
    * Change user password
    */
   changePassword(data: ChangePasswordRequest): Observable<any> {
-    return this.http.post(`${this.baseUrl}/password/change/`, data).pipe(
+    return this.http.post(`${this.baseUrl}/auth/change-password/`, data).pipe(
       tap(response => {
         console.log('Password changed successfully:', response);
       }),
@@ -127,7 +127,7 @@ export class UserService {
     const formData = new FormData();
     formData.append('avatar', file);
 
-    return this.http.post(`${this.baseUrl}/profile/avatar/upload/`, formData).pipe(
+    return this.http.post(`${this.baseUrl}/upload-avatar/`, formData).pipe(
       tap(response => {
         console.log('Avatar uploaded successfully:', response);
       }),
@@ -142,7 +142,7 @@ export class UserService {
    * Remove profile avatar
    */
   removeAvatar(): Observable<any> {
-    return this.http.delete(`${this.baseUrl}/profile/avatar/remove/`).pipe(
+    return this.http.delete(`${this.baseUrl}/remove-avatar/`).pipe(
       tap(response => {
         console.log('Avatar removed successfully:', response);
       }),
@@ -172,7 +172,7 @@ export class UserService {
    * Request password reset
    */
   requestPasswordReset(phoneNumber: string): Observable<any> {
-    return this.http.post(`${this.baseUrl}/password/reset/`, { phone_number: phoneNumber }).pipe(
+    return this.http.post(`${this.baseUrl}/auth/reset-password-request/`, { phone_number: phoneNumber }).pipe(
       tap(response => {
         console.log('Password reset requested:', response);
       }),
@@ -192,7 +192,7 @@ export class UserService {
     new_password: string;
     new_password_confirm: string;
   }): Observable<any> {
-    return this.http.post(`${this.baseUrl}/password/reset/confirm/`, data).pipe(
+    return this.http.post(`${this.baseUrl}/auth/reset-password-confirm/`, data).pipe(
       tap(response => {
         console.log('Password reset confirmed:', response);
       }),

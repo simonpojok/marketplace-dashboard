@@ -16,7 +16,7 @@ export interface ProductUploadProgress {
 })
 export class ProductsService {
   private http = inject(HttpClient);
-  private apiUrl = `${environment.apiUrl}${environment.apiVersion}/admin`;
+  private apiUrl = `${environment.apiUrl}${environment.apiVersion}`;
 
   // Products
   getProducts(params?: Record<string, string | number | null>): Observable<ProductListResponse> {
@@ -221,7 +221,7 @@ export class ProductsService {
   }
 
   getCategoryChildren(parentId: string): Observable<Category[]> {
-    return this.http.get<Category[]>(`${this.apiUrl}/admin/categories/${parentId}/children/`);
+    return this.http.get<Category[]>(`${this.apiUrl}/categories/${parentId}/children/`);
   }
 
 }
